@@ -344,7 +344,8 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
 
     public boolean saveChanges(){
 
-        if (authorView.getText().toString().equals("") && titleView.getText().toString().equals("")){
+        if (authorView.getText().toString().equals("") && titleView.getText().toString().equals(""))
+        {
             showNoTitleAndAuthorDialog();
             return false;
         }
@@ -352,27 +353,42 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
 //        cv.put(NoteTable.COLUMN_PATH, );
         String path1 = pathView.getText().toString();
         path1 = fixPath(path1);
+
         cv.put(NoteTable.COLUMN_PATH, path1);
-        cv.put(NoteTable.COLUMN_AUTHOR, authorView.getText().toString());
-        cv.put(NoteTable.COLUMN_TITLE, titleView.getText().toString());
+        if (authorView.length()<20){cv.put(NoteTable.COLUMN_AUTHOR, authorView.getText().toString());}
+        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое имя автора ",Toast.LENGTH_SHORT).show(); return false;}
+
+        if (authorView.length()<20){        cv.put(NoteTable.COLUMN_TITLE, titleView.getText().toString());}
+        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название книги ",Toast.LENGTH_SHORT).show();return false;}
+
+        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_GENRE,genreView.getText().toString()); }
+        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название жанра ",Toast.LENGTH_SHORT).show();return false;}
+
+        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_TIME, timeView.getText().toString()); }
+        else {Toast.makeText(EditNoteActivity.this,"Введенн слишком большой текст для времени прочтения",Toast.LENGTH_SHORT).show();return false;}
+
+        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_PLACE, placeView.getText().toString()); }
+        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название места прочтения",Toast.LENGTH_SHORT).show();return false;}
+
+        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_SHORT_COMMENT, shortCommentView.getText().toString()); }
+        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большой короткий комментарий",Toast.LENGTH_SHORT).show();return false;}
         cv.put(NoteTable.COLUMN_COVER_IMAGE, imagePath);
         cv.put(NoteTable.COLUMN_RATING, String.valueOf(ratingView.getRating()));
-        cv.put(NoteTable.COLUMN_GENRE,genreView.getText().toString());
-        cv.put(NoteTable.COLUMN_TIME, timeView.getText().toString());
-        cv.put(NoteTable.COLUMN_PLACE, placeView.getText().toString());
-        cv.put(NoteTable.COLUMN_SHORT_COMMENT, shortCommentView.getText().toString());
         cv.put(NoteTable.COLUMN_COVER_IMAGE, "");
 
-        if (!beforeChanging[0].equals(path1)){
+        if (!beforeChanging[0].equals(path1))
+        {
             beforeChanging[0] = path1;
             savePaths();
         }
 
-        if (id != null){
+        if (id != null)
+        {
             sdb.update(NoteTable.TABLE_NAME, cv, "_id=" + id, null);
             changedIntent();
         }
-        else{
+        else
+        {
 
             id = sdb.insert(NoteTable.TABLE_NAME, null, cv) + "";
             insertIntent();
@@ -453,7 +469,8 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
         setResult(RESULT_OK, returnIntent);
     }
 
-    public void insertIntent(){
+    public void insertIntent()
+    {
         Intent returnIntent = new Intent();
         returnIntent.putExtra("id", id);
         returnIntent.putExtra("path", path);
