@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void signin(String email , String password)
     {
 
-            mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
+            mAuth.signInWithEmailAndPassword(email.trim(), password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
             {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task)
@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             {
                 if (task.isSuccessful())
                 {
-                    mAuth.createUserWithEmailAndPassword(email, password)
+                    mAuth.createUserWithEmailAndPassword(email.trim(), password)
                             .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                                 @Override
                                 public void onSuccess(AuthResult authResult) {
