@@ -46,11 +46,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null)
                 {
-
+                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+                    startActivity(intent);
                 }
                 else
                 {
-
 
                 }
 
