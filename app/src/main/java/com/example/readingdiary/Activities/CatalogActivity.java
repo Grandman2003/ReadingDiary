@@ -632,6 +632,8 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             public void onClick(View v) {
                 MainActivity out = new MainActivity();
                 out.signOut();
+                Aunteficator Aunteficator = new Aunteficator();
+                Aunteficator.authIN();
             }
         });
 

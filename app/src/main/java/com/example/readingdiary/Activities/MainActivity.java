@@ -34,26 +34,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Привет, зеленая обезьянка
     // Привет, работяга
 
-
-
-
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        SharedPreferences sharedPreferences= getSharedPreferences("gameSetting", Context.MODE_PRIVATE);
-         int line = sharedPreferences.getInt("User", 0);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        Aunteficator Aunteficator = new Aunteficator();  //Так не работает
+//        int sost = Aunteficator.line;
 
-        if (line ==0){
-//            Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
-//            startActivity(intent);
+          int sost = 0; // так работает
 
-            Toast.makeText(MainActivity.this, "ХЗ ", Toast.LENGTH_SHORT).show();
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putInt("User", 1);
+        if (sost ==1){
+
+            Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+            startActivity(intent);
+
+           // Toast.makeText(MainActivity.this, "ХЗ ", Toast.LENGTH_SHORT).show();
+
+        }
+        else if (sost ==0)
+        {
+//            super.onCreate(savedInstanceState);
+//            setContentView(R.layout.activity_catalog);
+
         }
 
 
@@ -152,6 +155,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                         startActivity(intent);
 
+                        Aunteficator Aunteficator = new Aunteficator();
+                        Aunteficator.authIN();
 
                     }
                     else
