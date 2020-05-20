@@ -624,6 +624,18 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         recyclerView.setAdapter(mAdapter);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
+
+
+        Button sigout = (Button) findViewById(R.id.button2);
+        sigout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity out = new MainActivity();
+                out.signOut();
+            }
+        });
+
+
         mAdapter.setOnItemClickListener(new RecyclerViewAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {

@@ -40,6 +40,14 @@
         android:layout_alignParentBottom="true"
         />
 
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="268dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:text="Выйти из аккаунта" />
+
 
 </RelativeLayout>
 

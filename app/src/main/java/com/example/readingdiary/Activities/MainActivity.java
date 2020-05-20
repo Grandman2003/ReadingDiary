@@ -3,12 +3,15 @@ package com.example.readingdiary.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.readingdiary.R;
@@ -31,31 +34,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Привет, зеленая обезьянка
     // Привет, работяга
 
+
+
+
+
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences= getSharedPreferences("gameSetting", Context.MODE_PRIVATE);
+         int line = sharedPreferences.getInt("User", 0);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
 
-        mAuth = FirebaseAuth.getInstance();
-        mAuthListener = new FirebaseAuth.AuthStateListener()
-        {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth)
-            {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null)
-                {
-                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
-                    startActivity(intent);
-                }
-                else
-                {
+        if (line ==0){
+//            Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+//            startActivity(intent);
 
+            Toast.makeText(MainActivity.this, "ХЗ ", Toast.LENGTH_SHORT).show();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("User", 1);
+        }
+
+
+        mAuth = FirebaseAuth.getInstance();
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    // User is signed in
+                    // Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+
+
+//                        editor.putBoolean("User_bool", true);
+//                        editor.apply();
+
+                } else {
+                    // User is signed out
+                    //Log.d(TAG, "onAuthStateChanged:signed_out");
                 }
+
+                updateUI(user);
 
             }
-
         };
 
         ETemail = (EditText) findViewById(R.id.et_email);
@@ -63,11 +85,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.btn_sign_in).setOnClickListener(this);
         findViewById(R.id.btn_registration).setOnClickListener(this);
+    }
 
+
+
+    public void signOut() {
+        mAuth.signOut();
+        updateUI(null);
+    }
+
+    private void updateUI(FirebaseUser user) {
+
+        if (user != null) {
+
+            //textView.setVisibility(View.VISIBLE);
+        } else {
+
+
+        }
     }
 
     @Override
     public void onClick(View view) {
+
+
+
         if (ETemail.getText().toString().isEmpty()  && ETpassword.getText().toString().isEmpty())
         {
             Toast.makeText(MainActivity.this,"Введите логин и пароль",Toast.LENGTH_SHORT).show();
@@ -110,6 +152,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                         startActivity(intent);
 
+
                     }
                     else
                     {
@@ -149,7 +192,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                                     startActivity(intent);
                                 }
-                            }).addOnFailureListener(new OnFailureListener() {
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             Toast toast = Toast.makeText(getApplicationContext(), "sign-up is unsuccessful: "

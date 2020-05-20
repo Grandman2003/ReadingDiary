@@ -230,6 +230,9 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     }
 
     private void setButtons(){
+
+
+
         FloatingActionButton accept =  (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
         FloatingActionButton cancel =  (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
         Button deleteButton = (Button) findViewById(R.id.deleteNoteButton);
@@ -255,9 +258,21 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
         {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(EditNoteActivity.this, GaleryActivity.class);
-                intent.putExtra("id", id);
-                startActivityForResult(intent, GALERY_REQUEST_CODE);
+                if (id!=null) {
+                    Intent intent = new Intent(EditNoteActivity.this, GaleryActivity.class);
+                    intent.putExtra("id", id);
+                    startActivityForResult(intent, GALERY_REQUEST_CODE);
+                }
+                else
+                    {
+                        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                        photoPickerIntent.setType("image/*");
+                        startActivityForResult(photoPickerIntent, Pick_image);
+
+                        GaleryActivity GaleryActivity = new GaleryActivity();
+                        GaleryActivity.onActivityResult(1, 1,null);
+
+                    }
             }
         });
 
