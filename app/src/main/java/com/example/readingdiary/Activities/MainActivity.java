@@ -164,18 +164,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     }
-    public void registration (final String email , final String password) {
-        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
-        {
+    public void registration(final String email, final String password) {
+        mAuth.createUserWithEmailAndPassword(email.trim(), password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
-            public void onComplete(@NonNull Task<AuthResult> task)
-            {
-                if (task.isSuccessful())
-                {
-                    mAuth.createUserWithEmailAndPassword(email.trim(), password)
-                            .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    FirebaseAuth.getInstance().getCurrentUser()
+                            .sendEmailVerification()
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
-                                public void onSuccess(AuthResult authResult) {
+                                public void onComplete(@NonNull Task<Void> task) {
                                     //смотри когда пользователь регестрируется ему отправляется письмо
                                     FirebaseAuth.getInstance().getCurrentUser()
                                             .sendEmailVerification()

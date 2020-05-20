@@ -101,7 +101,7 @@ public class GaleryActivity extends AppCompatActivity {
 
 
 
-    private void setResultChanged(){
+    public void setResultChanged(){
         // создание возвращаемого интента
         Intent returnIntent = new Intent();
 //        returnIntent.putExtra("changed", "changed);

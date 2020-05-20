@@ -270,7 +270,8 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
                         startActivityForResult(photoPickerIntent, Pick_image);
 
                         GaleryActivity GaleryActivity = new GaleryActivity();
-                        GaleryActivity.onActivityResult(1, 1,null);
+//                        GaleryActivity.onActivityResult(1, 1,null);
+                        GaleryActivity.setResultChanged();
 
                     }
             }
