@@ -3,7 +3,8 @@ package com.example.readingdiary.Activities;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-public class Aunteficator {
+public class Aunteficator // класс для определения состояния аккаунта пользователя. при входе и выходе изменяется
+{
     SharedPreferences sharedPreferences; // getSharedPreferences("gameSetting", Context.MODE_PRIVATE);
     int line = sharedPreferences.getInt("User", 0);
 

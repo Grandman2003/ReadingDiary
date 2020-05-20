@@ -194,6 +194,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             });
                                     Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                                     startActivity(intent);
+                                    Aunteficator Aunteficator = new Aunteficator();
+                                    Aunteficator.authIN();
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
