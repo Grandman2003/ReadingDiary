@@ -33,16 +33,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Привет, зеленая обезьянка
     // Привет, работяга
-
+    SharedPreferences sharedPreferences = getSharedPreferences("gameSetting",Context.MODE_PRIVATE);
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
 //        Aunteficator Aunteficator = new Aunteficator();  //Так не работает
 //        int sost = Aunteficator.line;
 
-          int sost = 0; // так работает
+          int sost = 0; // так работает/ и с 1 тоже
 
         if (sost ==1){
 
