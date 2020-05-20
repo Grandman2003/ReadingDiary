@@ -21,10 +21,6 @@
         <activity
             android:name=".Activities.CatalogActivity"
             android:label="" />
-        <activity
-            android:name=".Activities.AddNoteActivity"
-            android:label="@string/title_activity_add_note"
-            android:theme="@style/AppTheme" />
         <activity android:name=".Activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
