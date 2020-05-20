@@ -33,19 +33,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Привет, зеленая обезьянка
     // Привет, работяга
+
+//    SharedPreferences sPref;
+//    final String SAVE_AUTOREG = "SAVE_AUTOREG";
+//    final String NAME_SPREF = "autoris";
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        sPref =getSharedPreferences(NAME_SPREF,Context.MODE_PRIVATE);
+//
+////        Aunteficator Aunteficator = new Aunteficator();  //Так не работает
+////        int sost = Aunteficator.line;
+//
+//        SharedPreferences.Editor sp = sPref.edit();
+//        sp.putInt(SAVE_AUTOREG,0);
+//        sp.apply();
 
+//          int sost = 0; // так работает/ и с 1 тоже
 
-//        Aunteficator Aunteficator = new Aunteficator();  //Так не работает
-//        int sost = Aunteficator.line;
+        Aunteficator Aunteficator= new Aunteficator();
 
-          int sost = 0; // так работает/ и с 1 тоже
+        //int sost =  Aunteficator.line;
 
-        if (sost ==1){
+        if (Aunteficator.line ==2){
 
             Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
             startActivity(intent);
@@ -53,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
            // Toast.makeText(MainActivity.this, "ХЗ ", Toast.LENGTH_SHORT).show();
 
         }
-        else if (sost ==0)
+        else if (Aunteficator.line ==1)
         {
 //            super.onCreate(savedInstanceState);
 //            setContentView(R.layout.activity_catalog);
@@ -74,7 +88,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                        editor.putBoolean("User_bool", true);
 //                        editor.apply();
 
-                } else {
+                }
+                else
+                    {
                     // User is signed out
                     //Log.d(TAG, "onAuthStateChanged:signed_out");
                 }
@@ -156,8 +172,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                         startActivity(intent);
 
-//                        Aunteficator Aunteficator = new Aunteficator();
-//                        Aunteficator.authIN();
+                        Aunteficator Aunteficator = new Aunteficator();
+                        Aunteficator.authIN();
 
                     }
                     else
@@ -195,8 +211,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             });
                                     Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                                     startActivity(intent);
-//                                    Aunteficator Aunteficator = new Aunteficator();
-//                                    Aunteficator.authIN();
+                                    Aunteficator Aunteficator = new Aunteficator();
+                                    Aunteficator.authIN();
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
