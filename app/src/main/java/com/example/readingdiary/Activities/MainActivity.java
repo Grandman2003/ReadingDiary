@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Привет, зеленая обезьянка
     // Привет, работяга
-    SharedPreferences sharedPreferences = getSharedPreferences("gameSetting",Context.MODE_PRIVATE);
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
