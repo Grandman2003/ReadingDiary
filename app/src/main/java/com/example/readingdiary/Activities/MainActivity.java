@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(MainActivity.this, "Online ", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
             startActivity(intent);
-            signOut();
+            currentUser=null;;
 //            args.putBoolean("num", true);
         }
         else if (currentUser==null)// &&line==true)// args.getBoolean("num")== true   )
@@ -140,7 +140,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        mAuth.signOut();
 //        updateUI(null);
        // x=true;
-        currentUser=null;
+        onBackPressed();
+       // currentUser=null;
     }
 
     private void updateUI(FirebaseUser user) {

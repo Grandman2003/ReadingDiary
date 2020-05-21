@@ -630,15 +630,16 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         sigout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity out = new MainActivity();
-                out.signOut();
-
-//                out.currentUser=null;
-//                MainActivity MainActivity = new MainActivity();
-//                MainActivity.args.putBoolean("num", true);
-
-                Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
-                startActivity(intent);
+//                MainActivity out = new MainActivity();
+////                out.signOut();
+////
+//////                out.currentUser=null;
+//////                MainActivity MainActivity = new MainActivity();
+//////                MainActivity.args.putBoolean("num", true);
+////
+////                Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
+////                startActivity(intent);
+                onBackPressed();
 
 //                Intent returnIntent = new Intent(CatalogActivity.this, MainActivity.class);
 //                setResult(RESULT_OK,returnIntent);
