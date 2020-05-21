@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 else
                 {
-                    currentUser=null;
+
                 }
                 updateUI(user);
 

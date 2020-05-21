@@ -48,6 +48,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class CatalogActivity extends AppCompatActivity implements SortDialogFragment.SortDialogListener {
@@ -614,10 +617,17 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         findText1 = (EditText) findViewById(R.id.editTextFind);
     }
 
-
+    int rep =0;
+    Timer timer = new Timer();
+    class SayHello extends TimerTask {
+        public void run() {
+            rep--;
+        }
+    }
     @Override
     public void onBackPressed()
     {
+
         for (int i=0;i<1;i++)
         {
             if (ext==1)
@@ -627,10 +637,31 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                 super.onBackPressed();
                 ext=0;
                 break;
-            }
 
-            ext();
-            ext=0;
+            }
+            if (rep<3)
+            {   rep++;
+                if(rep==1)
+                {
+                    Toast.makeText(CatalogActivity.this, "Для выхода из приложения нажмите ещё раз ", Toast.LENGTH_SHORT).show();
+                    timer.schedule(new SayHello(), 3000, 0);
+                      //  rep--;
+
+                }
+                else if (rep==2)
+                {
+                    timer.cancel();
+                    ext();
+                    rep=0;
+                }
+
+
+            }
+//            else if (rep==1)
+//            {
+//
+//            }
+
 
         }
 

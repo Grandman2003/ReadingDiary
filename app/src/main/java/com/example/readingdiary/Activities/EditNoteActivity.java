@@ -374,20 +374,21 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
         if (authorView.length()<20){cv.put(NoteTable.COLUMN_AUTHOR, authorView.getText().toString());}
         else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое имя автора ",Toast.LENGTH_SHORT).show(); return false;}
 
-        if (authorView.length()<20){        cv.put(NoteTable.COLUMN_TITLE, titleView.getText().toString());}
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название книги ",Toast.LENGTH_SHORT).show();return false;}
+        if (titleView.length()<20){ cv.put(NoteTable.COLUMN_TITLE, titleView.getText().toString());}
+        else {Toast.makeText(EditNoteActivity.this,"Ведено слишком большое название книги ",Toast.LENGTH_SHORT).show();return false;}
 
-        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_GENRE,genreView.getText().toString()); }
+        if (genreView.length()<20){ cv.put(NoteTable.COLUMN_GENRE,genreView.getText().toString()); }
         else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название жанра ",Toast.LENGTH_SHORT).show();return false;}
 
-        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_TIME, timeView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введенн слишком большой текст для времени прочтения",Toast.LENGTH_SHORT).show();return false;}
+        if (timeView.length()<20){ cv.put(NoteTable.COLUMN_TIME, timeView.getText().toString()); }
+        else {Toast.makeText(EditNoteActivity.this,"Введен слишком большой текст для периода прочтения",Toast.LENGTH_SHORT).show();return false;}
 
-        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_PLACE, placeView.getText().toString()); }
+        if (placeView.length()<20){ cv.put(NoteTable.COLUMN_PLACE, placeView.getText().toString()); }
         else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название места прочтения",Toast.LENGTH_SHORT).show();return false;}
 
-        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_SHORT_COMMENT, shortCommentView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большой короткий комментарий",Toast.LENGTH_SHORT).show();return false;}
+        if (shortCommentView.length()<20){ cv.put(NoteTable.COLUMN_SHORT_COMMENT, shortCommentView.getText().toString()); }
+        else {Toast.makeText(EditNoteActivity.this,"Введен слишком большой короткий комментарий",Toast.LENGTH_SHORT).show();return false;}
+
         cv.put(NoteTable.COLUMN_COVER_IMAGE, imagePath);
         cv.put(NoteTable.COLUMN_RATING, String.valueOf(ratingView.getRating()));
         cv.put(NoteTable.COLUMN_COVER_IMAGE, "");
