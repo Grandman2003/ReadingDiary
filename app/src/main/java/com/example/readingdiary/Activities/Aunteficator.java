@@ -22,7 +22,7 @@ public class Aunteficator // класс для определения состо
         editor.putInt(SAVE_AUTOREG, 2);
         editor.apply();
 
-        line = sPref.getInt(SAVE_AUTOREG, 2);
+        line = sPref.getInt(SAVE_AUTOREG, 1);
     }
 
 //здесь был Гена

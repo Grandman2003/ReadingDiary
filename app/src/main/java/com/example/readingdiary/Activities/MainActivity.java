@@ -57,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Aunteficator Aunteficator= new Aunteficator();
 
+        Integer x = Aunteficator.line; // проверя, что лежит в line
+        String y= x.toString();
+        Toast.makeText(MainActivity.this, y, Toast.LENGTH_SHORT).show();
         //int sost =  Aunteficator.line;
 
         if (Aunteficator.line ==2){
@@ -73,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            setContentView(R.layout.activity_catalog);
 
         }
+
 
 
         mAuth = FirebaseAuth.getInstance();
