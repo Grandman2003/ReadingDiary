@@ -622,11 +622,8 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         {
             if (ext==1)
             {
-
                 MainActivity MainActivity = new MainActivity();
-
                 MainActivity.currentUser=null;
-
                 super.onBackPressed();
                 ext=0;
                 break;
@@ -662,6 +659,9 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             @Override
             public void onClick(View v) {
                 ext =1;
+                MainActivity MainActivity = new MainActivity();
+                MainActivity.currentUser=null;
+                MainActivity. mAuth.signOut();
                 onBackPressed();
             }
         });

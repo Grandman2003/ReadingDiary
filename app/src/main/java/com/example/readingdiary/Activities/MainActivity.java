@@ -26,19 +26,14 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private FirebaseAuth mAuth;
+    public FirebaseAuth mAuth= FirebaseAuth.getInstance();
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText ETemail;
     private EditText ETpassword;
-//    boolean line;
-//    Bundle args=new Bundle();
 
 
     // Привет, зеленая обезьянка
     // Привет, работяга
-//    SharedPreferences sPref;
-//    final String SAVE_AUTOREG = "SAVE_AUTOREG";
-//    final String NAME_SPREF = "autoris";
     FirebaseUser currentUser ;
 
 
@@ -47,62 +42,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        sPref =getSharedPreferences(NAME_SPREF,Context.MODE_PRIVATE);
-
-//        Aunteficator Aunteficator = new Aunteficator();  //Так не работает
-//        int sost = Aunteficator.line;
-
-//        SharedPreferences.Editor sp = sPref.edit();
-//        sp.putInt(SAVE_AUTOREG,0);
-//        sp.apply();
-//
-//          int sost = 0; // так работает/ и с 1 тоже
-//
-//        Aunteficator Aunteficator= new Aunteficator();
-//
-//        Integer x = Aunteficator.line; // проверя, что лежит в line
-//        String y= x.toString();
-//        Toast.makeText(MainActivity.this, y, Toast.LENGTH_SHORT).show();
-//        //int sost =  Aunteficator.line;
-//
-//        if (Aunteficator.line ==2){
-//
-//            Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
-//            startActivity(intent);
-//
-//           // Toast.makeText(MainActivity.this, "ХЗ ", Toast.LENGTH_SHORT).show();
-//
-//        }
-//        else if (Aunteficator.line ==1)
-//        {
-////            super.onCreate(savedInstanceState);
-////            setContentView(R.layout.activity_catalog);
-//
-//        }
-//        args.putBoolean("num", false);
-//        line = args.getBoolean("num");
 
 
-        mAuth = FirebaseAuth.getInstance();
+
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    // User is signed in
-                    // Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-
-
-//                        editor.putBoolean("User_bool", true);
-//                        editor.apply();
+                if (user != null)
+                {
 
                 }
                 else
-                    {
-                    // User is signed out
-                    //Log.d(TAG, "onAuthStateChanged:signed_out");
+                {
+                    currentUser=null;
                 }
-
                 updateUI(user);
 
             }
@@ -115,19 +69,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_registration).setOnClickListener(this);
         currentUser = mAuth.getCurrentUser();
 
-        if (currentUser!= null)//&& line==false)// args.getBoolean("num")== false)
+        if (currentUser!= null)
         {
             Toast.makeText(MainActivity.this, "Online ", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
             startActivity(intent);
             currentUser=null;;
-//            args.putBoolean("num", true);
+
         }
-        else if (currentUser==null)// &&line==true)// args.getBoolean("num")== true   )
+        else if (currentUser==null)
         {
 
             Toast.makeText(MainActivity.this, "Offline ", Toast.LENGTH_SHORT).show();
-           // mAuth.CurrentUser=null;
 
         }
 
@@ -135,16 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
-    public void signOut() {
-//        mAuth.signOut();
-//        updateUI(null);
-       // x=true;
-        onBackPressed();
-       // currentUser=null;
-    }
-
-    private void updateUI(FirebaseUser user) {
+    public void updateUI(FirebaseUser user) {
 
         if (user != null) {
 
@@ -202,9 +146,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                         startActivity(intent);
 
-//                        Aunteficator Aunteficator = new Aunteficator();
-//                        Aunteficator.authIN();
-
                     }
                     else
                     {
@@ -241,8 +182,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             });
                                     Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                                     startActivity(intent);
-//                                    Aunteficator Aunteficator = new Aunteficator();
-//                                    Aunteficator.authIN();
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
