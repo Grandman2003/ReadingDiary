@@ -79,6 +79,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     public boolean action_mode = false;
     int count=0;
     int menuType = 0;
+    int ext =0;
     ArrayList<RealNote> selectionRealNotesList = new ArrayList<>();
     ArrayList<Directory> selectionDirectoriesList = new ArrayList<>();
     String[] choices = new String[]{"Сортировка по названиям в лексикографическом порядке",
@@ -602,10 +603,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         buttonAdapter.notifyDataSetChanged();
     }
 
-    public void prepareSelection(View view, int position){
-
-    }
-
     private void findViews(){
         recyclerView = (RecyclerView) findViewById(R.id.recyclerViewCatalog);  // здесь будут отображаться каталоги и файлы notes
         buttonView = (RecyclerView) findViewById(R.id.buttonViewCatalog);  // здесь будут отображаться пройденные поддиректории buttons
@@ -615,6 +612,40 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 //        findText = (EditText) findViewById(R.id.findText);
         counterText = (TextView) findViewById(R.id.counter_text);
         findText1 = (EditText) findViewById(R.id.editTextFind);
+    }
+
+
+    @Override
+    public void onBackPressed()
+    {
+        for (int i=0;i<1;i++)
+        {
+            if (ext==1)
+            {
+
+                MainActivity MainActivity = new MainActivity();
+
+                MainActivity.currentUser=null;
+
+                super.onBackPressed();
+                ext=0;
+                break;
+            }
+
+            ext();
+            ext=0;
+
+        }
+
+
+    }
+
+    private void ext()
+    {
+            moveTaskToBack(true);
+            super.onDestroy();
+            System.exit(0);
+
     }
 
     private void setAdapters(){
@@ -630,25 +661,8 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         sigout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                MainActivity out = new MainActivity();
-////                out.signOut();
-////
-//////                out.currentUser=null;
-//////                MainActivity MainActivity = new MainActivity();
-//////                MainActivity.args.putBoolean("num", true);
-////
-////                Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
-////                startActivity(intent);
+                ext =1;
                 onBackPressed();
-
-//                Intent returnIntent = new Intent(CatalogActivity.this, MainActivity.class);
-//                setResult(RESULT_OK,returnIntent);
-
-
-//                Aunteficator Aunteficator = new Aunteficator();
-//                Aunteficator.authON();
-
-               // mAuth.getCurrentUser()!=null
             }
         });
 
