@@ -30,13 +30,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText ETemail;
     private EditText ETpassword;
+//    boolean line;
+//    Bundle args=new Bundle();
+
 
     // Привет, зеленая обезьянка
     // Привет, работяга
-
 //    SharedPreferences sPref;
 //    final String SAVE_AUTOREG = "SAVE_AUTOREG";
 //    final String NAME_SPREF = "autoris";
+    FirebaseUser currentUser ;
 
 
     @Override
@@ -45,38 +48,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
 //        sPref =getSharedPreferences(NAME_SPREF,Context.MODE_PRIVATE);
-//
-////        Aunteficator Aunteficator = new Aunteficator();  //Так не работает
-////        int sost = Aunteficator.line;
-//
+
+//        Aunteficator Aunteficator = new Aunteficator();  //Так не работает
+//        int sost = Aunteficator.line;
+
 //        SharedPreferences.Editor sp = sPref.edit();
 //        sp.putInt(SAVE_AUTOREG,0);
 //        sp.apply();
-
+//
 //          int sost = 0; // так работает/ и с 1 тоже
-
-        Aunteficator Aunteficator= new Aunteficator();
-
-        Integer x = Aunteficator.line; // проверя, что лежит в line
-        String y= x.toString();
-        Toast.makeText(MainActivity.this, y, Toast.LENGTH_SHORT).show();
-        //int sost =  Aunteficator.line;
-
-        if (Aunteficator.line ==2){
-
-            Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
-            startActivity(intent);
-
-           // Toast.makeText(MainActivity.this, "ХЗ ", Toast.LENGTH_SHORT).show();
-
-        }
-        else if (Aunteficator.line ==1)
-        {
-//            super.onCreate(savedInstanceState);
-//            setContentView(R.layout.activity_catalog);
-
-        }
-
+//
+//        Aunteficator Aunteficator= new Aunteficator();
+//
+//        Integer x = Aunteficator.line; // проверя, что лежит в line
+//        String y= x.toString();
+//        Toast.makeText(MainActivity.this, y, Toast.LENGTH_SHORT).show();
+//        //int sost =  Aunteficator.line;
+//
+//        if (Aunteficator.line ==2){
+//
+//            Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+//            startActivity(intent);
+//
+//           // Toast.makeText(MainActivity.this, "ХЗ ", Toast.LENGTH_SHORT).show();
+//
+//        }
+//        else if (Aunteficator.line ==1)
+//        {
+////            super.onCreate(savedInstanceState);
+////            setContentView(R.layout.activity_catalog);
+//
+//        }
+//        args.putBoolean("num", false);
+//        line = args.getBoolean("num");
 
 
         mAuth = FirebaseAuth.getInstance();
@@ -109,13 +113,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.btn_sign_in).setOnClickListener(this);
         findViewById(R.id.btn_registration).setOnClickListener(this);
+        currentUser = mAuth.getCurrentUser();
+
+        if (currentUser!= null)//&& line==false)// args.getBoolean("num")== false)
+        {
+            Toast.makeText(MainActivity.this, "Online ", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+            startActivity(intent);
+            signOut();
+//            args.putBoolean("num", true);
+        }
+        else if (currentUser==null)// &&line==true)// args.getBoolean("num")== true   )
+        {
+
+            Toast.makeText(MainActivity.this, "Offline ", Toast.LENGTH_SHORT).show();
+           // mAuth.CurrentUser=null;
+
+        }
+
+
     }
 
 
 
     public void signOut() {
-        mAuth.signOut();
-        updateUI(null);
+//        mAuth.signOut();
+//        updateUI(null);
+       // x=true;
+        currentUser=null;
     }
 
     private void updateUI(FirebaseUser user) {
@@ -176,8 +201,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                         startActivity(intent);
 
-                        Aunteficator Aunteficator = new Aunteficator();
-                        Aunteficator.authIN();
+//                        Aunteficator Aunteficator = new Aunteficator();
+//                        Aunteficator.authIN();
 
                     }
                     else
@@ -215,8 +240,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             });
                                     Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                                     startActivity(intent);
-                                    Aunteficator Aunteficator = new Aunteficator();
-                                    Aunteficator.authIN();
+//                                    Aunteficator Aunteficator = new Aunteficator();
+//                                    Aunteficator.authIN();
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
