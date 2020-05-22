@@ -135,27 +135,37 @@
             android:id="@+id/galeryButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="галерея" />
+            android:text="Галерея"
+            android:textAllCaps="false"
+            android:textSize="8dp"
+            android:layout_margin="1dp"/>
 
         <Button
             android:id="@+id/descriptionButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="описание" />
+            android:text="Описание"
+            android:textAllCaps="false"
+            android:textSize="8dp"
+            android:layout_margin="1dp"/>
 
         <Button
             android:id="@+id/comentsButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="отзыв" />
+            android:text="Отзыв"
+            android:textAllCaps="false"
+            android:textSize="8dp"
+            android:layout_margin="1dp"/>
 
         <Button
             android:id="@+id/quoteButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="цитаты" />
+            android:text="Цитаты"
+            android:textAllCaps="false"
+            android:textSize="8dp"
+            android:layout_margin="1dp"/>
     </LinearLayout>
 
 </RelativeLayout>
