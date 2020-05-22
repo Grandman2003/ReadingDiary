@@ -5,7 +5,7 @@
     <color name="colorAccent">#D8CA00</color>
     <color name="colorText">#000000</color>
     <color name="colorTitle">#ffffff</color>
-    <color name="grey_50">#FAFAFA</color>
+    <color name="grey_50">#808080</color>
 
 </resources>
 <!--        <color name="colorPrimary">#003285</color>-->
