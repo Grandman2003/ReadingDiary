@@ -647,8 +647,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                 if(rep==1)
                 {
                     Toast.makeText(CatalogActivity.this, "Для выхода из приложения нажмите ещё раз ", Toast.LENGTH_SHORT).show();
-                    //timer.schedule(new SayHello(), 3000, 0);
-                    //rep--;
                     CountDownTimer mCount=new CountDownTimer(2000,1000)
                     {
                         @Override
@@ -670,7 +668,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                 }
                 else if (rep==2)
                 {
-                  //  timer.cancel();
                     ext();
                     rep=0;
                 }
