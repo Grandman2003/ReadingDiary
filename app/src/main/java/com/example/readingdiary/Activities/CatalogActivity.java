@@ -17,6 +17,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -618,12 +619,12 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     }
 
     int rep =0;
-    Timer timer = new Timer();
-    class SayHello extends TimerTask {
-        public void run() {
-            rep--;
-        }
-    }
+//    Timer timer = new Timer();
+//    class SayHello extends TimerTask {
+//        public void run() {
+//            rep--;
+//        }
+//    }
     @Override
     public void onBackPressed()
     {
@@ -637,35 +638,45 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                 super.onBackPressed();
                 ext=0;
                 break;
-
             }
+
             if (rep<3)
-            {   rep++;
+            {
+                rep++;
+
                 if(rep==1)
                 {
                     Toast.makeText(CatalogActivity.this, "Для выхода из приложения нажмите ещё раз ", Toast.LENGTH_SHORT).show();
-                    timer.schedule(new SayHello(), 3000, 0);
-                      //  rep--;
+                    //timer.schedule(new SayHello(), 3000, 0);
+                    //rep--;
+                    CountDownTimer mCount=new CountDownTimer(2000,1000)
+                    {
+                        @Override
+                        public void onTick(long millisUntilFinished)
+                        {
+
+                        }
+
+                        @Override
+                        public void onFinish()
+                        {
+
+                            rep--;
+
+                        }
+                    }.start();
+
 
                 }
                 else if (rep==2)
                 {
-                    timer.cancel();
+                  //  timer.cancel();
                     ext();
                     rep=0;
                 }
 
-
             }
-//            else if (rep==1)
-//            {
-//
-//            }
-
-
         }
-
-
     }
 
     private void ext()
