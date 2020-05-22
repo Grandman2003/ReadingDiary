@@ -619,12 +619,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     }
 
     int rep =0;
-//    Timer timer = new Timer();
-//    class SayHello extends TimerTask {
-//        public void run() {
-//            rep--;
-//        }
-//    }
     @Override
     public void onBackPressed()
     {
@@ -663,8 +657,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
                         }
                     }.start();
-
-
                 }
                 else if (rep==2)
                 {

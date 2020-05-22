@@ -93,7 +93,7 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
 
         try{
             File file;
-            if (path==null){
+            if (path==null&& path.length()<5000){
                 File fileDir1 = getApplicationContext().getDir(type + File.pathSeparator + id, MODE_PRIVATE);
                 if (!fileDir1.exists()) fileDir1.mkdirs();
                 long time = new GregorianCalendar().getTimeInMillis();
