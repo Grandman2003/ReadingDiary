@@ -19,6 +19,7 @@ import android.widget.RatingBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
@@ -42,6 +43,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -276,8 +278,6 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
                     photoPickerIntent.setType("image/*");
                     startActivityForResult(photoPickerIntent, Pick_image);
 
-                    GaleryActivity GaleryActivity = new GaleryActivity();
-                    GaleryActivity.onActivityResult(1, 1,null);
 
                 }
             }
@@ -591,11 +591,9 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
                         @Override
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                             Map <String, Boolean> map = (HashMap) documentSnapshot.getData();
-//                            ArrayList<String> arrayList = (ArrayList<String>) documentSnapshot.get("Paths");
                             if (map != null){
                                 for (String path : map.keySet()){
                                     storageReference.child("Images").child(path).delete();
-//                                FirebaseStorage.getInstance().getReference(user).child(id)
                                 }
                             }
 
@@ -699,6 +697,80 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     }
 
 
+    // методы проверки размера изображения до открытия. Если размер слишком большой - сжимаем
+    public Bitmap decodeSampledBitmapFromResource(Uri imageUri,
+                                                  int reqWidth, int reqHeight) throws Exception{
+
+        // Читаем с inJustDecodeBounds=true для определения размеров
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        InputStream imageStream = getContentResolver().openInputStream(imageUri);
+        BitmapFactory.decodeStream(imageStream, null, options);
+
+        // Вычисляем inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth,
+                reqHeight);
+
+        // Читаем с использованием inSampleSize коэффициента
+        options.inJustDecodeBounds = false;
+        imageStream.close();
+        imageStream = getContentResolver().openInputStream(imageUri);
+        return BitmapFactory.decodeStream(imageStream, null, options);
+    }
+
+    public int calculateInSampleSize(BitmapFactory.Options options,
+                                     int reqWidth, int reqHeight) {
+        // Реальные размеры изображения
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        Log.d("SCALE", "OPTIONS " + height + " "  + width);
+        int inSampleSize = (int) Math.max((double)height / reqHeight, (double)width/reqWidth);
+        return inSampleSize;
+    }
+
+    private void saveAndOpenImage(final Uri imageUri) throws Exception{
+        int px = 500;
+        final Bitmap bitmap = decodeSampledBitmapFromResource(imageUri, px, px); // файл сжимается
+//        FirebaseStorage.getInstance().getReference(user).child("Images").put
+        final long time = System.currentTimeMillis();
+        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 60, stream);// сохранение
+        coverView.setImageBitmap(bitmap);
+//        ImageClass t = new ImageClass(bitmap);
+////        images.add(t);
+//        adapter.notifyItemInserted(images.size()-1);
+////        names.add(time);
+//        Map<String, Boolean> map = new HashMap<>();
+//        map.put(time+"", false);
+//        imagePathsDoc.set(map, SetOptions.merge())
+//                .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void aVoid) {
+//                        imageStorage.child(time + "").putBytes(stream.toByteArray())
+//                                .addOnSuccessListener(
+//                                        new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                                            @Override
+//                                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                                                Toast.makeText(getApplicationContext(), "success", Toast.LENGTH_LONG).show();
+//                                                imagePathsDoc.update(time+"", true);
+//                                            }
+//                                        })
+//                                .addOnFailureListener(new OnFailureListener() {
+//                                    @Override
+//                                    public void onFailure(@NonNull Exception e) {
+//                                        imagePathsDoc.update(time+"", FieldValue.delete());
+//                                    }
+//                                });
+//                    }});
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == Pick_image){
+            if (data != null){
+                saveAndOpenImage(data.getData());
+            }
+        }
+    }
 
     @Override
     protected void onStop() {
