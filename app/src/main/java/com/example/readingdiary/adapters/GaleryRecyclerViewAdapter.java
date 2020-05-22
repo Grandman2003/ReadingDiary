@@ -8,6 +8,7 @@ package com.example.readingdiary.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,14 +18,17 @@ import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.readingdiary.Classes.ImageClass;
 import com.example.readingdiary.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 // Адаптер для GaleryActivity.
 public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecyclerViewAdapter.ViewHolder>{
 
-    private List<Bitmap> buttons;
+    private List<ImageClass> buttons;
+
     private GaleryRecyclerViewAdapter.OnItemClickListener mListener;
     private Context context;
     public interface OnItemClickListener{
@@ -36,14 +40,13 @@ public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecycl
         mListener = listener;
     }
 
-    public GaleryRecyclerViewAdapter(List<Bitmap> buttons, Context context) {
+    public GaleryRecyclerViewAdapter(List<ImageClass> buttons, Context context) {
         this.buttons = buttons;
+        Log.d("qwerty23", buttons.size()+"");
         this.context = context;
+//        this.newImages = newImages;
     }
 
-    /**
-     * Создание новых View и ViewHolder элемента списка, которые впоследствии могут переиспользоваться.
-     */
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View v;
@@ -53,15 +56,28 @@ public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecycl
         return vh;
     }
 
-    /**
-     * Заполнение виджетов View данными из элемента списка с номером i
-     */
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
 //        String path = buttons.get(i);
 //        FileInputStream fileInputStream = openFileInput(path);
 //        Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream);
-        Bitmap source = buttons.get(i);
+//        holder.textViewName.setText(uploadCurrent.getName());
+        if (buttons.get(i).getType()==1){
+            Log.d("qwerty24", buttons.size()+"");
+            Log.d("qwerty23", buttons.get(i).toString());
+
+//        Display display = context.getResources().getDisplayMetrics()
+            DisplayMetrics metricsB = context.getResources().getDisplayMetrics();
+//        display.getMetrics(metricsB);
+            float size = metricsB.widthPixels / 3;
+
+            Picasso.get()
+                    .load(buttons.get(i).getUri())
+                    .resize((int) size, (int) size)
+                    .into(viewHolder.imageView);
+        }
+        else{
+                    Bitmap source = buttons.get(i).getBitmap();
 //        Display display = context.getResources().getDisplayMetrics()
         DisplayMetrics metricsB = context.getResources().getDisplayMetrics();
 //        display.getMetrics(metricsB);
@@ -75,29 +91,8 @@ public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecycl
         Bitmap result = Bitmap.createBitmap(resizedBitmap, x, y, (int)size, (int)size);
 
         viewHolder.imageView.setImageBitmap(result);
-//        viewHolder.imageView.setImageBitmap(buttons.get(i);
-
-
-//        viewHolder.imageview.setText(tokens[tokens.length - 1] + " > ");
-//        int type = getItemViewType(i);
-//        if (type == TYPE_ITEM1){
-//            RealNote realNote = (RealNote) notes.get(i);
-//            viewHolder.path1.setText(realNote.getPath());
-//            viewHolder.author.setText(realNote.getAuthor());
-//            viewHolder.title.setText(realNote.getTitle());
-//        }
-//        if (type == TYPE_ITEM2){
-//            Directory directory = (Directory) notes.get(i);
-//            viewHolder.path2.setText(directory.getDirectory());
-//        }
-
-//
-//
-//        Note note = notes.get(i);
-//        viewHolder.path.setText(note.getPath());
-//        viewHolder.title.setText(note.getTitle());
-//        viewHolder.author.setText(note.getAuthor());
-
+        }
+////        viewHolder.imageView.setImageBitmap(buttons.get(i);
     }
 //
 //    @Override
@@ -124,10 +119,6 @@ public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecycl
         buttons.clear();
         notifyDataSetChanged();
     }
-
-    /**
-     * Реализация класса ViewHolder, хранящего ссылки на виджеты.
-     */
 
     class ViewHolder extends RecyclerView.ViewHolder {
         //        private TextView path1;

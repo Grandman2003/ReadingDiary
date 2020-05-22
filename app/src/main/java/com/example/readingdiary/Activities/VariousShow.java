@@ -1,12 +1,5 @@
 package com.example.readingdiary.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,11 +9,19 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.readingdiary.Classes.DeleteFilesClass;
 import com.example.readingdiary.Classes.VariousNotes;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.VariousViewAdapter;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -43,11 +44,13 @@ public class VariousShow extends AppCompatActivity {
     int count=0;
     boolean action_mode=false;
     ArrayList<VariousNotes> selectedNotes = new ArrayList<>();
+    String user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_various_show);
+        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
@@ -68,7 +71,7 @@ public class VariousShow extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId()==R.id.item_delete){
+        if (item.getItemId()== R.id.item_delete){
             action_mode=false;
             viewAdapter.setActionMode(false);
             deleteVariousNotes();

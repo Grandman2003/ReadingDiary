@@ -1,18 +1,16 @@
 package com.example.readingdiary.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.readingdiary.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -35,19 +33,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Привет, работяга
 
 
-
-
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        SharedPreferences sharedPreferences= getSharedPreferences("gameSetting", Context.MODE_PRIVATE);
-         int line = sharedPreferences.getInt("User", 0);
+        SharedPreferences sharedPreferences = getSharedPreferences("gameSetting", Context.MODE_PRIVATE);
+        int line = sharedPreferences.getInt("User", 0);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
 
-        if (line ==0){
+        if (line == 0) {
 //            Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
 //            startActivity(intent);
 
@@ -64,15 +58,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
-                    // Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    Log.d("qwerty", "onAuthStateChanged:signed_in:" + user.getUid());
 
 
 //                        editor.putBoolean("User_bool", true);
 //                        editor.apply();
 
                 } else {
+
                     // User is signed out
-                    //Log.d(TAG, "onAuthStateChanged:signed_out");
+                    Log.d("qwerty", "onAuthStateChanged:signed_out");
                 }
 
                 updateUI(user);
@@ -86,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_sign_in).setOnClickListener(this);
         findViewById(R.id.btn_registration).setOnClickListener(this);
     }
-
 
 
     public void signOut() {
@@ -107,113 +101,119 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-
-
-
-        if (ETemail.getText().toString().isEmpty()  && ETpassword.getText().toString().isEmpty())
-        {
-            Toast.makeText(MainActivity.this,"Введите логин и пароль",Toast.LENGTH_SHORT).show();
-        }
-
-        else if (ETemail.getText().toString().isEmpty())
-        {
-            Toast.makeText(MainActivity.this,"Введите логин",Toast.LENGTH_SHORT).show();
-        }
-
-        else if (ETpassword.getText().toString().isEmpty())
-        {
-            Toast.makeText(MainActivity.this,"Введите пароль",Toast.LENGTH_SHORT).show();
-        }
-
-        else
-        {
-            if (view.getId() == R.id.btn_sign_in)
-            {
+        if (ETemail.getText().toString().isEmpty() && ETpassword.getText().toString().isEmpty()) {
+            Toast.makeText(MainActivity.this, "Введите логин и пароль", Toast.LENGTH_SHORT).show();
+        } else if (ETemail.getText().toString().isEmpty()) {
+            Toast.makeText(MainActivity.this, "Введите логин", Toast.LENGTH_SHORT).show();
+        } else if (ETpassword.getText().toString().isEmpty()) {
+            Toast.makeText(MainActivity.this, "Введите пароль", Toast.LENGTH_SHORT).show();
+        } else {
+            if (view.getId() == R.id.btn_sign_in) {
                 signin(ETemail.getText().toString(), ETpassword.getText().toString());
-            }
-            else if (view.getId() == R.id.btn_registration)
-            {
+            } else if (view.getId() == R.id.btn_registration) {
                 registration(ETemail.getText().toString(), ETpassword.getText().toString());
             }
         }
     }
 
-    public void signin(String email , String password)
-    {
+    public void signin(String email, String password) {
 
-            mAuth.signInWithEmailAndPassword(email.trim(), password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
-            {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task)
-                {
-                    if (task.isSuccessful())
-                    {
-                        Toast.makeText(MainActivity.this, "Aвторизация успешна", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
-                        startActivity(intent);
-
-
-                    }
-                    else
-                    {
-                        Toast.makeText(MainActivity.this, "Aвторизация провалена", Toast.LENGTH_SHORT).show();
-
-                    }
-                }
-            });
-
-
-    }
-    public void registration (final String email , final String password) {
-        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
-        {
+        mAuth.signInWithEmailAndPassword(email.trim(), password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
-            public void onComplete(@NonNull Task<AuthResult> task)
-            {
-                if (task.isSuccessful())
-                {
-                    mAuth.createUserWithEmailAndPassword(email.trim(), password)
-                            .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                @Override
-                                public void onSuccess(AuthResult authResult) {
-                                    //смотри когда пользователь регестрируется ему отправляется письмо
-                                    FirebaseAuth.getInstance().getCurrentUser()
-                                            .sendEmailVerification()
-                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    Toast.makeText(MainActivity.this, "Вам отправленно ссылка на email. Для подтверждения email перейдите по ней", Toast.LENGTH_LONG).show();
-                                                    FirebaseUser userAuth = mAuth.getCurrentUser();
-                                                    UserProfileChangeRequest.Builder builder = new UserProfileChangeRequest.Builder();
-                                                    UserProfileChangeRequest u = builder.build();
-                                                    userAuth.updateProfile(u);
-                                                }
-                                            });
-                                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
-                                    startActivity(intent);
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast toast = Toast.makeText(getApplicationContext(), "sign-up is unsuccessful: "
-                                    + e.getMessage(), Toast.LENGTH_SHORT);
-                            toast.show();
-                        }
-                    });
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(MainActivity.this, "Aвторизация успешна", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+                    startActivity(intent);
 
-                }
 
-                else
-                {
-                    Toast.makeText(MainActivity.this, "Регистрация провалена", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Aвторизация провалена", Toast.LENGTH_SHORT).show();
+
                 }
             }
-
         });
+
 
     }
 
+    public void registration(final String email, final String password) {
+        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    Log.d("qwerty14", "ok");
+                    FirebaseAuth.getInstance().getCurrentUser()
+                            .sendEmailVerification()
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    Toast.makeText(MainActivity.this, "Вам отправленно ссылка на email. Для подтверждения email перейдите по ней", Toast.LENGTH_LONG).show();
+                                    FirebaseUser userAuth = mAuth.getCurrentUser();
+                                    UserProfileChangeRequest.Builder builder = new UserProfileChangeRequest.Builder();
+                                    UserProfileChangeRequest u = builder.build();
+                                    userAuth.updateProfile(u);
+                                    Log.d("qwerty14", "ok");
+                                }
+                            });
+                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+                    startActivity(intent);
+                }
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e("qwerty14", e.toString());
+                    }
+                });
+    }
 }
+//                    mAuth.createUserWithEmailAndPassword(email.trim(), password)
+//                            .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+//                                @Override
+//                                public void onSuccess(AuthResult authResult) {
+//                                    //смотри когда пользователь регестрируется ему отправляется письмо
+//                                    Log.d("qwerty14", "ok");
+//                                    FirebaseAuth.getInstance().getCurrentUser()
+//                                            .sendEmailVerification()
+//                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                                                @Override
+//                                                public void onComplete(@NonNull Task<Void> task) {
+//                                                    Toast.makeText(MainActivity.this, "Вам отправленно ссылка на email. Для подтверждения email перейдите по ней", Toast.LENGTH_LONG).show();
+//                                                    FirebaseUser userAuth = mAuth.getCurrentUser();
+//                                                    UserProfileChangeRequest.Builder builder = new UserProfileChangeRequest.Builder();
+//                                                    UserProfileChangeRequest u = builder.build();
+//                                                    userAuth.updateProfile(u);
+//                                                    Log.d("qwerty14", "ok");
+//                                                }
+//                                            });
+//                                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+//                                    startActivity(intent);
+//                                }
+//                            })
+//                            .addOnFailureListener(new OnFailureListener() {
+//                                @Override
+//                                public void onFailure(@NonNull Exception e) {
+//                                    Toast toast = Toast.makeText(getApplicationContext(), "sign-up is unsuccessful: "
+//                                            + e.getMessage(), Toast.LENGTH_SHORT);
+//                                    Log.e("qwerty14", e.toString());
+//                                    toast.show();
+//                        }
+//                    });
+//
+//                }
+//
+//                else
+//                {
+//                    Toast.makeText(MainActivity.this, "Регистрация провалена", Toast.LENGTH_SHORT).show();
+//                }
+//            }
 
+
+//    }
+
+//}
+//
 

@@ -1,10 +1,5 @@
 package com.example.readingdiary.Activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -21,8 +16,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RatingBar;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.readingdiary.Fragments.CreateWithoutNoteDialogFragment;
 import com.example.readingdiary.Fragments.DeleteDialogFragment;
@@ -30,14 +30,23 @@ import com.example.readingdiary.Fragments.DeleteTitleAndAuthorDialogFragment;
 import com.example.readingdiary.Fragments.SaveDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.data.LiteratureContract.NoteTable;
-
-import com.example.readingdiary.data.OpenHelper;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import java.io.File;
-
-import javax.xml.transform.Result;
 import com.example.readingdiary.data.LiteratureContract.PathTable;
+import com.example.readingdiary.data.OpenHelper;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EditNoteActivity extends AppCompatActivity implements DeleteDialogFragment.DeleteDialogListener,
         CreateWithoutNoteDialogFragment.CreateWithoutNoteDialogListener,
@@ -51,9 +60,9 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     EditText placeView;
     EditText shortCommentView;
     ImageView coverView;
-    String imagePath;
-    SQLiteDatabase sdb;
-    OpenHelper dbHelper;
+    String imagePath="";
+    //    SQLiteDatabase sdb;
+//    OpenHelper dbHelper;
     String id;
     String path;
     boolean change = false;
@@ -62,14 +71,17 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     private final int EDIT_REQUEST_CODE = 123;
     private String[] beforeChanging;
     private final int GALERY_REQUEST_CODE = 124;
+    private String user = "user0";
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_note);
-        dbHelper = new OpenHelper(this);
-        sdb = dbHelper.getReadableDatabase();
+        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//        dbHelper = new OpenHelper(this);
+//        sdb = dbHelper.getReadableDatabase();
         findViews();
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -90,11 +102,9 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
             setViews(beforeChanging);
         }
         Log.d("putExtra", "start");
-
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         setButtons();
         setFocuses();
-
     }
 
     @Override
@@ -230,9 +240,6 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     }
 
     private void setButtons(){
-
-
-
         FloatingActionButton accept =  (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
         FloatingActionButton cancel =  (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
         Button deleteButton = (Button) findViewById(R.id.deleteNoteButton);
@@ -264,15 +271,15 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
                     startActivityForResult(intent, GALERY_REQUEST_CODE);
                 }
                 else
-                    {
-                        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                        photoPickerIntent.setType("image/*");
-                        startActivityForResult(photoPickerIntent, Pick_image);
+                {
+                    Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                    photoPickerIntent.setType("image/*");
+                    startActivityForResult(photoPickerIntent, Pick_image);
 
-                        GaleryActivity GaleryActivity = new GaleryActivity();
-                        GaleryActivity.onActivityResult(1, 1,null);
+                    GaleryActivity GaleryActivity = new GaleryActivity();
+                    GaleryActivity.onActivityResult(1, 1,null);
 
-                    }
+                }
             }
         });
 
@@ -299,116 +306,172 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     }
 
     public void select(String id){
-        // Выбор полей из бд
-        // Сейчас тут выбор не всех полей
-        String[] projection = {
-                NoteTable._ID,
-                NoteTable.COLUMN_PATH,
-                NoteTable.COLUMN_AUTHOR,
-                NoteTable.COLUMN_TITLE,
-                NoteTable.COLUMN_COVER_IMAGE,
-                NoteTable.COLUMN_RATING,
-                NoteTable.COLUMN_GENRE,
-                NoteTable.COLUMN_TIME,
-                NoteTable.COLUMN_PLACE,
-                NoteTable.COLUMN_SHORT_COMMENT
-
-        };
-        Cursor cursor = sdb.query(
-                NoteTable.TABLE_NAME,   // таблица
-                projection,            // столбцы
-                NoteTable._ID + " = ?",                  // столбцы для условия WHERE
-                new String[] {id},                  // значения для условия WHERE
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);
-        try{
-            int idColumnIndex = cursor.getColumnIndex(NoteTable._ID);
-            int pathColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_PATH);
-            int authorColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_AUTHOR);
-            int titleColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_TITLE);
-            int coverColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_COVER_IMAGE);
-            int ratingColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_RATING);
-            int genreColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_GENRE);
-            int timeColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_TIME);
-            int placeColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_PLACE);
-            int shortCommentIndex =  cursor.getColumnIndex(NoteTable.COLUMN_SHORT_COMMENT);
-
-            while (cursor.moveToNext()) {
-                beforeChanging = new String[] {cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
-                        cursor.getString(titleColumnIndex), cursor.getString(ratingColumnIndex),
-                        cursor.getString(genreColumnIndex), cursor.getString(timeColumnIndex),
-                        cursor.getString(placeColumnIndex), cursor.getString(shortCommentIndex),
-                        cursor.getString(coverColumnIndex)};
-                if (beforeChanging[0] == null) beforeChanging[0] = "./";
-//                setViews(new String[] {cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
+        Log.d("qwerty16", id);
+        db.collection("Notes").document(user).collection("userNotes").document(id).get().
+                addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        String s = documentSnapshot.get("author").toString();
+                        Log.d("qwerty16", s);
+                        HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
+                        Log.d("qwerty16", map.toString());
+                        imagePath = map.get("imagePath").toString();
+                        beforeChanging = new String[] {
+                                map.get("path").toString(), map.get("author").toString(),
+                                map.get("title").toString(), map.get("rating").toString(),
+                                map.get("genre").toString(), map.get("time").toString(),
+                                map.get("place").toString(), map.get("short_comment").toString(),
+                                map.get("imagePath").toString()};
+                        setViews(beforeChanging);
+                    }
+                });
+//        // Выбор полей из бд
+//        // Сейчас тут выбор не всех полей
+//        String[] projection = {
+//                NoteTable._ID,
+//                NoteTable.COLUMN_PATH,
+//                NoteTable.COLUMN_AUTHOR,
+//                NoteTable.COLUMN_TITLE,
+//                NoteTable.COLUMN_COVER_IMAGE,
+//                NoteTable.COLUMN_RATING,
+//                NoteTable.COLUMN_GENRE,
+//                NoteTable.COLUMN_TIME,
+//                NoteTable.COLUMN_PLACE,
+//                NoteTable.COLUMN_SHORT_COMMENT
+//
+//        };
+//        Cursor cursor = sdb.query(
+//                NoteTable.TABLE_NAME,   // таблица
+//                projection,            // столбцы
+//                NoteTable._ID + " = ?",                  // столбцы для условия WHERE
+//                new String[] {id},                  // значения для условия WHERE
+//                null,                  // Don't group the rows
+//                null,                  // Don't filter by row groups
+//                null);
+//        try{
+//            int idColumnIndex = cursor.getColumnIndex(NoteTable._ID);
+//            int pathColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_PATH);
+//            int authorColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_AUTHOR);
+//            int titleColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_TITLE);
+//            int coverColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_COVER_IMAGE);
+//            int ratingColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_RATING);
+//            int genreColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_GENRE);
+//            int timeColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_TIME);
+//            int placeColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_PLACE);
+//            int shortCommentIndex =  cursor.getColumnIndex(NoteTable.COLUMN_SHORT_COMMENT);
+//
+//            while (cursor.moveToNext()) {
+//                beforeChanging = new String[] {cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
 //                        cursor.getString(titleColumnIndex), cursor.getString(ratingColumnIndex),
 //                        cursor.getString(genreColumnIndex), cursor.getString(timeColumnIndex),
 //                        cursor.getString(placeColumnIndex), cursor.getString(shortCommentIndex),
-//                        cursor.getString(shortCommentIndex)});
-                setViews(beforeChanging);
-            }
-        }
-        finally{
-            if (path==null){
-                path="./";
-            }
-            cursor.close();
-        }
+//                        cursor.getString(coverColumnIndex)};
+//                if (beforeChanging[0] == null) beforeChanging[0] = "./";
+////                setViews(new String[] {cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
+////                        cursor.getString(titleColumnIndex), cursor.getString(ratingColumnIndex),
+////                        cursor.getString(genreColumnIndex), cursor.getString(timeColumnIndex),
+////                        cursor.getString(placeColumnIndex), cursor.getString(shortCommentIndex),
+////                        cursor.getString(shortCommentIndex)});
+//                setViews(beforeChanging);
+//            }
+//        }
+//        finally{
+//            if (path==null){
+//                path="./";
+//            }
+//            cursor.close();
+//        }
     }
 
     public boolean saveChanges(){
 
-        if (authorView.getText().toString().equals("") && titleView.getText().toString().equals(""))
-        {
+
+        if (authorView.getText().toString().equals("") && titleView.getText().toString().equals("")){
             showNoTitleAndAuthorDialog();
             return false;
         }
-        ContentValues cv = new ContentValues();
-//        cv.put(NoteTable.COLUMN_PATH, );
         String path1 = pathView.getText().toString();
         path1 = fixPath(path1);
-
-        cv.put(NoteTable.COLUMN_PATH, path1);
-        if (authorView.length()<20){cv.put(NoteTable.COLUMN_AUTHOR, authorView.getText().toString());}
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое имя автора ",Toast.LENGTH_SHORT).show(); return false;}
-
-        if (authorView.length()<20){        cv.put(NoteTable.COLUMN_TITLE, titleView.getText().toString());}
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название книги ",Toast.LENGTH_SHORT).show();return false;}
-
-        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_GENRE,genreView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название жанра ",Toast.LENGTH_SHORT).show();return false;}
-
-        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_TIME, timeView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введенн слишком большой текст для времени прочтения",Toast.LENGTH_SHORT).show();return false;}
-
-        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_PLACE, placeView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название места прочтения",Toast.LENGTH_SHORT).show();return false;}
-
-        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_SHORT_COMMENT, shortCommentView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большой короткий комментарий",Toast.LENGTH_SHORT).show();return false;}
-        cv.put(NoteTable.COLUMN_COVER_IMAGE, imagePath);
-        cv.put(NoteTable.COLUMN_RATING, String.valueOf(ratingView.getRating()));
-        cv.put(NoteTable.COLUMN_COVER_IMAGE, "");
-
-        if (!beforeChanging[0].equals(path1))
-        {
+        Map<String, Object> note = new HashMap<String, Object>();
+        note.put("path", path1.replace("/", "\\"));
+        note.put("author", authorView.getText().toString());
+        note.put("title", titleView.getText().toString());
+        note.put("imagePath", imagePath);
+        note.put("rating", String.valueOf(ratingView.getRating()));
+        note.put("genre", genreView.getText().toString());
+        note.put("time", timeView.getText().toString());
+        note.put("place", placeView.getText().toString());
+        note.put("short_comment", shortCommentView.getText().toString());
+        if (!beforeChanging[0].equals(path1)){
             beforeChanging[0] = path1;
             savePaths();
         }
-
-        if (id != null)
-        {
-            sdb.update(NoteTable.TABLE_NAME, cv, "_id=" + id, null);
-            changedIntent();
-        }
-        else
-        {
-
-            id = sdb.insert(NoteTable.TABLE_NAME, null, cv) + "";
+        if (id == null){
+            id = db.collection("Notes").document(user).collection("userNotes").document().getId();
+            db.collection("Notes").document(user).collection("userNotes").document(id).set(note);
+            HashMap<String, Boolean> map = new HashMap<String, Boolean>();
+            db.collection("Common").document(user).collection(id).document("Images").set(map);
+            db.collection("Common").document(user).collection(id).document("Quotes").set(map);
+            db.collection("Common").document(user).collection(id).document("Comment").set(map);
+            db.collection("Common").document(user).collection(id).document("Description").set(map);
             insertIntent();
         }
+        else if (id != null)
+        {
+            db.collection("Notes").document(user).collection("userNotes").document(id).set(note);
+            changedIntent();
+        }
         return true;
+//        if (authorView.getText().toString().equals("") && titleView.getText().toString().equals(""))
+//        {
+//            showNoTitleAndAuthorDialog();
+//            return false;
+//        }
+//        ContentValues cv = new ContentValues();
+////        cv.put(NoteTable.COLUMN_PATH, );
+//        String path1 = pathView.getText().toString();
+//        path1 = fixPath(path1);
+//
+//        cv.put(NoteTable.COLUMN_PATH, path1);
+//        if (authorView.length()<20){cv.put(NoteTable.COLUMN_AUTHOR, authorView.getText().toString());}
+//        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое имя автора ",Toast.LENGTH_SHORT).show(); return false;}
+//
+//        if (authorView.length()<20){        cv.put(NoteTable.COLUMN_TITLE, titleView.getText().toString());}
+//        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название книги ",Toast.LENGTH_SHORT).show();return false;}
+//
+//        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_GENRE,genreView.getText().toString()); }
+//        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название жанра ",Toast.LENGTH_SHORT).show();return false;}
+//
+//        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_TIME, timeView.getText().toString()); }
+//        else {Toast.makeText(EditNoteActivity.this,"Введенн слишком большой текст для времени прочтения",Toast.LENGTH_SHORT).show();return false;}
+//
+//        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_PLACE, placeView.getText().toString()); }
+//        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название места прочтения",Toast.LENGTH_SHORT).show();return false;}
+//
+//        if (authorView.length()<20){ cv.put(NoteTable.COLUMN_SHORT_COMMENT, shortCommentView.getText().toString()); }
+//        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большой короткий комментарий",Toast.LENGTH_SHORT).show();return false;}
+//        cv.put(NoteTable.COLUMN_COVER_IMAGE, imagePath);
+//        cv.put(NoteTable.COLUMN_RATING, String.valueOf(ratingView.getRating()));
+//        cv.put(NoteTable.COLUMN_COVER_IMAGE, "");
+//
+//        if (!beforeChanging[0].equals(path1))
+//        {
+//            beforeChanging[0] = path1;
+//            savePaths();
+//        }
+//
+//        if (id != null)
+//        {
+//            sdb.update(NoteTable.TABLE_NAME, cv, "_id=" + id, null);
+//            changedIntent();
+//        }
+//        else
+//        {
+//
+//            id = sdb.insert(NoteTable.TABLE_NAME, null, cv) + "";
+//            insertIntent();
+//        }
+//        return true;
     }
 
     private void showNoTitleAndAuthorDialog(){
@@ -444,19 +507,63 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     }
 
     public void savePaths(){
-        ContentValues cv = new ContentValues();
-        String pathTokens[] = ((String) beforeChanging[0]).split("/");
-        String prev = pathTokens[0] + "/";
-        for (int i = 1; i < pathTokens.length; i++){
-            if (pathTokens[i].equals("")){
+        final String pathTokens[] = ((String) beforeChanging[0]).split("/");
+//        String prev = pathTokens[0] + "\\";
+//        final String prePrev = "";
+        String prev="";
+        for (int i = 0; i < pathTokens.length - 1; i++) {
+            if (pathTokens[i].equals("")) {
                 continue;
             }
-            cv.put(PathTable.COLUMN_PARENT, prev);
-            prev = prev + pathTokens[i] + "/";
-            cv.put(PathTable.COLUMN_CHILD, prev);
-            sdb.insert(PathTable.TABLE_NAME, null, cv);
-            cv.clear();
+//            final String prev0 = prev;
+//            final String child0 = pathTokens[i];
+//            final String child1 = pathTokens[i+1];
+            final String prev0 = prev;
+            final String doc = prev + pathTokens[i] + "\\";
+            final String toAdd = prev + pathTokens[i] + "\\" + pathTokens[i+1]+"\\";
+
+//            List<String> list = new ArrayList<>();
+//            list.add(prev + pathTokens[i] + "\\" + pathTokens[i+1]+"\\");
+//            Map<String, Object> map = new HashMap<>();
+//            map.put("parent", prev);
+//            map.put("paths", list);
+            db.collection("User").document(user).collection("paths").document(doc)
+                    .update("paths", FieldValue.arrayUnion(toAdd))
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Map<String, Object> map = new HashMap<>();
+                            List<String> list = new ArrayList<>();
+                            list.add(toAdd);
+                            map.put("parent", prev0);
+                            map.put("paths", list);
+                            db.collection("User").document(user).collection("paths").document(doc)
+                                    .set(map);
+
+                        }
+                    });
+//                    .set(map, SetOptions.merge());
+            prev += pathTokens[i] + "\\";
         }
+        Map<String, Object> map = new HashMap<>();
+        map.put("paths", new ArrayList<String>());
+        map.put("parent", prev);
+        db.collection("User").document(user).collection("paths").document(
+                prev+pathTokens[pathTokens.length - 1]+"\\").set(map, SetOptions.merge());
+
+//        ContentValues cv = new ContentValues();
+//        String pathTokens[] = ((String) beforeChanging[0]).split("/");
+//        String prev = pathTokens[0] + "/";
+//        for (int i = 1; i < pathTokens.length; i++){
+//            if (pathTokens[i].equals("")){
+//                continue;
+//            }
+//            cv.put(PathTable.COLUMN_PARENT, prev);
+//            prev = prev + pathTokens[i] + "/";
+//            cv.put(PathTable.COLUMN_CHILD, prev);
+//            sdb.insert(PathTable.TABLE_NAME, null, cv);
+//            cv.clear();
+//        }
     }
 
     public String fixPath(String path){
@@ -476,7 +583,95 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     }
 
     private void deleteNote(){
-        sdb.delete(NoteTable.TABLE_NAME, NoteTable._ID + " = ?", new String[]{id});
+        if (id != null) {
+            db.collection("Notes").document(user).collection("userNotes").document(id).delete();
+            final StorageReference storageReference = FirebaseStorage.getInstance().getReference(user).child(id);
+            db.collection("Common").document(user).collection(id).document("Images").get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            Map <String, Boolean> map = (HashMap) documentSnapshot.getData();
+//                            ArrayList<String> arrayList = (ArrayList<String>) documentSnapshot.get("Paths");
+                            if (map != null){
+                                for (String path : map.keySet()){
+                                    storageReference.child("Images").child(path).delete();
+//                                FirebaseStorage.getInstance().getReference(user).child(id)
+                                }
+                            }
+
+                        }
+                            });
+            db.collection("Common").document(user).collection(id).document("Images").delete();
+
+
+            db.collection("Common").document(user).collection(id).document("Comment").get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            Map <String, Boolean> map = (HashMap) documentSnapshot.getData();
+//                            ArrayList<String> arrayList = (ArrayList<String>) documentSnapshot.get("Paths");
+                            if (map != null){
+                                for (String path : map.keySet()){
+                                    storageReference.child("Comment").child(path).delete();
+//                                FirebaseStorage.getInstance().getReference(user).child(id)
+                                }
+                            }
+
+                        }
+                    });
+            db.collection("Common").document(user).collection(id).document("Comment").delete();
+
+            db.collection("Common").document(user).collection(id).document("Description").get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            Map <String, Boolean> map = (HashMap) documentSnapshot.getData();
+//                            ArrayList<String> arrayList = (ArrayList<String>) documentSnapshot.get("Paths");
+                            if (map != null){
+                                for (String path : map.keySet()){
+                                    storageReference.child("Description").child(path).delete();
+//                                FirebaseStorage.getInstance().getReference(user).child(id)
+                                }
+                            }
+
+                        }
+                    });
+            db.collection("Common").document(user).collection(id).document("Description").delete();
+
+            db.collection("Common").document(user).collection(id).document("Quotes").get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            Map <String, Boolean> map = (HashMap) documentSnapshot.getData();
+//                            ArrayList<String> arrayList = (ArrayList<String>) documentSnapshot.get("Paths");
+                            if (map != null){
+                                for (String path : map.keySet()){
+                                    storageReference.child("Quotes").child(path).delete();
+//                                FirebaseStorage.getInstance().getReference(user).child(id)
+                                }
+                            }
+
+                        }
+                    });
+            db.collection("Common").document(user).collection(id).document("Quotes").delete();
+//            FirebaseStorage.getInstance().getReference(user).child(id).delete().
+//                    addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//                            Log.d("qwerty31", "success");
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Log.e("qwerty31", e.toString());
+//                            Log.d("qwerty31", e.toString());
+//
+//                        }
+//                    });
+
+        }
+//        sdb.delete(NoteTable.TABLE_NAME, NoteTable._ID + " = ?", new String[]{id});
     }
 
     public void changedIntent(){
