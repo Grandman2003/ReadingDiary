@@ -7,15 +7,19 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -56,6 +60,8 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     private final int EDIT_REQUEST_CODE = 123;
     private String[] beforeChanging;
     private final int GALERY_REQUEST_CODE = 124;
+    FloatingActionButton acceptButton;
+    FloatingActionButton cancelButton;
 
 
     @Override
@@ -88,6 +94,7 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         setButtons();
         setFocuses();
+//        Window.SetSoftInputMode(SoftInput.StateAlwaysHidden);
 
     }
 
@@ -98,18 +105,18 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
         return true;
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN){
-//            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-            InputMethodManager imm = (InputMethodManager) getSystemService(getApplicationContext().INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
-//            findText.clearFocus();
-            setCursorsVisible(false);
-        }
-
-        return super.dispatchTouchEvent(event);
-    }
+//    @Override
+//    public boolean dispatchTouchEvent(MotionEvent event) {
+//        if (event.getAction() == MotionEvent.ACTION_DOWN){
+////            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+//            InputMethodManager imm = (InputMethodManager) getSystemService(getApplicationContext().INPUT_METHOD_SERVICE);
+//            imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
+////            findText.clearFocus();
+//            setCursorsVisible(false);
+//        }
+//
+//        return super.dispatchTouchEvent(event);
+//    }
 
     @Override
     public void onDeleteClicked() {
@@ -163,6 +170,8 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_UP){
+                    acceptButton.setVisibility(View.GONE);
+                    cancelButton.setVisibility(View.GONE);
                     editText.setCursorVisible(true);
                 }
                 return false;
@@ -183,6 +192,7 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
 
     public void findViews(){
         pathView = (EditText) findViewById(R.id.editPath);
+//        pathView.onKeyDown()
         titleView = (EditText) findViewById(R.id.editTitleNoteActivity);
         authorView = (EditText) findViewById(R.id.editAuthorNoteActivity);
         ratingView = (RatingBar) findViewById(R.id.editRatingBar);
@@ -191,6 +201,26 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
         placeView = (EditText) findViewById(R.id.editPlace);
         shortCommentView = (EditText) findViewById(R.id.editShortComment);
         coverView = (ImageView) findViewById(R.id.editCoverImage);
+        acceptButton = (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
+        cancelButton = (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
+        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.relativeViewEditNote);
+        relativeLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "CLICK", Toast.LENGTH_LONG).show();
+                acceptButton.setVisibility(View.VISIBLE);
+                cancelButton.setVisibility(View.VISIBLE);
+            }
+        });
+        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linearLayoutEditNote);
+        linearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "CLICK L", Toast.LENGTH_LONG).show();
+                acceptButton.setVisibility(View.VISIBLE);
+                cancelButton.setVisibility(View.VISIBLE);
+            }
+        });
 //        changeViews = {pathView, authorView, titleView, ratingView, genreView, timeView, placeView, shortCommentView, imageView};
     }
 
@@ -227,10 +257,10 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
 
 
 
-        FloatingActionButton accept =  (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
-        FloatingActionButton cancel =  (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
+//        FloatingActionButton accept =  (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
+//        FloatingActionButton cancel =  (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
         Button deleteButton = (Button) findViewById(R.id.deleteNoteButton);
-        accept.setOnClickListener(new View.OnClickListener() {
+        acceptButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (saveChanges()){
@@ -240,7 +270,7 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
             }
         });
 
-        cancel.setOnClickListener(new View.OnClickListener() {
+        cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -507,13 +537,30 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Toast.makeText(getApplicationContext(), "backPressed!1 " + keyCode , Toast.LENGTH_LONG).show();
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Toast.makeText(getApplicationContext(), "backPressed!1", Toast.LENGTH_LONG).show();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
     public void onBackPressed() {
+        Toast.makeText(getApplicationContext(), "backPressed", Toast.LENGTH_LONG).show();
+        Log.d("QWERTY", "backPressed");
         if (checkChanges()){
             saveDialog();
         }
         else{
             finish();
         }
+
+        acceptButton.setVisibility(View.VISIBLE);
+        cancelButton.setVisibility(View.VISIBLE);
+        super.onBackPressed();
+
 //        saveChanges();
 //        super.onBackPressed();
 //        finish();
