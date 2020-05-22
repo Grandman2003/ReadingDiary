@@ -288,16 +288,16 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
                     startActivityForResult(intent, GALERY_REQUEST_CODE);
                 }
                 else
-                    {
-                        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                        photoPickerIntent.setType("image/*");
-                        startActivityForResult(photoPickerIntent, Pick_image);
+                {
+                    Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                    photoPickerIntent.setType("image/*");
+                    startActivityForResult(photoPickerIntent, Pick_image);
 
-                        GaleryActivity GaleryActivity = new GaleryActivity();
+                    GaleryActivity GaleryActivity = new GaleryActivity();
 //                        GaleryActivity.onActivityResult(1, 1,null);
-                        GaleryActivity.setResultChanged();
+                    GaleryActivity.setResultChanged();
 
-                    }
+                }
             }
         });
 

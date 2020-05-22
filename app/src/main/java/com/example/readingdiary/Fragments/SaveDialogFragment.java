@@ -1,6 +1,5 @@
 package com.example.readingdiary.Fragments;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.readingdiary.Activities.EditNoteActivity;
+import com.example.readingdiary.Activities.VariousNotebook;
 import com.example.readingdiary.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -30,13 +29,39 @@ public class SaveDialogFragment extends DialogFragment {
         builder.setTitle(title);  // заголовок
         builder.setMessage(message); // сообщение
 
+//        final  VariousNotebook VariousNotebook = new VariousNotebook();
+//        int q = VariousNotebook.text.length();
+//        final String aLot= "Текст слишком длинный, он не должен привышать 5000 символов"+String.valueOf(q-5000)+"\nУ вас"+q+"лишних симвлово";
+//        final String aMin = "Введите что-нибудь";
+
         builder.setPositiveButton(saveButtonString, new DialogInterface.OnClickListener() {
+
+
+
             public void onClick(DialogInterface dialog, int id) {
+
+//                if (VariousNotebook.text.getText().toString().equals(""))
+//                {
+//                    // Toast.makeText(VariousNotebook.this, "Введите что-нибудь", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getActivity(), aMin,
+//                            Toast.LENGTH_LONG).show();
+//                }
+//                else if (VariousNotebook.text.length()>5000)
+//                {
+//                    Toast.makeText(getActivity(), aLot,
+//                            Toast.LENGTH_LONG).show();
+//                    //Toast.makeText(VariousNotebook.this, , Toast.LENGTH_SHORT).show();
+//                }
+//                else
+//                {
+//                    Toast.makeText(getActivity(), saveButtonString,
+//                            Toast.LENGTH_LONG).show();
+//                    listener.onSaveClicked();
+//                }
+
                 Toast.makeText(getActivity(), saveButtonString,
                         Toast.LENGTH_LONG).show();
                 listener.onSaveClicked();
-//                ((EditNoteActivity)getActivity()).saveChanges();
-//                ((EditNoteActivity)getActivity()).finish();
 
             }
         });

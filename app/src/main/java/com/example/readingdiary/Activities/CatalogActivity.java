@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,32 +42,18 @@ import com.example.readingdiary.adapters.RecyclerViewAdapter;
 import com.example.readingdiary.data.LiteratureContract;
 import com.example.readingdiary.data.LiteratureContract.NoteTable;
 import com.example.readingdiary.data.OpenHelper;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.WriteBatch;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class CatalogActivity extends AppCompatActivity implements SortDialogFragment.SortDialogListener {
     // класс отвечает за активность с каталогами
-//    OpenHelper dbHelper;
+    OpenHelper dbHelper;
     RecyclerViewAdapter mAdapter;
-    //    SQLiteDatabase sdb;
+    SQLiteDatabase sdb;
     String parent = "./";
     ArrayList<Note> notes;
     ArrayList<String> buttons;
@@ -91,6 +78,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     public boolean action_mode = false;
     int count=0;
     int menuType = 0;
+    int ext =0;
     ArrayList<RealNote> selectionRealNotesList = new ArrayList<>();
     ArrayList<Directory> selectionDirectoriesList = new ArrayList<>();
     String[] choices = new String[]{"Сортировка по названиям в лексикографическом порядке",
@@ -99,15 +87,12 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             "Сортировка по автору в обратном лексиграфическим порядке",
             "Сортировка по возрастанию рейтинга",
             "Сортировка по убыванию рейтинга"};
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private String user = "user0";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
-        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
 //        Получение разрешений на чтение и запись
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -132,9 +117,9 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
 
 
-//        dbHelper = new OpenHelper(this);
-//
-//        sdb = dbHelper.getReadableDatabase();
+        dbHelper = new OpenHelper(this);
+
+        sdb = dbHelper.getReadableDatabase();
         notes = new ArrayList<Note>(); // список того, что будет отображаться в каталоге.
         buttons = new ArrayList<String>(); // Список пройденный каталогов до текущего
         setSortTitles();
@@ -192,13 +177,10 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d("qwerty15", "OnActivityResult");
-        Log.d("qwerty15", "requestCode " + requestCode + " " + resultCode);
-
         if (data != null && requestCode == NOTE_REQUEST_CODE){
             // если изменился путь до записи, добавилась новая запись, то переходим к этой записи
             if (data.getExtras().get("deleted") != null){
-                String id = data.getExtras().get("id").toString();
+                long id = Long.parseLong(data.getExtras().get("id").toString());
                 int index = deleteNote(id);
                 if (index != -1){
                     mAdapter.notifyItemRemoved(index);
@@ -206,17 +188,13 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             }
 
             if (data.getExtras().get("path") != null){
-                parent = data.getExtras().get("path").toString().replace("\\", "/");
+                parent = data.getExtras().get("path").toString();
                 reloadRecyclerView();
                 reloadButtonsView();
             }
         }
-
         if (requestCode==CREATE_NOTE_REQUEST_CODE && resultCode == RESULT_OK){
-            Log.d("qwerty15", data.getExtras().get("deleted") + " ! " + data.getExtras().get("noNote") + " !");
             if ((data.getExtras().get("deleted") == null && data.getExtras().get("noNote") == null)){
-                Log.d("qwerty15", "hi");
-
                 Intent intent = new Intent(CatalogActivity.this, NoteActivity.class); // вызов активности записи
                 intent.putExtra("id", data.getExtras().get("id").toString()); // передаем id активности в бд, чтобы понять какую активность надо показывать
                 intent.putExtra("changed", "true");
@@ -236,7 +214,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         if (item.getItemId()== R.id.item_delete){
 
             action_mode=false;
@@ -322,65 +299,34 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         return super.onOptionsItemSelected(item);
     }
 
-    public void deleteInStorage(String id, final String delEl){
-        final StorageReference storageReference = FirebaseStorage.getInstance().getReference(user).child(id);
-        db.collection("Common").document(user).collection(id).document(delEl).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        Map <String, Boolean> map = (HashMap) documentSnapshot.getData();
-//                            ArrayList<String> arrayList = (ArrayList<String>) documentSnapshot.get("Paths");
-                        if (map != null){
-                            for (String path : map.keySet()){
-                                storageReference.child(delEl).child(path).delete();
-//                                FirebaseStorage.getInstance().getReference(user).child(id)
-                            }
-                        }
-
-                    }
-                });
-        db.collection("Common").document(user).collection(id).document(delEl).delete();
-    }
-
     public void deleteSelectedRealNote(){
-        for (int i = 0; i < selectionRealNotesList.size(); i++){
-            String id = selectionRealNotesList.get(i).getID();
-            notes.remove(selectionRealNotesList.get(i));
-            db.collection("Notes").document(user).collection("userNotes").document(id).delete();
-            deleteInStorage(id, "Images");
-            deleteInStorage(id, "Comment");
-            deleteInStorage(id, "Description");
-            deleteInStorage(id, "Quotes");
+        File fileArr[] = new File[selectionRealNotesList.size() * 4];
+        for (int i = 0; i < selectionRealNotesList.size() * 4; i+=4){
+            String id = selectionRealNotesList.get(i / 4).getID() + "";
+            sdb.delete(NoteTable.TABLE_NAME, NoteTable._ID + " = ? ", new String[]{id+""});
+            notes.remove(selectionRealNotesList.get(i / 4));
+            fileArr[i] = getApplicationContext().getDir(getResources().getString(R.string.imagesDir) + File.pathSeparator + id, MODE_PRIVATE);
+            fileArr[i + 1] = getApplicationContext().getDir(getResources().getString(R.string.descriptionDir) + File.pathSeparator + id, MODE_PRIVATE);
+            fileArr[i + 2] = getApplicationContext().getDir(getResources().getString(R.string.commentDir) + File.pathSeparator + id, MODE_PRIVATE);
+            fileArr[i + 3] = getApplicationContext().getDir(getResources().getString(R.string.quoteDir) + File.pathSeparator + id, MODE_PRIVATE);
         }
+        DeleteFilesClass deleteClass = new DeleteFilesClass(fileArr);
+        deleteClass.start();
+
+        selectionRealNotesList.clear();
         mAdapter.notifyDataSetChanged();
-
-
-//        File fileArr[] = new File[selectionRealNotesList.size() * 4];
-//        for (int i = 0; i < selectionRealNotesList.size() * 4; i+=4){
-//            String id = selectionRealNotesList.get(i / 4).getID() + "";
-////            sdb.delete(NoteTable.TABLE_NAME, NoteTable._ID + " = ? ", new String[]{id+""});
-//            db.collection("Notes").document(user).collection("userNotes").document(id).delete();
-//            notes.remove(selectionRealNotesList.get(i / 4));
-//            fileArr[i] = getApplicationContext().getDir(getResources().getString(R.string.imagesDir) + File.pathSeparator + id, MODE_PRIVATE);
-//            fileArr[i + 1] = getApplicationContext().getDir(getResources().getString(R.string.descriptionDir) + File.pathSeparator + id, MODE_PRIVATE);
-//            fileArr[i + 2] = getApplicationContext().getDir(getResources().getString(R.string.commentDir) + File.pathSeparator + id, MODE_PRIVATE);
-//            fileArr[i + 3] = getApplicationContext().getDir(getResources().getString(R.string.quoteDir) + File.pathSeparator + id, MODE_PRIVATE);
-//        }
-//        DeleteFilesClass deleteClass = new DeleteFilesClass(fileArr);
-//        deleteClass.start();
-//        selectionRealNotesList.clear();
-//        mAdapter.notifyDataSetChanged();
     }
 
     public void deleteSelectedDirectories(){
         for (Directory directory : selectionDirectoriesList){
             notes.remove(directory);
-            deleteDirectory(directory.getDirectory().replace("/", "\\"));
-            String s = directory.getDirectory();
-            String parDoc = s.substring(0, s.substring(0, s.length() - 1).lastIndexOf("/")+1).replace("/", "\\");
-            db.collection("User").document(user).collection("paths").document(parDoc).update("paths", FieldValue.arrayRemove(s.replace("/", "\\")));
+            deleteDirectory(directory.getDirectory());
+//            deleteFilesInDirectory(directory.getDirectory())
+            sdb.delete(LiteratureContract.PathTable.TABLE_NAME, LiteratureContract.PathTable.COLUMN_CHILD + " = ? ",
+                    new String[]{directory.getDirectory()});
         }
         selectionDirectoriesList.clear();
+
     }
 
     @Override
@@ -391,99 +337,77 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
 
     public void deleteDirectory(String path){
-        final String path1 = path;
-        final File dir0 = new File(path);
-        Log.d("qwerty12", "start " + path1);
-        db.collection("User").document(user).collection("paths").whereEqualTo("parent", path1).get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (queryDocumentSnapshots != null){
-                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-//                                Log.d("qwerty12", path1 + " "  + documentSnapshot.getId());
-                                deleteDirectory(documentSnapshot.getId());
-//                                ArrayList<String> list = (ArrayList) documentSnapshot.get("paths");
-//                                if (list != null){
-//                                    for (String i : list){
-//                                        Log.d("qwerty12", documentSnapshot.getId() + " list " + i);
-//                                        deleteDirectory(i);
-//                                    }
-//
-//                                }
+        String[] projection1 = {
+                LiteratureContract.PathTable._ID,
+                LiteratureContract.PathTable.COLUMN_PARENT,
+                LiteratureContract.PathTable.COLUMN_CHILD
 
-                            }
-                        }
-                    }
-                });
-        db.collection("User").document(user).collection("paths").document(path1).delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Toast.makeText(getApplicationContext(), "success", Toast.LENGTH_LONG).show();
+        };
+        Cursor mCursor1 = sdb.query(LiteratureContract.PathTable.TABLE_NAME, projection1,
+                LiteratureContract.PathTable.COLUMN_PARENT + " = ?", new String[] {path},
+                null, null, null);
+        int count = 0;
+        int idColumnIndex1 = mCursor1.getColumnIndex(LiteratureContract.PathTable._ID);
+        int childColumnIndex = mCursor1.getColumnIndex(LiteratureContract.PathTable.COLUMN_CHILD);
+        while (mCursor1.moveToNext()){
+//            long currentId = mCursor1.getLong(idColumnIndex1);
+//            String currentChild = mCursor1.getString(childColumnIndex);
+            deleteDirectory(mCursor1.getString(childColumnIndex));
+            count++;
+//            notes.add(new Directory(currentId, currentChild));
+        }
+        mCursor1.close();
+        sdb.delete(LiteratureContract.PathTable.TABLE_NAME, LiteratureContract.PathTable.COLUMN_PARENT + " = ?",
+                new String[]{path});
 
-//                        Log.d("qwerty12", "Success " + path1);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("qwerty12", e.toString());
-                    }
-                });
-
-        db.collection("Notes").document(user).collection("userNotes").whereEqualTo("path", path1).get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-
-                        if (queryDocumentSnapshots != null){
-                            WriteBatch batch = db.batch();
-//                            File[] arr = new File[queryDocumentSnapshots.size()];
-                            int k = 0;
-
-                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-//                                db.document(documentSnapshot.getId()).delete();
-
-                                //            arr[k] = getApplicationContext().getDir(path + "/" + currentID, MODE_PRIVATE);
-//                                arr[k] = new File(dir0 + File.pathSeparator + documentSnapshot.getId());
-                                // Тут содержится pathSeparator, на что ide ругается
-//                                k++;
-                                deleteInStorage(documentSnapshot.getId(), "Images");
-                                deleteInStorage(documentSnapshot.getId(), "Comment");
-                                deleteInStorage(documentSnapshot.getId(), "Description");
-                                deleteInStorage(documentSnapshot.getId(), "Quotes");
-
-                                batch.delete(db.collection("Notes").document(user).collection("userNotes").document(documentSnapshot.getId()));
-                            }
-                            batch.commit();
-//                            DeleteFilesClass deleteFilesClass = new DeleteFilesClass(arr);
-//                            deleteFilesClass.start();
-                        }
-
-                    }
-                });
+        String[] projection = {
+                NoteTable._ID
+        };
+        Cursor cursor = sdb.query(
+                NoteTable.TABLE_NAME,
+                projection,
+                LiteratureContract.NoteTable.COLUMN_PATH + " = ?",
+                new String[] {path},
+                null,
+                null,
+                null);
+        int idColumnIndex = cursor.getColumnIndex(NoteTable._ID);
+        File[] arr = new File[cursor.getCount()];
+        int k = 0;
+        while (cursor.moveToNext()) {
+            int currentID = cursor.getInt(idColumnIndex);
+            File dir0 = new File(path);
+//            arr[k] = getApplicationContext().getDir(path + "/" + currentID, MODE_PRIVATE);
+            arr[k] = new File(dir0 + File.pathSeparator + currentID);
+            // Тут содержится pathSeparator, на что ide ругается
+            k++;
+            sdb.delete(NoteTable.TABLE_NAME, NoteTable._ID + "= ?", new String[]{currentID + ""});
+        }
+        cursor.close();
+        DeleteFilesClass deleteFilesClass = new DeleteFilesClass(arr);
+        deleteFilesClass.start();
 
 
 
     }
 
-//    private void deleteFileDir(String path1, String id){
-//        File fileDir1 = getApplicationContext().getDir(path1 + File.pathSeparator + id, MODE_PRIVATE);
-//        if (!fileDir1.exists()) return;
-//
-//        File files1[] = fileDir1.listFiles();
-//        if (files1 != null){
-//            for (File file : files1){
-//                file.delete();
-//            }
-//        }
-//        fileDir1.delete();
-//    }
+    private void deleteFileDir(String path1, long id){
+        File fileDir1 = getApplicationContext().getDir(path1 + File.pathSeparator + id, MODE_PRIVATE);
+        if (!fileDir1.exists()) return;
 
-    private int deleteNote(String id){
+        File files1[] = fileDir1.listFiles();
+        if (files1 != null){
+            for (File file : files1){
+                file.delete();
+            }
+        }
+        fileDir1.delete();
+    }
+
+    private int deleteNote(long id){
         int index = -1;
         for (int i = 0; i < notes.size(); i++){
-            if (notes.get(i).getID().equals(id)){
+            if (notes.get(i).getID() == id){
                 index = i;
                 break;
             }
@@ -491,19 +415,13 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         if (index != -1){
             notes.remove(index);
         }
-        db.collection("Notes").document(user).collection("userNotes").document(id).delete();
-        deleteInStorage(id, "Images");
-        deleteInStorage(id, "Comment");
-        deleteInStorage(id, "Description");
-        deleteInStorage(id, "Quotes");
-
-//        DeleteFilesClass deleteClass = new DeleteFilesClass(new File[]
-//                {
-//                        getApplicationContext().getDir(getResources().getString(R.string.imagesDir) + File.pathSeparator + id, MODE_PRIVATE),
-//                        getApplicationContext().getDir(getResources().getString(R.string.quoteDir) + File.pathSeparator + id, MODE_PRIVATE),
-//                        getApplicationContext().getDir(getResources().getString(R.string.descriptionDir) + File.pathSeparator + id, MODE_PRIVATE),
-//                        getApplicationContext().getDir(getResources().getString(R.string.commentDir) + File.pathSeparator + id, MODE_PRIVATE)
-//                });
+        DeleteFilesClass deleteClass = new DeleteFilesClass(new File[]
+                {
+                        getApplicationContext().getDir(getResources().getString(R.string.imagesDir) + File.pathSeparator + id, MODE_PRIVATE),
+                        getApplicationContext().getDir(getResources().getString(R.string.quoteDir) + File.pathSeparator + id, MODE_PRIVATE),
+                        getApplicationContext().getDir(getResources().getString(R.string.descriptionDir) + File.pathSeparator + id, MODE_PRIVATE),
+                        getApplicationContext().getDir(getResources().getString(R.string.commentDir) + File.pathSeparator + id, MODE_PRIVATE)
+                });
 //        deleteClass.start();
 //        deleteFileDir(getResources().getString(R.string.imagesDir), id);
 //        deleteFileDir(getResources().getString(R.string.commentDir), id);
@@ -513,91 +431,141 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     }
 
     private void selectAll() {
-        Toast.makeText(this, parent, Toast.LENGTH_LONG).show();
-        final String par1 = parent.replace("/", "\\");
-        Log.d("qwerty11", par1);
-        db.collection("User").document(user).collection("paths").document(par1).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        Log.d("qwerty11", par1 + " child");
-                        Log.d("qwerty8", "onSuccess");
-                        if (documentSnapshot != null){
-                            Log.d("qwerty11", "length " + par1);
-                            ArrayList<String> list = (ArrayList<String>) documentSnapshot.get("paths");
-//                            Log.d("qwerty11", "length " + list.size());
-                            if (list != null) {
-                                for (String i : list) {
-                                    notes.add(new Directory(i, i.replace("\\", "/")));
-                                }
-                            }
-                        }
-                        startPos = notes.size();
-                        mAdapter.notifyDataSetChanged();
 
-                        db.collection("Notes").document(user).collection("userNotes").whereEqualTo("path", par1).get()
-                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                        if (queryDocumentSnapshots != null){
-                                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                                HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
-                                                notes.add(new RealNote(documentSnapshot.getId(), map.get("path").toString(),
-                                                        map.get("author").toString(), map.get("title").toString(), Double.valueOf(map.get("rating").toString())));
-                                            }
-                                        }
-                                        mAdapter.notifyDataSetChanged();
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-                                        Log.e("qwerty9", e.toString());
-                                    }
-                                });
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-                        Log.e("qwerty10", e.toString());
-                    }
-                });
+        sdb = dbHelper.getReadableDatabase();
+
+        // Выбор директорий и добавление, находящихся в текущей директории parent.
+        String[] projection1 = {
+                LiteratureContract.PathTable._ID,
+                LiteratureContract.PathTable.COLUMN_PARENT,
+                LiteratureContract.PathTable.COLUMN_CHILD
+
+        };
+        Cursor mCursor1 = sdb.query(LiteratureContract.PathTable.TABLE_NAME, projection1,
+                LiteratureContract.PathTable.COLUMN_PARENT + " = ?", new String[] {parent},
+                null, null, LiteratureContract.PathTable.COLUMN_CHILD);
+        int idColumnIndex1 = mCursor1.getColumnIndex(LiteratureContract.PathTable._ID);
+        int childColumnIndex = mCursor1.getColumnIndex(LiteratureContract.PathTable.COLUMN_CHILD);
+        while (mCursor1.moveToNext()){
+            long currentId = mCursor1.getLong(idColumnIndex1);
+            String currentChild = mCursor1.getString(childColumnIndex);
+            notes.add(new Directory(currentId, currentChild));
+        }
+        mCursor1.close();
+        startPos = notes.size();
+
+
+        // Выбор и добавление записей, находящихся в текущей дирректории parent
+        String[] projection = {
+                NoteTable._ID,
+                NoteTable.COLUMN_PATH,
+                NoteTable.COLUMN_AUTHOR,
+                NoteTable.COLUMN_TITLE,
+                NoteTable.COLUMN_RATING
+        };
+        Cursor cursor = sdb.query(
+                NoteTable.TABLE_NAME,
+                projection,
+                LiteratureContract.NoteTable.COLUMN_PATH + " = ?",
+                new String[] {parent},
+                null,
+                null,
+                NoteTable.COLUMN_TITLE);
+        int idColumnIndex = cursor.getColumnIndex(NoteTable._ID);
+        int pathColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_PATH);
+        int authorColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_AUTHOR);
+        int titleColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_TITLE);
+        int ratingColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_RATING);
+        while (cursor.moveToNext()) {
+            int currentID = cursor.getInt(idColumnIndex);
+            String currentPath = cursor.getString(pathColumnIndex);
+            String currentAuthor = cursor.getString(authorColumnIndex);
+            String currentTitle = cursor.getString(titleColumnIndex);
+            double currentRating = Double.valueOf(cursor.getString(ratingColumnIndex));
+            notes.add(new RealNote(currentID, currentPath, currentAuthor, currentTitle, currentRating));
+        }
+        cursor.close();
+
     }
 
     private void selectTitle(String title){
-        db.collection("Notes").document(user).collection("userNotes").whereEqualTo("title", title).get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (queryDocumentSnapshots != null){
-                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
-                                notes.add(new RealNote(documentSnapshot.getId(), map.get("path").toString(),
-                                        map.get("author").toString(), map.get("title").toString(), Double.valueOf(map.get("rating").toString())));
-                            }
-                        }
-                        mAdapter.notifyDataSetChanged();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-                        Log.e("qwerty9", e.toString());
-                    }
-                });
+        String[] projection = {
+                NoteTable._ID,
+                NoteTable.COLUMN_PATH,
+                NoteTable.COLUMN_AUTHOR,
+                NoteTable.COLUMN_TITLE,
+                NoteTable.COLUMN_RATING
+        };
+
+        Cursor cursor = sdb.query(
+                NoteTable.TABLE_NAME,
+                projection,
+                NoteTable.COLUMN_TITLE + " = ?",
+                new String[] {title},
+                null,
+                null,
+                null);
+        int idColumnIndex = cursor.getColumnIndex(NoteTable._ID);
+        int pathColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_PATH);
+        int authorColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_AUTHOR);
+        int titleColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_TITLE);
+        int ratingColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_RATING);
+        while (cursor.moveToNext()) {
+            int currentID = cursor.getInt(idColumnIndex);
+            String currentPath = cursor.getString(pathColumnIndex);
+            String currentAuthor = cursor.getString(authorColumnIndex);
+            String currentTitle = cursor.getString(titleColumnIndex);
+            double currentRating = Double.valueOf(cursor.getString(ratingColumnIndex));
+            notes.add(new RealNote(currentID, currentPath, currentAuthor, currentTitle, currentRating));
+        }
+        cursor.close();
+
+        String[] titles = new String[title.length() + 1];
+        titles[0] = title;
+        titles[1] = "_" + title.substring(1);
+        String quest = NoteTable.COLUMN_TITLE + "!= ? AND (";
+        quest += NoteTable.COLUMN_TITLE + " LIKE ?" + " OR ";
+        for (int i = 2; i < titles.length - 1; i++){
+            titles[i] = title.substring(0, i - 1) + "%" + title.substring(i, title.length());
+            quest += NoteTable.COLUMN_TITLE + " LIKE ?" + " OR ";
+        }
+
+        titles[titles.length - 1] = title.substring(0, title.length() - 1) + "%";
+        quest += NoteTable.COLUMN_TITLE + " LIKE ?)";
+
+
+        cursor = sdb.query(
+                NoteTable.TABLE_NAME,
+                projection,
+                quest,
+                titles,
+                null,
+                null,
+                null);
+        idColumnIndex = cursor.getColumnIndex(NoteTable._ID);
+        pathColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_PATH);
+        authorColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_AUTHOR);
+        titleColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_TITLE);
+        ratingColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_RATING);
+        while (cursor.moveToNext()) {
+            int currentID = cursor.getInt(idColumnIndex);
+            String currentPath = cursor.getString(pathColumnIndex);
+            String currentAuthor = cursor.getString(authorColumnIndex);
+            String currentTitle = cursor.getString(titleColumnIndex);
+            double currentRating = Double.valueOf(cursor.getString(ratingColumnIndex));
+            notes.add(new RealNote(currentID, currentPath, currentAuthor, currentTitle, currentRating));
+        }
+        cursor.close();
+
     }
 
     private void setSortTitles(){
-        sortTitles1 = "по названиям по возрастанию";
-        sortTitles2 = "по названиям по убыванию";
-        sortAuthors1 = "по автору по возрастанию";
-        sortAuthors2 = "по автору по убыванию";
-        sortRating1 = "по рейтингу по возрастанию";
-        sortRating2 = "по рейтингу по убыванию";
+        sortTitles1 = "Сортировка по названиям в лексикографическом порядке";
+        sortTitles2 = "Сортировка по названиям в обратном лексикографическим порядке";
+        sortAuthors1 = "Сортировка по автору в лексиграфическом порядке";
+        sortAuthors2 = "Сортировка по автору в обратном лексиграфическим порядке";
+        sortRating1 = "Сортировка по возрастанию рейтинга";
+        sortRating2 = "Сортировка по убыванию рейтинга";
     }
 
 //    private void initSortsList(){
@@ -645,6 +613,72 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         findText1 = (EditText) findViewById(R.id.editTextFind);
     }
 
+    int rep =0;
+    //    Timer timer = new Timer();
+//    class SayHello extends TimerTask {
+//        public void run() {
+//            rep--;
+//        }
+//    }
+    @Override
+    public void onBackPressed()
+    {
+
+        for (int i=0;i<1;i++)
+        {
+            if (ext==1)
+            {
+                MainActivity MainActivity = new MainActivity();
+                MainActivity.currentUser=null;
+                super.onBackPressed();
+                ext=0;
+                break;
+            }
+
+            if (rep<3)
+            {
+                rep++;
+
+                if(rep==1)
+                {
+                    Toast.makeText(CatalogActivity.this, "Для выхода из приложения нажмите ещё раз ", Toast.LENGTH_SHORT).show();
+                    CountDownTimer mCount=new CountDownTimer(2000,1000)
+                    {
+                        @Override
+                        public void onTick(long millisUntilFinished)
+                        {
+
+                        }
+
+                        @Override
+                        public void onFinish()
+                        {
+
+                            rep--;
+
+                        }
+                    }.start();
+
+
+                }
+                else if (rep==2)
+                {
+                    ext();
+                    rep=0;
+                }
+
+            }
+        }
+    }
+
+    private void ext()
+    {
+        moveTaskToBack(true);
+        super.onDestroy();
+        System.exit(0);
+
+    }
+
     private void setAdapters(){
         mAdapter = new RecyclerViewAdapter(notes);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -658,8 +692,11 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         sigout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity out = new MainActivity();
-                out.signOut();
+                ext =1;
+                MainActivity MainActivity = new MainActivity();
+                MainActivity.currentUser=null;
+                MainActivity. mAuth.signOut();
+                onBackPressed();
             }
         });
 
@@ -683,7 +720,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     Directory directory = (Directory) notes.get(position);
                     parent = directory.getDirectory(); // устанавливаем директорию, на которую нажали в качестве отправной
                     notes.clear();
-                    Log.d("qwerty17", parent);
                     buttons.add(parent);
                     buttonAdapter.notifyDataSetChanged();
                     selectAll(); // выбираем новые данные из бд

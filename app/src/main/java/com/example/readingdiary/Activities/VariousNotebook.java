@@ -19,13 +19,12 @@ import java.io.FileReader;
 import java.io.OutputStreamWriter;
 import java.util.GregorianCalendar;
 
-//import android.os.FileUtils;
 
 public class VariousNotebook extends AppCompatActivity implements SaveDialogFragment.SaveDialogListener {
     private boolean shouldSave = true;
     private String id;
     private String type;
-    private TextInputEditText text;
+    public TextInputEditText text;
     private String path;
     private String position;
 
@@ -38,7 +37,6 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
         type = args.get("type").toString();
         if (type.equals("description")){
             TextView textView12 = (TextView) findViewById(R.id.textView12);
-            //textView12.setText("Описание");
         }
         text = (TextInputEditText) findViewById(R.id.editTextComments);
         if (args.get("path") != null){
@@ -70,9 +68,6 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
     }
 
     private void openText() throws Exception{
-//        File fileDir1 = getApplicationContext().getDir(type, MODE_PRIVATE);
-//        if (!fileDir1.exists()) fileDir1.mkdirs();
-//        File file = new File(fileDir1, id+".txt");
         File file = new File(path);
         if (!file.exists()) file.createNewFile();
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -90,7 +85,7 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
 
         try{
             File file;
-            if (path==null&& path.length()<5000){
+            if (path==null){
                 File fileDir1 = getApplicationContext().getDir(type + File.pathSeparator + id, MODE_PRIVATE);
                 if (!fileDir1.exists()) fileDir1.mkdirs();
                 long time = new GregorianCalendar().getTimeInMillis();
@@ -109,16 +104,9 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
                 bw.close();
                 return -2;
             }
-//            if (!file.exists()) file.createNewFile();
-//            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-//            bw.write(text.getText().toString());
-//            bw.close();
-//            return time;
-
-
         }
         catch (Exception e){
-                Log.e("openException", e.toString());
+            Log.e("openException", e.toString());
         }
         return -1;
     }
