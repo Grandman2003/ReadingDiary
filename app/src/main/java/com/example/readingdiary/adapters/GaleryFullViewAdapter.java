@@ -8,7 +8,6 @@ package com.example.readingdiary.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,15 +16,14 @@ import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.readingdiary.Classes.ImageClass;
 import com.example.readingdiary.R;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
+
 // Адаптер поолнога показа изображений
 public class GaleryFullViewAdapter extends RecyclerView.Adapter<GaleryFullViewAdapter.ViewHolder>{
 
-    private List<ImageClass> buttons;
+    private List<Bitmap> buttons;
     private GaleryFullViewAdapter.OnItemClickListener mListener;
     private GaleryFullViewAdapter.OnItemDeleteListener delListener;
     private Context context;
@@ -46,7 +44,7 @@ public class GaleryFullViewAdapter extends RecyclerView.Adapter<GaleryFullViewAd
 
 
 
-    public GaleryFullViewAdapter(List<ImageClass> buttons, Context context) {
+    public GaleryFullViewAdapter(List<Bitmap> buttons, Context context) {
         this.buttons = buttons;
         this.context = context;
         Log.d("BUTTONS", "1");
@@ -77,25 +75,13 @@ public class GaleryFullViewAdapter extends RecyclerView.Adapter<GaleryFullViewAd
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-//        Log.d("BUTTONS", "3");
-//
-//        Log.d("BUTTONS", ""+buttons.get(i));
-        Log.d("qwerty31", "I am in BindView " + buttons.get(i).getType());
+        Log.d("BUTTONS", "3");
+        Bitmap source = buttons.get(i);
+        Log.d("BUTTONS", ""+buttons.get(i));
+
         final int el = i;
-        if (buttons.get(i).getType()==0){
-            Bitmap source = buttons.get(i).getBitmap();
-            viewHolder.imageView.setImageBitmap(source);
-        }
-        else{
-            Log.d("qwerty31", "HI5 " + buttons.get(i).getUri());
-//            Bitmap source = BitmapFactory.decodeResource(context.getResources(), R.drawable.no_image);
-//            viewHolder.imageView.setImageBitmap(source);
-            Picasso.get()
-                    .load(buttons.get(i).getUri())
-                    .into(viewHolder.imageView);
-        }
 
-
+        viewHolder.imageView.setImageBitmap(source);
 //        viewHolder.deleteButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {

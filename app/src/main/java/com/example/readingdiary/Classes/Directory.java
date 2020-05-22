@@ -3,10 +3,10 @@ package com.example.readingdiary.Classes;
 
 // класс для директорий
 public class Directory implements Note {
-    private String id;
+    private long id;
     private String directory;
     private final int type = 1;
-    public Directory(String id, String directory){
+    public Directory(long id, String directory){
         this.id = id;
         this.directory = directory;
     }
@@ -21,7 +21,7 @@ public class Directory implements Note {
     }
 
     @Override
-    public String getID() {
+    public long getID() {
         return id;
     }
 }

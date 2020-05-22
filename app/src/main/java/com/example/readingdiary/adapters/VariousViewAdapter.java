@@ -13,8 +13,8 @@ import android.widget.TextView;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.readingdiary.R;
 import com.example.readingdiary.Classes.VariousNotes;
+import com.example.readingdiary.R;
 
 import java.util.List;
 

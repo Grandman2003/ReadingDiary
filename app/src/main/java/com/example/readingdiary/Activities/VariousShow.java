@@ -21,7 +21,6 @@ import com.example.readingdiary.Classes.VariousNotes;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.VariousViewAdapter;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -44,13 +43,11 @@ public class VariousShow extends AppCompatActivity {
     int count=0;
     boolean action_mode=false;
     ArrayList<VariousNotes> selectedNotes = new ArrayList<>();
-    String user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_various_show);
-        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
