@@ -5,14 +5,14 @@ public class RealNote implements Note {
     private String path;
     private String author;
     private String title;
-    private String id;
+    private long id;
     private final int type = 0;
     private double rating;
     String coverPath;
 
 
 
-    public RealNote(String id, String path, String author, String title, double rating, String coverPath){
+    public RealNote(long id, String path, String author, String title, double rating, String coverPath){
         this.id = id;
         this.path = path;
         this.title = title;
@@ -20,7 +20,7 @@ public class RealNote implements Note {
         this.rating = rating;
         this.coverPath=coverPath;
     }
-    public RealNote(String id, String path, String author, String title, double rating){
+    public RealNote(long id, String path, String author, String title, double rating){
         this.id = id;
         this.path = path;
         this.title = title;
@@ -76,7 +76,7 @@ public class RealNote implements Note {
     }
 
     @Override
-    public String getID() {
+    public long getID() {
         return id;
     }
 

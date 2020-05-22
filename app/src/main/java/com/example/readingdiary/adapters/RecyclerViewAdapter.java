@@ -8,15 +8,13 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.readingdiary.Classes.Directory;
 import com.example.readingdiary.Classes.Note;
-import com.example.readingdiary.R;
 import com.example.readingdiary.Classes.RealNote;
+import com.example.readingdiary.R;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;

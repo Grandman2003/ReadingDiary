@@ -1,7 +1,5 @@
 package com.example.readingdiary.Classes;
 
-import java.util.ArrayList;
-
 public class QuckSortClass
 {
 //    public static void quickSort(ArrayList<>, int from, int to)

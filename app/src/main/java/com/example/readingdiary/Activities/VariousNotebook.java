@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.readingdiary.Fragments.SaveDialogFragment;
 import com.example.readingdiary.R;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,17 +28,14 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
     private TextInputEditText text;
     private String path;
     private String position;
-    String user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_coments);
-        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
         type = args.get("type").toString();
-
         if (type.equals("description")){
             TextView textView12 = (TextView) findViewById(R.id.textView12);
             //textView12.setText("Описание");
@@ -122,7 +118,7 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
 
         }
         catch (Exception e){
-            Log.e("openException", e.toString());
+                Log.e("openException", e.toString());
         }
         return -1;
     }

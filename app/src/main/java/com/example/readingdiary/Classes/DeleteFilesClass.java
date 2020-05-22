@@ -3,7 +3,6 @@ package com.example.readingdiary.Classes;
 import android.util.Log;
 
 import java.io.File;
-import java.util.ArrayList;
 
 public class DeleteFilesClass extends Thread {
 //    ArrayList<File> files;

@@ -50,7 +50,13 @@ public class CatalogButtonAdapter extends RecyclerView.Adapter<CatalogButtonAdap
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
         String tokens[] = buttons.get(i).split("/");
-        viewHolder.path1.setText(tokens[tokens.length - 1] + " > ");
+        if (i == 0){
+            viewHolder.path1.setText("Папки");
+        }
+        else{
+            viewHolder.path1.setText(tokens[tokens.length - 1]);
+        }
+
     }
 
     @Override
