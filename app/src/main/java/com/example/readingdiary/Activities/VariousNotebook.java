@@ -79,18 +79,6 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
 
     @Override
     public void onBackPressed() {
-        if (text.getText().toString().equals(""))
-        {
-            Toast.makeText(VariousNotebook.this, "Введите что-нибудь", Toast.LENGTH_SHORT).show();
-        }
-        else if (text.length()>5000)
-        {
-            Toast.makeText(VariousNotebook.this, "Текст слишком длинный, он не должен привышать 5000 символов ", Toast.LENGTH_SHORT).show();
-        }
-        else
-        {
-            dialogSaveOpen();
-        }
         dialogSaveOpen();
     }
 

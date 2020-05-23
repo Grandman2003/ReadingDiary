@@ -1,32 +1,25 @@
 package com.example.readingdiary.Fragments;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.widget.EditText;
-import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.readingdiary.Activities.EditNoteActivity;
-import com.example.readingdiary.Activities.MainActivity;
+import com.example.readingdiary.Activities.VariousNotebook;
 import com.example.readingdiary.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 
 public class SaveDialogFragment extends DialogFragment {
     SaveDialogListener listener;
-    Context context;
 
-    public SaveDialogFragment(Context context){
-        this.context=context;
+    public SaveDialogFragment(Context applicationContext) {
     }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -39,14 +32,37 @@ public class SaveDialogFragment extends DialogFragment {
         builder.setTitle(title);  // заголовок
         builder.setMessage(message); // сообщение
 
-        builder.setPositiveButton(saveButtonString, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                Toast.makeText(getActivity(), saveButtonString,
-                        Toast.LENGTH_LONG).show();
-                listener.onSaveClicked();
-//                ((EditNoteActivity)getActivity()).saveChanges();
-//                ((EditNoteActivity)getActivity()).finish();
+//        final  VariousNotebook VariousNotebook = new VariousNotebook();
+//        final String aLot= "Текст слишком длинный, он не должен привышать 5000 символов"+"\nУ вас"+String.valueOf(q-5000)+"лишних символов";
+//        final String aMin = "Введите что-нибудь";
 
+
+
+        builder.setPositiveButton(saveButtonString, new DialogInterface.OnClickListener() {
+
+
+            public void onClick(DialogInterface dialog, int id) {
+
+//                if (q==0)
+//                {
+//                    Toast.makeText(getActivity(), aMin,
+//                    Toast.LENGTH_LONG).show();
+//                }
+//                else if (q>5000)
+//                {
+//                    Toast.makeText(getActivity(), aLot,
+//                    Toast.LENGTH_LONG).show();
+//                }
+//                else
+//                {
+//                    Toast.makeText(getActivity(), saveButtonString,
+//                    Toast.LENGTH_LONG).show();
+//                    listener.onSaveClicked();
+//                }
+//                q=0;
+                Toast.makeText(getActivity(), saveButtonString,
+                Toast.LENGTH_LONG).show();
+                listener.onSaveClicked();
             }
         });
         builder.setNeutralButton(returnButtonString, new DialogInterface.OnClickListener() {
@@ -63,7 +79,6 @@ public class SaveDialogFragment extends DialogFragment {
                 listener.onNotSaveClicked();
             }
         });
-
 
 
         return builder.create();
