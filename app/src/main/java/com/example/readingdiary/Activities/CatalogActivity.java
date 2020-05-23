@@ -103,6 +103,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             "Сортировка по убыванию рейтинга"};
     private String TAG_DARK = "dark_theme";
     SharedPreferences sharedPreferences;
+    MainActivity mein = new MainActivity();
 
 
     @Override
@@ -258,12 +259,13 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         this.recreate();
     }
 
+
+
     @Override
     public void onExitClick() {
         ext =1;
-        MainActivity MainActivity = new MainActivity();
-        MainActivity.currentUser=null;
-        MainActivity.mAuth.signOut();
+        mein.currentUser=null;
+        mein.mAuth.signOut();
         Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
@@ -271,8 +273,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
     @Override
     public void onDelete() {
-        MainActivity del = new MainActivity();
-         del.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
              @Override
              public void onComplete(@NonNull Task<Void> task) {
                  if (task.isSuccessful())
@@ -291,6 +292,29 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
          });
 
     }
+
+    @Override
+    public void onForgot()
+    {
+        mein.mAuth.sendPasswordResetEmail(mein.ETemail.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+//            String email = admin.auth().getUserByEmail(email);
+
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+               if (task.isSuccessful())
+               {
+                   Toast.makeText(CatalogActivity.this,"На вашу почто отправлено письмо. \nДля сброса пароля перейдите по ссылке в нём.",Toast.LENGTH_SHORT).show();
+               }
+               else
+                   {
+                       Toast.makeText(CatalogActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+                   }
+            }
+        });
+    }
+
+
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

@@ -60,6 +60,8 @@ public class SettingsDialogFragment extends DialogFragment {
             });
         TextView textView = materialDialogs.findViewById(R.id.exitButton);
         TextView txtDel = materialDialogs.findViewById(R.id.textView13);
+        TextView txtForg = materialDialogs.findViewById(R.id.textView);
+
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,6 +74,15 @@ public class SettingsDialogFragment extends DialogFragment {
                 listener.onDelete();
             }
         });
+        txtForg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onForgot();
+            }
+        });
+
+
+
         Window w = materialDialogs.getWindow();
             w.setLayout(400, w.getAttributes().height);
         return materialDialogs;
@@ -87,6 +98,7 @@ public class SettingsDialogFragment extends DialogFragment {
         void onChangeThemeClick(boolean t);
         void onExitClick();
         void onDelete();
+        void onForgot();
     }
 
     @Override

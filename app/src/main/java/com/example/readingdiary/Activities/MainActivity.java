@@ -20,6 +20,7 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+
     public FirebaseAuth mAuth= FirebaseAuth.getInstance();
     public FirebaseAuth.AuthStateListener mAuthListener;
     public EditText ETemail;
@@ -79,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(MainActivity.this, "Offline ", Toast.LENGTH_SHORT).show();
 
         }
-
 
 
     }
@@ -142,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(MainActivity.this, "Aвторизация успешна", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                         startActivity(intent);
-//                        finish();
 
                     }
                     else

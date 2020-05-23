@@ -156,6 +156,11 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
     }
 
     @Override
+    public void onForgot() {
+
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.item_settings) {
             int location[] = new int[2];
