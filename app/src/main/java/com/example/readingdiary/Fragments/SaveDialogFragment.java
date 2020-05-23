@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -29,40 +28,37 @@ public class SaveDialogFragment extends DialogFragment {
         builder.setTitle(title);  // заголовок
         builder.setMessage(message); // сообщение
 
-//        final  VariousNotebook VariousNotebook = new VariousNotebook();
-//        int q = VariousNotebook.text.length();
-//        final String aLot= "Текст слишком длинный, он не должен привышать 5000 символов"+String.valueOf(q-5000)+"\nУ вас"+q+"лишних симвлово";
+        final  VariousNotebook VariousNotebook = new VariousNotebook();
+//        final String aLot= "Текст слишком длинный, он не должен привышать 5000 символов"+"\nУ вас"+String.valueOf(q-5000)+"лишних символов";
 //        final String aMin = "Введите что-нибудь";
+
+
 
         builder.setPositiveButton(saveButtonString, new DialogInterface.OnClickListener() {
 
 
-
             public void onClick(DialogInterface dialog, int id) {
 
-//                if (VariousNotebook.text.getText().toString().equals(""))
+//                if (q==0)
 //                {
-//                    // Toast.makeText(VariousNotebook.this, "Введите что-нибудь", Toast.LENGTH_SHORT).show();
 //                    Toast.makeText(getActivity(), aMin,
-//                            Toast.LENGTH_LONG).show();
+//                    Toast.LENGTH_LONG).show();
 //                }
-//                else if (VariousNotebook.text.length()>5000)
+//                else if (q>5000)
 //                {
 //                    Toast.makeText(getActivity(), aLot,
-//                            Toast.LENGTH_LONG).show();
-//                    //Toast.makeText(VariousNotebook.this, , Toast.LENGTH_SHORT).show();
+//                    Toast.LENGTH_LONG).show();
 //                }
 //                else
 //                {
 //                    Toast.makeText(getActivity(), saveButtonString,
-//                            Toast.LENGTH_LONG).show();
+//                    Toast.LENGTH_LONG).show();
 //                    listener.onSaveClicked();
 //                }
-
+//                q=0;
                 Toast.makeText(getActivity(), saveButtonString,
                         Toast.LENGTH_LONG).show();
                 listener.onSaveClicked();
-
             }
         });
         builder.setNeutralButton(returnButtonString, new DialogInterface.OnClickListener() {

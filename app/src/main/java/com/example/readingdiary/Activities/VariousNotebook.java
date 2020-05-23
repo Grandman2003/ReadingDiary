@@ -28,6 +28,7 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
     private String path;
     private String position;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +56,7 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
     public void onBackPressed() {
         dialogSaveOpen();
     }
+
 
     @Override
     protected void onDestroy() {
