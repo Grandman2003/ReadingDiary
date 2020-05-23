@@ -1,7 +1,9 @@
 package com.example.readingdiary.Activities;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -20,8 +23,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
@@ -31,15 +36,21 @@ import com.example.readingdiary.Fragments.CreateWithoutNoteDialogFragment;
 import com.example.readingdiary.Fragments.DeleteDialogFragment;
 import com.example.readingdiary.Fragments.DeleteTitleAndAuthorDialogFragment;
 import com.example.readingdiary.Fragments.SaveDialogFragment;
+import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.data.LiteratureContract.NoteTable;
 import com.example.readingdiary.data.LiteratureContract.PathTable;
 import com.example.readingdiary.data.OpenHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.security.Key;
+
 public class EditNoteActivity extends AppCompatActivity implements DeleteDialogFragment.DeleteDialogListener,
         CreateWithoutNoteDialogFragment.CreateWithoutNoteDialogListener,
-        SaveDialogFragment.SaveDialogListener {
+        SaveDialogFragment.SaveDialogListener, SettingsDialogFragment.SettingsDialogListener {
+// класс отвечает за активность с каталогами
+private String TAG_DARK = "dark_theme";
+        SharedPreferences sharedPreferences;
     EditText pathView;
     EditText titleView;
     EditText authorView;
@@ -62,17 +73,29 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     private final int GALERY_REQUEST_CODE = 124;
     FloatingActionButton acceptButton;
     FloatingActionButton cancelButton;
+    Toolbar toolbar;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
+        boolean dark = sharedPreferences.getBoolean(TAG_DARK, false);
+        if (dark){
+            setTheme(R.style.DarkTheme);
+        }
+        else{
+            setTheme(R.style.AppTheme);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_note);
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         dbHelper = new OpenHelper(this);
         sdb = dbHelper.getReadableDatabase();
         findViews();
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.inflateMenu(R.menu.base_menu);
         Bundle args = getIntent().getExtras();
 
         if (args != null && args.get("id") != null){
@@ -91,9 +114,12 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
         }
         Log.d("putExtra", "start");
 
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+//        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         setButtons();
-        setFocuses();
+//        pathView.setFocusable(false);
+//        pathView.setFocusableInTouchMode(false);
+
+//        setFocuses();
 //        Window.SetSoftInputMode(SoftInput.StateAlwaysHidden);
 
     }
@@ -102,6 +128,7 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     public boolean onCreateOptionsMenu(Menu menu){
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_note, menu);
+        getMenuInflater().inflate(R.menu.base_menu, menu);
         return true;
     }
 
@@ -155,44 +182,89 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
         finish();
     }
 
-    private void setFocuses(){
-        setFocuse(pathView);
-        setFocuse(titleView);
-        setFocuse(authorView);
-        setFocuse(timeView);
-        setFocuse(placeView);
-        setFocuse(shortCommentView);
+    @Override
+    public void onChangeThemeClick(boolean isChecked) {
+        if (isChecked){
+//                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, true);
+            editor.apply();
 
+        }
+        else{
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, false);
+            editor.apply();
+            this.recreate();
+        }
+        this.recreate();
     }
 
-    private void setFocuse(final EditText editText){
-        editText.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_UP){
-                    acceptButton.setVisibility(View.GONE);
-                    cancelButton.setVisibility(View.GONE);
-                    editText.setCursorVisible(true);
-                }
-                return false;
-            }
-        });
+    @Override
+    public void onExitClick() {
+//        ext =1;
+        MainActivity MainActivity = new MainActivity();
+        MainActivity.currentUser=null;
+        MainActivity.mAuth.signOut();
+        Intent intent = new Intent(EditNoteActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
-    private void setCursorsVisible(boolean arg){
-        pathView.setCursorVisible(arg);
-        titleView.setCursorVisible(arg);
-        authorView.setCursorVisible(arg);
-        timeView.setCursorVisible(arg);
-        placeView.setCursorVisible(arg);
-        shortCommentView.setCursorVisible(arg);
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.item_settings) {
+            int location[] = new int[2];
+            toolbar.getLocationInWindow(location);
+            int y = getResources().getDisplayMetrics().heightPixels;
+            int x = getResources().getDisplayMetrics().widthPixels;
 
-
+            SettingsDialogFragment settingsDialogFragment = new SettingsDialogFragment(y, x, sharedPreferences.getBoolean(TAG_DARK, false));
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            settingsDialogFragment.show(transaction, "dialog");
+        }
+        return false;
     }
+//
+//    private void setFocuses(){
+//        setFocuse(pathView);
+//        setFocuse(titleView);
+//        setFocuse(authorView);
+//        setFocuse(timeView);
+//        setFocuse(placeView);
+//        setFocuse(shortCommentView);
+//
+//    }
+
+//    private void setFocuse(final EditText editText){
+//        editText.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if (event.getAction() == MotionEvent.ACTION_UP){
+////                    acceptButton.setVisibility(View.GONE);
+////                    cancelButton.setVisibility(View.GONE);
+//                    editText.setCursorVisible(true);
+//                }
+//                return false;
+//            }
+//        });
+//    }
+
+//    private void setCursorsVisible(boolean arg){
+//        pathView.setCursorVisible(arg);
+//        titleView.setCursorVisible(arg);
+//        authorView.setCursorVisible(arg);
+//        timeView.setCursorVisible(arg);
+//        placeView.setCursorVisible(arg);
+//        shortCommentView.setCursorVisible(arg);
+//        genreView.setCursorVisible(arg);
+//
+//
+//    }
 
     public void findViews(){
         pathView = (EditText) findViewById(R.id.editPath);
-//        pathView.onKeyDown()
         titleView = (EditText) findViewById(R.id.editTitleNoteActivity);
         authorView = (EditText) findViewById(R.id.editAuthorNoteActivity);
         ratingView = (RatingBar) findViewById(R.id.editRatingBar);
@@ -203,24 +275,24 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
         coverView = (ImageView) findViewById(R.id.editCoverImage);
         acceptButton = (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
         cancelButton = (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
-        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.relativeViewEditNote);
-        relativeLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "CLICK", Toast.LENGTH_LONG).show();
-                acceptButton.setVisibility(View.VISIBLE);
-                cancelButton.setVisibility(View.VISIBLE);
-            }
-        });
-        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linearLayoutEditNote);
-        linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "CLICK L", Toast.LENGTH_LONG).show();
-                acceptButton.setVisibility(View.VISIBLE);
-                cancelButton.setVisibility(View.VISIBLE);
-            }
-        });
+//        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.relativeViewEditNote);
+//        relativeLayout.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Toast.makeText(getApplicationContext(), "CLICK", Toast.LENGTH_LONG).show();
+//                acceptButton.setVisibility(View.VISIBLE);
+//                cancelButton.setVisibility(View.VISIBLE);
+//            }
+//        });
+//        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linearLayoutEditNote);
+//        linearLayout.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Toast.makeText(getApplicationContext(), "CLICK L", Toast.LENGTH_LONG).show();
+//                acceptButton.setVisibility(View.VISIBLE);
+//                cancelButton.setVisibility(View.VISIBLE);
+//            }
+//        });
 //        changeViews = {pathView, authorView, titleView, ratingView, genreView, timeView, placeView, shortCommentView, imageView};
     }
 
@@ -520,7 +592,7 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
     }
 
     private void saveDialog(){
-        SaveDialogFragment saveDialogFragment = new SaveDialogFragment();
+        SaveDialogFragment saveDialogFragment = new SaveDialogFragment(getApplicationContext());
 //        MyDialogFragment myDialogFragment = new MyDialogFragment();
         FragmentManager manager = getSupportFragmentManager();
         //myDialogFragment.show(manager, "dialog");
@@ -531,20 +603,21 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
 
 
 
+
     @Override
     protected void onStop() {
         super.onStop();
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Toast.makeText(getApplicationContext(), "backPressed!1 " + keyCode , Toast.LENGTH_LONG).show();
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            Toast.makeText(getApplicationContext(), "backPressed!1", Toast.LENGTH_LONG).show();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        Toast.makeText(getApplicationContext(), "backPressed!1 " + keyCode , Toast.LENGTH_LONG).show();
+//        if (keyCode == KeyEvent.KEYCODE_BACK) {
+//            Toast.makeText(getApplicationContext(), "backPressed!1", Toast.LENGTH_LONG).show();
+//            return true;
+//        }
+//        return super.onKeyDown(keyCode, event);
+//    }
 
     @Override
     public void onBackPressed() {
@@ -557,9 +630,9 @@ public class EditNoteActivity extends AppCompatActivity implements DeleteDialogF
             finish();
         }
 
-        acceptButton.setVisibility(View.VISIBLE);
-        cancelButton.setVisibility(View.VISIBLE);
-        super.onBackPressed();
+//        acceptButton.setVisibility(View.VISIBLE);
+//        cancelButton.setVisibility(View.VISIBLE);
+//        super.onBackPressed();
 
 //        saveChanges();
 //        super.onBackPressed();

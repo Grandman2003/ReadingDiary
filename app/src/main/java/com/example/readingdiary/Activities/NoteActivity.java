@@ -1,6 +1,8 @@
 package com.example.readingdiary.Activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
@@ -14,15 +16,22 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
+import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.data.LiteratureContract.NoteTable;
 import com.example.readingdiary.data.OpenHelper;
 
-public class NoteActivity extends AppCompatActivity {
+public class NoteActivity extends AppCompatActivity implements SettingsDialogFragment.SettingsDialogListener {
+    // класс отвечает за активность с каталогами
+    private String TAG_DARK = "dark_theme";
+    SharedPreferences sharedPreferences;
     TextView pathView;
     TextView titleView;
     TextView authorView;
@@ -43,10 +52,19 @@ public class NoteActivity extends AppCompatActivity {
     private final int EDIT_REQUEST_CODE = 123;
     private final int GALERY_REQUEST_CODE = 124;
     private final int COMENTS_REQUEST_CODE = 125;
+    Toolbar toolbar;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
+        boolean dark = sharedPreferences.getBoolean(TAG_DARK, false);
+        if (dark){
+            setTheme(R.style.DarkTheme);
+        }
+        else{
+            setTheme(R.style.AppTheme);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
         dbHelper = new OpenHelper(this);
@@ -54,8 +72,9 @@ public class NoteActivity extends AppCompatActivity {
         findViews();
         ratingView.setEnabled(false);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
         if (args.get("changed") != null && args.get("changed").equals("true")){
@@ -71,11 +90,53 @@ public class NoteActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu){
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_note, menu);
+        getMenuInflater().inflate(R.menu.base_menu, menu);
+
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public void onChangeThemeClick(boolean isChecked) {
+        if (isChecked){
+//                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, true);
+            editor.apply();
+
+        }
+        else{
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, false);
+            editor.apply();
+            this.recreate();
+        }
+        this.recreate();
+    }
+
+    @Override
+    public void onExitClick() {
+//        ext =1;
+        MainActivity MainActivity = new MainActivity();
+        MainActivity.currentUser=null;
+        MainActivity.mAuth.signOut();
+        Intent intent = new Intent(NoteActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId()==R.id.item_settings) {
+            int location[] = new int[2];
+            toolbar.getLocationInWindow(location);
+            int y = getResources().getDisplayMetrics().heightPixels;
+            int x = getResources().getDisplayMetrics().widthPixels;
+
+            SettingsDialogFragment settingsDialogFragment = new SettingsDialogFragment(y, x, sharedPreferences.getBoolean(TAG_DARK, false));
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            settingsDialogFragment.show(transaction, "dialog");
+        }
 //        int id = item.getItemId();
         int it = item.getItemId();
         if (it == R.id.edit_note) {

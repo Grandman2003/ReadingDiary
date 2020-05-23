@@ -9,7 +9,6 @@
     <include
         android:id="@+id/appbarVariousShow"
         layout="@layout/long_click_toolbar">
-
     </include>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -25,6 +24,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:gravity="bottom"
         android:text="Добавить запись" />
 </RelativeLayout>

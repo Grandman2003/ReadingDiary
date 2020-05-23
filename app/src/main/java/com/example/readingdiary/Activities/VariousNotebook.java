@@ -1,14 +1,25 @@
 package com.example.readingdiary.Activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.readingdiary.Fragments.SaveDialogFragment;
+import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.BufferedReader;
@@ -20,19 +31,33 @@ import java.io.OutputStreamWriter;
 import java.util.GregorianCalendar;
 
 
-public class VariousNotebook extends AppCompatActivity implements SaveDialogFragment.SaveDialogListener {
+public class VariousNotebook extends AppCompatActivity implements SaveDialogFragment.SaveDialogListener, SettingsDialogFragment.SettingsDialogListener {
+    // класс отвечает за активность с каталогами
+    private String TAG_DARK = "dark_theme";
+    SharedPreferences sharedPreferences;
     private boolean shouldSave = true;
     private String id;
     private String type;
     public TextInputEditText text;
     private String path;
     private String position;
+    MaterialToolbar toolbar;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
+        boolean dark = sharedPreferences.getBoolean(TAG_DARK, false);
+        if (dark){
+            setTheme(R.style.DarkTheme);
+        }
+        else{
+            setTheme(R.style.AppTheme);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_coments);
+        toolbar = findViewById(R.id.base_toolbar);
+        setSupportActionBar(toolbar);
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
         type = args.get("type").toString();
@@ -54,6 +79,18 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
 
     @Override
     public void onBackPressed() {
+        if (text.getText().toString().equals(""))
+        {
+            Toast.makeText(VariousNotebook.this, "Введите что-нибудь", Toast.LENGTH_SHORT).show();
+        }
+        else if (text.length()>5000)
+        {
+            Toast.makeText(VariousNotebook.this, "Текст слишком длинный, он не должен привышать 5000 символов ", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            dialogSaveOpen();
+        }
         dialogSaveOpen();
     }
 
@@ -69,6 +106,57 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
         super.onBackPressed();
     }
 
+
+    @Override
+    public void onChangeThemeClick(boolean isChecked) {
+        if (isChecked){
+//                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, true);
+            editor.apply();
+
+        }
+        else{
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, false);
+            editor.apply();
+            this.recreate();
+        }
+        this.recreate();
+    }
+
+    @Override
+    public void onExitClick() {
+//        ext =1;
+        MainActivity MainActivity = new MainActivity();
+        MainActivity.currentUser=null;
+        MainActivity.mAuth.signOut();
+        Intent intent = new Intent(VariousNotebook.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.item_settings) {
+            int location[] = new int[2];
+            toolbar.getLocationInWindow(location);
+            int y = getResources().getDisplayMetrics().heightPixels;
+            int x = getResources().getDisplayMetrics().widthPixels;
+
+            SettingsDialogFragment settingsDialogFragment = new SettingsDialogFragment(y, x, sharedPreferences.getBoolean(TAG_DARK, false));
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            settingsDialogFragment.show(transaction, "dialog");
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.base_menu, menu);
+        return true;
+    }
     private void openText() throws Exception{
         File file = new File(path);
         if (!file.exists()) file.createNewFile();
@@ -128,7 +216,7 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
     }
 
     private void dialogSaveOpen(){
-        SaveDialogFragment dialog = new SaveDialogFragment();
+        SaveDialogFragment dialog = new SaveDialogFragment(getApplicationContext());
         dialog.show(getSupportFragmentManager(), "saveNoteDialog");
     }
 

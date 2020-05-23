@@ -8,6 +8,7 @@
     android:theme="@style/Widget.MaterialComponents.CardView"
     android:id="@+id/catalogDirectoryCardView"
     android:layout_margin="5dp"
+    android:background="#999999"
     >
     <RelativeLayout
         android:layout_width="match_parent"

@@ -1,20 +1,26 @@
 package com.example.readingdiary.Activities;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -22,7 +28,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -34,6 +42,7 @@ import com.example.readingdiary.Classes.DeleteFilesClass;
 import com.example.readingdiary.Classes.Directory;
 import com.example.readingdiary.Classes.Note;
 import com.example.readingdiary.Classes.RealNote;
+import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.Fragments.SortDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.CatalogButtonAdapter;
@@ -44,13 +53,16 @@ import com.example.readingdiary.data.LiteratureContract.NoteTable;
 import com.example.readingdiary.data.OpenHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.io.File;
 import java.util.ArrayList;
 
 
-public class CatalogActivity extends AppCompatActivity implements SortDialogFragment.SortDialogListener {
+public class CatalogActivity extends AppCompatActivity implements SortDialogFragment.SortDialogListener,
+        SettingsDialogFragment.SettingsDialogListener {
     // класс отвечает за активность с каталогами
+
     OpenHelper dbHelper;
     RecyclerViewAdapter mAdapter;
     SQLiteDatabase sdb;
@@ -87,10 +99,21 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             "Сортировка по автору в обратном лексиграфическим порядке",
             "Сортировка по возрастанию рейтинга",
             "Сортировка по убыванию рейтинга"};
+    private String TAG_DARK = "dark_theme";
+    SharedPreferences sharedPreferences;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
+        boolean dark = sharedPreferences.getBoolean(TAG_DARK, false);
+        if (dark){
+            setTheme(R.style.DarkTheme);
+        }
+        else{
+            setTheme(R.style.AppTheme);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
 
@@ -169,6 +192,8 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     public boolean onCreateOptionsMenu(Menu menu){
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_catalog, menu);
+        getMenuInflater().inflate(R.menu.base_menu, menu);
+
         return true;
     }
 
@@ -212,8 +237,123 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
     }
 
+
+    @Override
+    public void onChangeThemeClick(boolean isChecked) {
+        if (isChecked){
+//                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, true);
+            editor.apply();
+
+        }
+        else{
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, false);
+            editor.apply();
+            this.recreate();
+        }
+        this.recreate();
+    }
+
+    @Override
+    public void onExitClick() {
+        ext =1;
+        MainActivity MainActivity = new MainActivity();
+        MainActivity.currentUser=null;
+        MainActivity.mAuth.signOut();
+        Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId()==R.id.item_settings){
+            int location[] = new int[2];
+            toolbar.getLocationInWindow(location);
+            int y = getResources().getDisplayMetrics().heightPixels;
+            int x = getResources().getDisplayMetrics().widthPixels;
+
+            SettingsDialogFragment settingsDialogFragment = new SettingsDialogFragment(y, x, sharedPreferences.getBoolean(TAG_DARK, false));
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            settingsDialogFragment.show(transaction, "dialog");
+//            settingsDialogFragment.getDialog().getWindow();
+
+
+//
+//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//            builder.setView(this.getLayoutInflater().inflate(R.layout.switch_dialog, null));
+//            builder.setCancelable(true);
+//            AlertDialog materialDialogs = builder.create();
+//            WindowManager.LayoutParams wmlp = materialDialogs.getWindow().getAttributes();
+//            wmlp.y=-y / 2 + 260;
+//            wmlp.x = x/2;
+//            materialDialogs.show();
+//            Window w = materialDialogs.getWindow();
+//            w.setLayout(400, w.getAttributes().height);
+//            w.setGravity(Gravity.NO_GRAVITY);
+//            materialDialogs.show();
+//             if (findViewById(R.id.textView10)==null){
+//                 Log.d("qwerty34", "null");
+//             }
+//            public interface SettingsDialogListener{
+//                void onSettingsClick(int position);
+//            };
+
+//            final SwitchMaterial switchMaterial = (SwitchMaterial) materialDialogs.findViewById(R.id.switchTheme);
+//            switchMaterial.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//                @Override
+//                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                    if (isChecked){
+////                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
+//                        SharedPreferences.Editor editor = sharedPreferences.edit();
+//                        editor.putBoolean(TAG_DARK, true);
+//                        editor.apply();
+//
+//                    }
+//                    else{
+//                        SharedPreferences.Editor editor = sharedPreferences.edit();
+//                        editor.putBoolean(TAG_DARK, false);
+//                        editor.apply();
+//                        this.recreate();
+//                    }
+//                    Toast.makeText(getApplicationContext(), ""+isChecked, Toast.LENGTH_LONG).show();
+//                }
+//            });
+
+
+
+
+//
+////            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+////            builder.setView(this.getLayoutInflater().inflate(R.layout.switch_dialog, null));
+//////            builder.set
+////            builder.setCancelable(true);
+////            AlertDialog materialDialogs = builder.create();
+////            materialDialogs.show();
+////            Window w = materialDialogs.getWindow();
+//////            w.setLayout(400, 400);
+////            w.getAttributes().width=400;
+////            w.getAttributes().y=400;
+////
+////            materialDialogs.show();
+//            SettingsDialogFragment settingsDialogFragment = new SettingsDialogFragment(-y / 2 + 260);
+////            alertDialog.getWindow().setLayout(200, 200);
+////            alertDialog.show();
+////            Toast.makeText(getApplicationContext(), alertDialog.getWindow().get)
+////
+//            FragmentManager manager = getSupportFragmentManager();
+////
+////            //myDialogFragment.show(manager, "dialog");
+////
+//            FragmentTransaction transaction = manager.beginTransaction();
+//            settingsDialogFragment.show(transaction, "dialog");
+//            settingsDialogFragment.getDialog().getWindow().setLayout(300, 300);
+
+
+        }
         if (item.getItemId()== R.id.item_delete){
 
             action_mode=false;
@@ -225,6 +365,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 //            recyclerViewAdapter.updateAdapter(selectionList);
             toolbar.getMenu().clear();
             toolbar.inflateMenu(R.menu.menu_catalog);
+            toolbar.inflateMenu(R.menu.base_menu);
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             menuType = 0;
             counterText.setText("Каталог");
@@ -249,15 +390,19 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 //            findText1.setVisibility(View.GONE);
 //            toolbar.getMenu().clear();
 //            toolbar.inflateMenu(R.menu.menu_catalog);
-            notes.clear();
+
 //                buttons.clear();
-            selectTitle(findText1.getText().toString());
-            mAdapter.notifyDataSetChanged();
-            findText1.clearComposingText();
+            if (!findText1.getText().toString().equals("")){
+                notes.clear();
+                selectTitle(findText1.getText().toString());
+                mAdapter.notifyDataSetChanged();
+                findText1.clearComposingText();
+            }
             counterText.setVisibility(View.VISIBLE);
             findText1.setVisibility(View.GONE);
             toolbar.getMenu().clear();
             toolbar.inflateMenu(R.menu.menu_catalog);
+            toolbar.inflateMenu(R.menu.base_menu);
             menuType = 0;
 //            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         }
@@ -267,7 +412,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 //            SaveDialogFragment saveDialogFragment = new SaveDialogFragment();
             FragmentManager manager = getSupportFragmentManager();
             //myDialogFragment.show(manager, "dialog");
-
             FragmentTransaction transaction = manager.beginTransaction();
             sortDialogFragment.show(transaction, "dialog");
         }
@@ -282,6 +426,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                 mAdapter.notifyDataSetChanged();
                 toolbar.getMenu().clear();
                 toolbar.inflateMenu(R.menu.menu_catalog);
+                toolbar.inflateMenu(R.menu.base_menu);
                 getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 menuType = 0;
                 counterText.setText("Каталог");
@@ -293,6 +438,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                 findText1.setVisibility(View.GONE);
                 toolbar.getMenu().clear();
                 toolbar.inflateMenu(R.menu.menu_catalog);
+                toolbar.inflateMenu(R.menu.base_menu);
                 menuType = 0;
             }
         }
@@ -687,18 +833,18 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
 
-
-        Button sigout = (Button) findViewById(R.id.button2);
-        sigout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ext =1;
-                MainActivity MainActivity = new MainActivity();
-                MainActivity.currentUser=null;
-                MainActivity. mAuth.signOut();
-                onBackPressed();
-            }
-        });
+//
+//        Button sigout = (Button) findViewById(R.id.button2);
+//        sigout.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                ext =1;
+//                MainActivity MainActivity = new MainActivity();
+//                MainActivity.currentUser=null;
+//                MainActivity. mAuth.signOut();
+//                onBackPressed();
+//            }
+//        });
 
 
         mAdapter.setOnItemClickListener(new RecyclerViewAdapter.OnItemClickListener() {

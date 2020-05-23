@@ -5,6 +5,7 @@
     android:layout_height="120dp"
     android:padding="10dp"
     android:layout_margin="5dp"
+    android:background="#999999"
     android:id="@+id/catalogNoteCardView">
     <RelativeLayout
         android:layout_width="match_parent"

@@ -8,11 +8,9 @@
         tools:context=".Activities.CatalogActivity"
     android:theme="@style/AppTheme"
         >
-
         <include
             android:id="@+id/appbarCatalog"
             layout="@layout/long_click_toolbar">
-
         </include>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -20,6 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/appbarCatalog"
+            android:background="#ffffff"
         />
 
 
@@ -42,14 +41,6 @@
         android:layout_alignParentRight="true"
         android:layout_margin="@dimen/fab_margin"
         />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="268dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="0dp"
-        android:text="Выйти из аккаунта" />
 
 
 </RelativeLayout>

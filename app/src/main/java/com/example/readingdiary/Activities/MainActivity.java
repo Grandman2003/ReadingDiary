@@ -139,6 +139,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(MainActivity.this, "Aвторизация успешна", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                         startActivity(intent);
+//                        finish();
 
                     }
                     else
@@ -176,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             });
                                     Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                                     startActivity(intent);
+//                                    finish();
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
@@ -186,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             toast.show();
                         }
                     });
-
                 }
 
                 else

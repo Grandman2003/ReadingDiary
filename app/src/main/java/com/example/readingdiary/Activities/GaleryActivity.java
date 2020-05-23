@@ -1,21 +1,30 @@
 package com.example.readingdiary.Activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.GaleryFullViewAdapter;
 import com.example.readingdiary.adapters.GaleryRecyclerViewAdapter;
@@ -28,7 +37,10 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-public class GaleryActivity extends AppCompatActivity {
+public class GaleryActivity extends AppCompatActivity implements SettingsDialogFragment.SettingsDialogListener {
+    // класс отвечает за активность с каталогами
+    private String TAG_DARK = "dark_theme";
+    SharedPreferences sharedPreferences;
     private ImageView imageView;
     private final int Pick_image = 1;
     private RecyclerView galeryView;;
@@ -37,13 +49,23 @@ public class GaleryActivity extends AppCompatActivity {
     private List<Bitmap> images;
     private List<String> names;
     private final int FULL_GALERY_CODE = 8800;
-
+    Toolbar toolbar;
     private int count = 3;
     String id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
+        boolean dark = sharedPreferences.getBoolean(TAG_DARK, false);
+        if (dark){
+            setTheme(R.style.DarkTheme);
+        }
+        else{
+            setTheme(R.style.AppTheme);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.galery_activity);
+        toolbar = findViewById(R.id.base_toolbar);
+        setSupportActionBar(toolbar);
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
         images = new ArrayList<>(); // список bitmap изображений
@@ -99,7 +121,56 @@ public class GaleryActivity extends AppCompatActivity {
         setResultChanged();
     }
 
+    @Override
+    public void onChangeThemeClick(boolean isChecked) {
+        if (isChecked){
+//                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, true);
+            editor.apply();
 
+        }
+        else{
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TAG_DARK, false);
+            editor.apply();
+            this.recreate();
+        }
+        this.recreate();
+    }
+
+    @Override
+    public void onExitClick() {
+//        ext =1;
+        MainActivity MainActivity = new MainActivity();
+        MainActivity.currentUser=null;
+        MainActivity.mAuth.signOut();
+        Intent intent = new Intent(GaleryActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.item_settings) {
+            int location[] = new int[2];
+            toolbar.getLocationInWindow(location);
+            int y = getResources().getDisplayMetrics().heightPixels;
+            int x = getResources().getDisplayMetrics().widthPixels;
+
+            SettingsDialogFragment settingsDialogFragment = new SettingsDialogFragment(y, x, sharedPreferences.getBoolean(TAG_DARK, false));
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            settingsDialogFragment.show(transaction, "dialog");
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.base_menu, menu);
+        return true;
+    }
 
     public void setResultChanged(){
         // создание возвращаемого интента

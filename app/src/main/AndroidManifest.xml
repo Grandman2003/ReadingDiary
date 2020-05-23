@@ -15,7 +15,8 @@
         android:theme="@style/AppTheme">
         <activity android:name=".Activities.VariousShow" />
         <activity android:name=".Activities.VariousNotebook" />
-        <activity android:name=".Activities.EditNoteActivity" />
+        <activity android:name=".Activities.EditNoteActivity"
+            android:windowSoftInputMode="adjustPan"/>
         <activity android:name=".Activities.GaleryFullViewActivity" />
         <activity android:name=".Activities.NoteActivity" />
         <activity

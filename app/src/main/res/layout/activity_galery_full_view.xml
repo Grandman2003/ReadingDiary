@@ -6,11 +6,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".Activities.GaleryFullViewActivity">
-
+    <include
+        android:id="@+id/toolbar_full_galery"
+        layout="@layout/base_toolbar">
+    </include>
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/toolbar_full_galery"
         android:paddingBottom="100dp"
         android:id="@+id/galery_full_recycle_view"
         />
