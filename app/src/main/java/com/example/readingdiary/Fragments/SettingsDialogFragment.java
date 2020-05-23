@@ -31,17 +31,12 @@ public class SettingsDialogFragment extends DialogFragment {
     int x;
     boolean isChecked;
     AlertDialog materialDialogs;
-//    String[] choices;
     int position;
     public SettingsDialogFragment(int y, int x, boolean isChecked){
         this.y = y;
         this.x = x;
         this.isChecked = isChecked;
-
     }
-//    public SortDialogFragment(String[] choices){
-//        this.choices = choices;
-//    }
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -61,15 +56,20 @@ public class SettingsDialogFragment extends DialogFragment {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     Log.d("qwerty33", "qwertyui");
-//                    listener.onChangeThemeClick(isChecked);
                 }
             });
-//        MaterialButton button = materialDialogs.findViewById(R.id.exitButton);
         TextView textView = materialDialogs.findViewById(R.id.exitButton);
+        TextView txtDel = materialDialogs.findViewById(R.id.textView13);
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 listener.onExitClick();
+            }
+        });
+        txtDel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onDelete();
             }
         });
         Window w = materialDialogs.getWindow();
@@ -86,6 +86,7 @@ public class SettingsDialogFragment extends DialogFragment {
     public interface SettingsDialogListener{
         void onChangeThemeClick(boolean t);
         void onExitClick();
+        void onDelete();
     }
 
     @Override

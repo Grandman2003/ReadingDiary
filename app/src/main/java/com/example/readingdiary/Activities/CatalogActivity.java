@@ -51,6 +51,8 @@ import com.example.readingdiary.adapters.RecyclerViewAdapter;
 import com.example.readingdiary.data.LiteratureContract;
 import com.example.readingdiary.data.LiteratureContract.NoteTable;
 import com.example.readingdiary.data.OpenHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -265,6 +267,29 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+    }
+
+    @Override
+    public void onDelete() {
+        MainActivity del = new MainActivity();
+         del.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+             @Override
+             public void onComplete(@NonNull Task<Void> task) {
+                 if (task.isSuccessful())
+                 {
+                     Toast.makeText(CatalogActivity.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+                     Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
+                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                     startActivity(intent);
+                 }
+                 else
+                     {
+                         Toast.makeText(CatalogActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+                     }
+             }
+         });
+
     }
 
     @Override
@@ -568,11 +593,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                         getApplicationContext().getDir(getResources().getString(R.string.descriptionDir) + File.pathSeparator + id, MODE_PRIVATE),
                         getApplicationContext().getDir(getResources().getString(R.string.commentDir) + File.pathSeparator + id, MODE_PRIVATE)
                 });
-//        deleteClass.start();
-//        deleteFileDir(getResources().getString(R.string.imagesDir), id);
-//        deleteFileDir(getResources().getString(R.string.commentDir), id);
-//        deleteFileDir(getResources().getString(R.string.descriptionDir), id);
-//        deleteFileDir(getResources().getString(R.string.quoteDir), id);
         return index;
     }
 
@@ -714,17 +734,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         sortRating2 = "Сортировка по убыванию рейтинга";
     }
 
-//    private void initSortsList(){
-//        sortsList = new ArrayList<>();
-//        sortsList.add("");
-//        sortsList.add("Сортировка по названиям в лексикографическом порядке");
-//        sortsList.add("Сортировка по названиям в обратном лексикографическим порядке");
-//        sortsList.add("Сортировка по автору в лексиграфическом порядке");
-//        sortsList.add("Сортировка по автору в обратном лексиграфическим порядке");
-//        sortsList.add("Сортировка по возрастанию рейтинга");
-//        sortsList.add("Сортировка по убыванию рейтинга");
-//    }
-
     private void reloadRecyclerView(){
         // перезагрузка recyclerView. Удаляются все элементы notes, выбираются новые из бд
         notes.clear();
@@ -751,21 +760,16 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     private void findViews(){
         recyclerView = (RecyclerView) findViewById(R.id.recyclerViewCatalog);  // здесь будут отображаться каталоги и файлы notes
         buttonView = (RecyclerView) findViewById(R.id.buttonViewCatalog);  // здесь будут отображаться пройденные поддиректории buttons
-//        sortsSpinner = (Spinner) findViewById(R.id.spinnerSorts);
         toolbar = (MaterialToolbar) findViewById(R.id.long_click_toolbar);
-//        findButton = (Button) findViewById(R.id.findButton);
-//        findText = (EditText) findViewById(R.id.findText);
         counterText = (TextView) findViewById(R.id.counter_text);
         findText1 = (EditText) findViewById(R.id.editTextFind);
     }
 
+
+
+
+
     int rep =0;
-    //    Timer timer = new Timer();
-//    class SayHello extends TimerTask {
-//        public void run() {
-//            rep--;
-//        }
-//    }
     @Override
     public void onBackPressed()
     {

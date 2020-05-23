@@ -80,6 +80,7 @@ private String TAG_DARK = "dark_theme";
     protected void onCreate(Bundle savedInstanceState) {
         sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
         boolean dark = sharedPreferences.getBoolean(TAG_DARK, false);
+
         if (dark){
             setTheme(R.style.DarkTheme);
         }
@@ -209,6 +210,11 @@ private String TAG_DARK = "dark_theme";
         Intent intent = new Intent(EditNoteActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+    }
+
+    @Override
+    public void onDelete() {
+
     }
 
     @Override

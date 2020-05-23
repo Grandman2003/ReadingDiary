@@ -21,9 +21,9 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     public FirebaseAuth mAuth= FirebaseAuth.getInstance();
-    private FirebaseAuth.AuthStateListener mAuthListener;
-    private EditText ETemail;
-    private EditText ETpassword;
+    public FirebaseAuth.AuthStateListener mAuthListener;
+    public EditText ETemail;
+    public EditText ETpassword;
 
 
     // Привет, зеленая обезьянка
@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 updateUI(user);
 
             }
+
+
         };
 
         ETemail = (EditText) findViewById(R.id.et_email);
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(MainActivity.this, "Offline ", Toast.LENGTH_SHORT).show();
 
         }
+
 
 
     }
