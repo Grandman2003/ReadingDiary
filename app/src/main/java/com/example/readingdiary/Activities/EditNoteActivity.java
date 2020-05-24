@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
@@ -237,7 +238,53 @@ private String TAG_DARK = "dark_theme";
         }
         return false;
     }
-//
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        Log.d("qwerty37", requestCode+"");
+        if (resultCode == GALERY_REQUEST_CODE){
+            updateImage();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void updateImage(){
+        // Выбор полей из бд
+        // Сейчас тут выбор не всех полей
+
+        String[] projection = {
+                NoteTable._ID,
+                NoteTable.COLUMN_COVER_IMAGE
+
+        };
+        Cursor cursor = sdb.query(
+                NoteTable.TABLE_NAME,   // таблица
+                projection,            // столбцы
+                NoteTable._ID + " = ?",                  // столбцы для условия WHERE
+                new String[] {id},                  // значения для условия WHERE
+                null,                  // Don't group the rows
+                null,                  // Don't filter by row groups
+                null);
+        try{
+            int coverColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_COVER_IMAGE);
+
+            while (cursor.moveToNext()) {
+                imagePath = cursor.getString(coverColumnIndex);
+                this.coverView.setImageBitmap(BitmapFactory.decodeFile(imagePath));
+
+//                setViews(cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
+//                        cursor.getString(titleColumnIndex), cursor.getString(ratingColumnIndex),
+//                        cursor.getString(genreColumnIndex), cursor.getString(timeColumnIndex),
+//                        cursor.getString(placeColumnIndex), cursor.getString(shortCommentIndex),
+//                        cursor.getString(coverColumnIndex));
+            }
+        }
+        finally{
+            cursor.close();
+        }
+
+    }
+    //
 //    private void setFocuses(){
 //        setFocuse(pathView);
 //        setFocuse(titleView);
@@ -498,7 +545,7 @@ private String TAG_DARK = "dark_theme";
 
         cv.put(NoteTable.COLUMN_COVER_IMAGE, imagePath);
         cv.put(NoteTable.COLUMN_RATING, String.valueOf(ratingView.getRating()));
-        cv.put(NoteTable.COLUMN_COVER_IMAGE, "");
+//        cv.put(NoteTable.COLUMN_COVER_IMAGE, "");
 
         if (!beforeChanging[0].equals(path1))
         {
@@ -603,7 +650,7 @@ private String TAG_DARK = "dark_theme";
     }
 
     private void saveDialog(){
-        SaveDialogFragment saveDialogFragment = new SaveDialogFragment(getApplicationContext());
+        SaveDialogFragment saveDialogFragment = new SaveDialogFragment(getApplicationContext(), 0);
 //        MyDialogFragment myDialogFragment = new MyDialogFragment();
         FragmentManager manager = getSupportFragmentManager();
         //myDialogFragment.show(manager, "dialog");

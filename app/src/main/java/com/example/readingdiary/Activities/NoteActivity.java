@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -209,20 +210,45 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
                           String time, String place, String shortComment, String imagePath){
         this.path = path;
         this.authorView.setText(author);
+        Toast.makeText(this, "!" + author + " " + author.equals(""), Toast.LENGTH_SHORT).show();
+        if (author.equals("")){
+            this.authorView.setVisibility(View.GONE);
+        }
         this.titleView.setText(title);
+        if (title.equals("")){
+            this.titleView.setVisibility(View.GONE);
+        }
         if (rating != null){
             this.ratingView.setRating(Float.parseFloat(rating));
         }
+        if (rating == null || rating.equals("0.0")){
+            this.ratingView.setVisibility(View.GONE);
+        }
 
         this.genreView.setText(genre);
+        if (title.equals("")){
+            this.titleView.setVisibility(View.GONE);
+        }
         this.timeView.setText(time);
+        if (time.equals("")){
+            this.timeView.setVisibility(View.GONE);
+        }
         this.placeView.setText(place);
+        if (place.equals("")){
+            this.placeView.setVisibility(View.GONE);
+        }
         this.shortCommentView.setText(shortComment);
+        if (shortComment.equals("")){
+            this.shortCommentView.setVisibility(View.GONE);
+        }
 //        File file = new File(imagePath);
         Log.d("IMAGE1", imagePath +" !");
         if (imagePath != null){
             this.coverView.setImageBitmap(BitmapFactory.decodeFile(imagePath));
             this.imagePath = imagePath;
+        }
+        if (imagePath==null || imagePath.equals("")){
+            this.coverView.setVisibility(View.GONE);
         }
     }
 

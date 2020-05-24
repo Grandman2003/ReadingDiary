@@ -52,6 +52,7 @@ private String TAG_DARK = "dark_theme";
     private boolean changed = false;
     String id;
     MaterialToolbar toolbar;
+    boolean chooseCover = false;
 
 
     @Override
@@ -176,6 +177,7 @@ private String TAG_DARK = "dark_theme";
         Log.d("IMAGE1", "!!! " + names.get(position));
         sdb.update(LiteratureContract.NoteTable.TABLE_NAME, cv, LiteratureContract.NoteTable._ID + " = " + id, null);
         Log.d("IMAGE1", "!!!end " + id);
+        chooseCover=true;
     }
 
     @Override
@@ -254,6 +256,11 @@ private String TAG_DARK = "dark_theme";
 
     @Override
     protected void onDestroy() {
+        if (chooseCover){
+//            Intent returnIntent = new Intent();
+//            returnIntent.putExtra("cover", "true");
+//            setResultChanged(RESULT_OK, returnIntent);
+        }
         super.onDestroy();
 
     }
