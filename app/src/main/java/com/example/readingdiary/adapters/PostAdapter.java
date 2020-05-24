@@ -19,13 +19,11 @@ import java.util.List;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
 {
-    private boolean actionMode;
     private List<Note> notes;
 
-    public PostAdapter()
+    public PostAdapter(List<Note> notes)
     {
         this.notes = notes;
-        this.actionMode = false;
     }
 
     @Override
@@ -33,7 +31,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
         View v;
         v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.post_activity, viewGroup, false);
         PostAdapter.PostPosts vh = new PostAdapter.PostPosts(v);
-
         return vh;
     }
 
@@ -58,10 +55,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
             tvReitPost = (TextView) itemView.findViewById(R.id.tvReitPost);
             imageView2 = (ImageView) itemView.findViewById(R.id.imageView2);
             ratingBar2 = (RatingBar) itemView.findViewById(R.id.ratingBar2);
-
-
-
-
         }
 
     }
@@ -71,11 +64,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
 
     @Override
     public void onBindViewHolder(@NonNull PostPosts holder, int position) {
-
+        holder.tvNamePost.setText("Asdfghj");
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return notes.size();
     }
 }

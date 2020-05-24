@@ -52,7 +52,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View v;
         if (viewType == TYPE_ITEM1){
-            v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.post_activity, viewGroup, false);
+            v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recycler_catalog_item0, viewGroup, false);
         }
         else{
             v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recycler_catalog_item1, viewGroup, false);

@@ -41,9 +41,7 @@ public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecycl
         this.context = context;
     }
 
-    /**
-     * Создание новых View и ViewHolder элемента списка, которые впоследствии могут переиспользоваться.
-     */
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View v;
