@@ -39,12 +39,13 @@ public class OnlineActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-//                Intent intent = new Intent(OnlineActivity.this, OnlineActivity.class);
-//                startActivity(intent);
-                x[x.length]=etShareUser.getText().toString();
+            if (etShareUser.getText().equals("")) {
+                x[x.length] = etShareUser.getText().toString();
                 ShareUser(etShareUser.getText().toString());
                 // добавление usID к списку подписок
-                Toast.makeText(OnlineActivity.this,"Пользователь добавлен в подписки ",Toast.LENGTH_SHORT).show();
+                Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();
+            }
+            else {Toast.makeText(OnlineActivity.this, "Введите id пользователя", Toast.LENGTH_SHORT).show();}
             }
         });
 

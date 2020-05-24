@@ -116,7 +116,6 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
 
     @Override
     public void onExitClick() {
-//        ext =1;
         MainActivity MainActivity = new MainActivity();
         MainActivity.currentUser=null;
         MainActivity.mAuth.signOut();
