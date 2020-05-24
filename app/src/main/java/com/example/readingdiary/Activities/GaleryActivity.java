@@ -276,25 +276,30 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
         }
 
         else if (requestCode == FULL_GALERY_CODE) {
-            Log.d("DELETEIMAGE1", "request");
+            if (data!= null && data.getExtras().get("delete")!= null) {
+                Log.d("DELETEIMAGE1", "request");
 
-            // Вернулись из показа полных изображений. Если там удалили изображение, то меняем список имен и изображений
-            if (resultCode == RESULT_OK) {
-                List<Integer> index = new ArrayList<>();
-                for (int i = 0; i < names.size(); i++) {
-                    if (!(new File(names.get(i)).exists())) {
-                        index.add(i);
+                // Вернулись из показа полных изображений. Если там удалили изображение, то меняем список имен и изображений
+                if (resultCode == RESULT_OK) {
+                    List<Integer> index = new ArrayList<>();
+                    for (int i = 0; i < names.size(); i++) {
+                        if (!(new File(names.get(i)).exists())) {
+                            index.add(i);
+                        }
                     }
-                }
 
-                int minus = 0;
-                for (int i : index) {
-                    names.remove(i - minus);
-                    images.remove(i - minus);
-                    adapter.notifyItemRemoved(i - minus);
-                    minus++;
-                }
+                    int minus = 0;
+                    for (int i : index) {
+                        names.remove(i - minus);
+                        images.remove(i - minus);
+                        adapter.notifyItemRemoved(i - minus);
+                        minus++;
+                    }
 //                adapter.notifyDataSetChanged();
+                }
+            }
+            else if (data != null && data.getExtras().get("cover") != null){
+                Log.d("qwerty38", "cover");
             }
         }
 

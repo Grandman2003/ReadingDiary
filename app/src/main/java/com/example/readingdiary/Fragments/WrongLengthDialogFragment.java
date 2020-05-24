@@ -1,5 +1,6 @@
 package com.example.readingdiary.Fragments;
 
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -20,16 +21,16 @@ import com.example.readingdiary.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
-public class SaveDialogFragment extends DialogFragment {
-    SaveDialogListener listener;
+public class WrongLengthDialogFragment extends DialogFragment {
+    WrongLengthDialogListener listener;
     Context context;
     int length;
 
-    public SaveDialogFragment(Context context, int length){
+    public WrongLengthDialogFragment(Context context, int length){
         this.context=context;
         this.length = length;
     }
-    public SaveDialogFragment(Context context){
+    public WrongLengthDialogFragment(Context context){
         this.context=context;
         this.length = -1;
     }
@@ -37,50 +38,49 @@ public class SaveDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        String title = getResources().getString(R.string.saveDialogTitle);
-        String message = getResources().getString(R.string.saveDialogMessage);
-        final String saveButtonString = getResources().getString(R.string.saveDialogSaveButton);
-        final String notSaveButtonString = getResources().getString(R.string.saveDialogNotSaveButton);
-        final String returnButtonString = getResources().getString(R.string.saveDialogReturnButton);
+//        String title = getResources().getString(R.string.saveDialogTitle);
+//        String message = getResources().getString(R.string.saveDialogMessage);
+        String title;
+        String message;
+        if (length > 0 && length <= 5000){
+            getActivity().finish();
+        }
+        if (length == 0){
+            title = "Пустая запись";
+            message = "Запись не может быть пустой. Вернитесь к редактированию записи или не сохраняйте изменения";
+        }
+        else{
+            title = "Слишком много символов";
+            message = "Максимальное число символов - 5000. Вам небходимо вернуться к редактированию и убрать " + (length - 5000) + " или не сохранятть изменения";
+
+        }
+
+        final String notSaveButtonString = "Не сохранять";
+        final String returnButtonString = "Вернуться";
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity());
         builder.setTitle(title);  // заголовок
         builder.setMessage(message); // сообщение
-
-        if (length == 0){
-            Toast.makeText(getActivity(), "length=0", Toast.LENGTH_LONG).show();
-        }
-        builder.setPositiveButton(saveButtonString, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(returnButtonString, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Toast.makeText(getActivity(), saveButtonString,
+                Toast.makeText(getActivity(), returnButtonString,
                         Toast.LENGTH_LONG).show();
-                listener.onSaveClicked();
 //                ((EditNoteActivity)getActivity()).saveChanges();
 //                ((EditNoteActivity)getActivity()).finish();
 
             }
         });
-        builder.setNeutralButton(returnButtonString, new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(notSaveButtonString, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Toast.makeText(getActivity(), returnButtonString, Toast.LENGTH_SHORT).show();
-            }
-        });
-        builder.setCancelable(true);
-        builder.setNegativeButton(notSaveButtonString, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                Toast.makeText(getActivity(), notSaveButtonString, Toast.LENGTH_LONG)
-                        .show();
                 listener.onNotSaveClicked();
             }
         });
-
-
-
+        builder.setCancelable(true);
         return builder.create();
     }
 
-    public interface SaveDialogListener {
-        void onSaveClicked();
+    public interface WrongLengthDialogListener {
         void onNotSaveClicked();
     }
 
@@ -89,7 +89,7 @@ public class SaveDialogFragment extends DialogFragment {
         super.onAttach(context);
 
         try {
-            listener = (SaveDialogFragment.SaveDialogListener) context;
+            listener = (WrongLengthDialogListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
                     + "must implement ExampleDialogListener");

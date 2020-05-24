@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.readingdiary.Fragments.SaveDialogFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
+import com.example.readingdiary.Fragments.WrongLengthDialogFragment;
 import com.example.readingdiary.R;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -31,7 +32,8 @@ import java.io.OutputStreamWriter;
 import java.util.GregorianCalendar;
 
 
-public class VariousNotebook extends AppCompatActivity implements SaveDialogFragment.SaveDialogListener, SettingsDialogFragment.SettingsDialogListener {
+public class VariousNotebook extends AppCompatActivity implements SaveDialogFragment.SaveDialogListener,
+        SettingsDialogFragment.SettingsDialogListener, WrongLengthDialogFragment.WrongLengthDialogListener {
     // класс отвечает за активность с каталогами
     private String TAG_DARK = "dark_theme";
     SharedPreferences sharedPreferences;
@@ -155,6 +157,8 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
         getMenuInflater().inflate(R.menu.base_menu, menu);
         return true;
     }
+
+
     private void openText() throws Exception{
         File file = new File(path);
         if (!file.exists()) file.createNewFile();
@@ -214,8 +218,16 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
     }
 
     private void dialogSaveOpen(){
-        SaveDialogFragment dialog = new SaveDialogFragment(getApplicationContext());
-        dialog.show(getSupportFragmentManager(), "saveNoteDialog");
+        if (text.getText().toString().toString().length() == 0 || text.getText().toString().toString().length() > 5000){
+            WrongLengthDialogFragment dialog = new WrongLengthDialogFragment(getApplicationContext(),
+                    text.getText().toString().length());
+            dialog.show(getSupportFragmentManager(), "wrongLengthDialog");
+        }
+        else{
+                    SaveDialogFragment dialog = new SaveDialogFragment(getApplicationContext());
+            dialog.show(getSupportFragmentManager(), "saveNoteDialog");
+        }
+
     }
 
     @Override

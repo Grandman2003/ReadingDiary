@@ -22,6 +22,7 @@
         android:id="@+id/full_view_button_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/toolbar_full_galery"
         android:alpha="0.5"
         android:orientation="horizontal"
         android:visibility="invisible">
