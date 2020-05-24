@@ -40,7 +40,7 @@ public class ForgotPswActivity extends AppCompatActivity
 
     public void onForgot()
         {
-        if (etForg.getText().equals(""))
+        if (!etForg.getText().equals(""))
         {
         mein.mAuth.sendPasswordResetEmail(etForg.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
 
