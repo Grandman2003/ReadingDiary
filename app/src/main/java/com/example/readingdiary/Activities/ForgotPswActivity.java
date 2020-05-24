@@ -2,6 +2,8 @@ package com.example.readingdiary.Activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -44,7 +46,13 @@ public class ForgotPswActivity extends AppCompatActivity
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful())
                 {
-                    Toast.makeText(ForgotPswActivity.this,"На вашу почто отправлено письмо. \nДля сброса пароля перейдите по ссылке в нём.",Toast.LENGTH_LONG).show();
+                    if (mein.currentUser==null)
+                    {
+
+                        Intent intent = new Intent( ForgotPswActivity .this, MainActivity.class);
+                        startActivity(intent);
+                    }
+                    Toast.makeText(ForgotPswActivity.this,"На вашу почто отправлено письмо. \nДля сброса пароля перейдите по ссылке.",Toast.LENGTH_LONG).show();
                 }
                 else
                 {
