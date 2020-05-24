@@ -103,14 +103,16 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             "Сортировка по убыванию рейтинга"};
     private String TAG_DARK = "dark_theme";
     SharedPreferences sharedPreferences;
+    Button online;
     MainActivity mein = new MainActivity();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
         boolean dark = sharedPreferences.getBoolean(TAG_DARK, false);
+
+
         if (dark){
             setTheme(R.style.DarkTheme);
         }
@@ -163,6 +165,18 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         selectAll(); // чтение данных из бд
 
         setAdapters();
+
+
+        online= (Button) findViewById(R.id.bOnline);
+        online.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(CatalogActivity.this, OnlineActivity.class);
+                startActivity(intent);
+
+            }
+        });
+
 
         // Кнопка добавление новой активности
         FloatingActionButton addNote = (FloatingActionButton) findViewById(R.id.addNote);

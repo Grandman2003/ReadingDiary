@@ -38,22 +38,27 @@ public class QuickSort
         StrSort (words, x,coincide); // вызов метода сортировки по алфовиту
     }
 
-    public static void quickSort(int[] arr, int from, int to)
+    public static int[] quickSort(int[] arr, int from, int to)
     {// from и to - два условных места в массиве.
         // from всегда должен быть равен 0, а to длине массива минус один. алгоритм потом их сам сдвигает
         // arr это массив, который нужно сортировать
 
-
-        if (from < to)
+        for (int ph=0;ph<arr.length;ph++)
         {
+            if (from < to)
+            {
 
-            int divideIndex = partition(arr, from, to);
+                int divideIndex = partition(arr, from, to);
 
-            quickSort(arr, from, divideIndex - 1);
+                quickSort(arr, from, divideIndex - 1);
 
-            quickSort(arr, divideIndex, to);
+                quickSort(arr, divideIndex, to);
 
+            }
+            else {break;}
         }
+        return arr;
+
     }
 
     private static int partition(int[] arr, int from, int to)
@@ -91,15 +96,16 @@ public class QuickSort
         array[index1] = array[index2];
         array[index2] = tmp;
     }
-    private static void measureTime(Runnable task)
-    {
-        long startTime = System.currentTimeMillis();
-        task.run();
-        long elapsed = System.currentTimeMillis() - startTime;
-        System.out.println("Затраченное время: " + elapsed + " ms");
-    }
 
-    public static void StrSort(String [] words, String x,List<String> coincide )
+//    private static void measureTime(Runnable task)
+//{
+//    long startTime = System.currentTimeMillis();
+//    task.run();
+//    long elapsed = System.currentTimeMillis() - startTime;
+//    System.out.println("Затраченное время: " + elapsed + " ms");
+//}
+
+    public static List<String> StrSort(String [] words, String x, List<String> coincide )
     // worbs массив, котрый нужно сортировать
     // в x передаём слово, которое нужно искать
     //  coincide лист, в который переаются совпадения
@@ -107,19 +113,20 @@ public class QuickSort
         for (int i = 0; i < words.length; i++) // проверка неупорядоченного массива на предмет совпадений и переброс совпадений в пустой массив
         {                                       // из массива worbs в массив coincide
 
-            if (words[i].contains(x)) {
-
+            if (words[i]==x) //.contains(x) для поиска любых совпадений
+            {
                 coincide.add(words[i]);
 
             }
         }
 
-        for (int z = 0; z < coincide.size(); z++) // вывод массива coincide
-        {
-
-            System.out.println(coincide.get(z));
-
-        }
+//        for (int z = 0; z < coincide.size(); z++) // вывод массива coincide
+//        {
+//
+//            System.out.println(coincide.get(z));
+//
+//        }
+     return coincide;
     }
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.readingdiary" >
+    package="com.example.readingdiary">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -12,9 +12,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
-        <activity android:name=".Activities.ForgotPswActivity" >
-        </activity>
+        android:theme="@style/AppTheme">
+        <activity android:name=".Activities.LentaActivity"></activity>
+        <activity android:name=".Activities.OnlineActivity" />
+        <activity android:name=".Activities.ForgotPswActivity" />
         <activity android:name=".Activities.VariousShow" />
         <activity android:name=".Activities.VariousNotebook" />
         <activity
@@ -25,7 +26,7 @@
         <activity
             android:name=".Activities.CatalogActivity"
             android:label="" />
-        <activity android:name=".Activities.MainActivity" >
+        <activity android:name=".Activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
