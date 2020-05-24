@@ -8,12 +8,14 @@ import java.util.Scanner;
 
 public class QuickSort
 {
-    public static void main(String[] args) // по идеи его тут не должно быть, это для тестов. потом будем просто вызывать нужный метод из класса
+    int testLen = 0;
+   public int [] array = new int[testLen];
+    public void main(String[] args) // по идеи его тут не должно быть, это для тестов. потом будем просто вызывать нужный метод из класса
     {
         // cортировка чисел от меньшего к большему
         System.out.println("Выполняется выстрая сортировка:");
-        int testLen = 10000; // количпество чисел, которым заполять массив
-        int [] array = new int[testLen];
+         testLen = 10000; // количпество чисел, которым заполять массив
+
         for (int i = 0; i < testLen; i++) // заполнение array случайными числами
         {
             array[i] = (int)Math.round(Math.random() * 10000);
@@ -38,27 +40,27 @@ public class QuickSort
         StrSort (words, x,coincide); // вызов метода сортировки по алфовиту
     }
 
-    public static int[] quickSort(int[] arr, int from, int to)
+    public static void quickSort(int[] arr, int from, int to)
     {// from и to - два условных места в массиве.
         // from всегда должен быть равен 0, а to длине массива минус один. алгоритм потом их сам сдвигает
         // arr это массив, который нужно сортировать
 
-        for (int ph=0;ph<arr.length;ph++)
+
+        if (from < to)
         {
-            if (from < to)
-            {
 
-                int divideIndex = partition(arr, from, to);
+            int divideIndex = partition(arr, from, to);
 
-                quickSort(arr, from, divideIndex - 1);
+            quickSort(arr, from, divideIndex - 1);
 
-                quickSort(arr, divideIndex, to);
+            quickSort(arr, divideIndex, to);
 
-            }
-            else {break;}
         }
-        return arr;
+        else
+        {
+            return;
 
+        }
     }
 
     private static int partition(int[] arr, int from, int to)
@@ -96,7 +98,6 @@ public class QuickSort
         array[index1] = array[index2];
         array[index2] = tmp;
     }
-
 //    private static void measureTime(Runnable task)
 //{
 //    long startTime = System.currentTimeMillis();

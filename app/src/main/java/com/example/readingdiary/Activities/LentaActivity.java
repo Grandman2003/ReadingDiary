@@ -44,8 +44,7 @@ public class LentaActivity extends AppCompatActivity {
                 {
                     // вывод этих записей в ленту
 //            TextView x = share[zap];
-                    int x = array[zap];
-                    tLenta.append(array[zap]+" ");
+                    tLenta.append(share.array[zap]+" ");
 
                 }
 
