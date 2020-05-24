@@ -2,8 +2,10 @@ package com.example.readingdiary.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -13,6 +15,7 @@ import com.example.readingdiary.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,6 +28,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public FirebaseAuth.AuthStateListener mAuthListener;
     public EditText ETemail;
     public EditText ETpassword;
+    public TextView tvForgPsw;
+  //  public String frgEm="nope";
 
 
     // Привет, зеленая обезьянка
@@ -60,17 +65,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
 
         ETemail = (EditText) findViewById(R.id.et_email);
-        ETpassword = (EditText) findViewById(R.id.et_password);
+        ETpassword = (EditText) findViewById(R.id.etForgPsw);
 
-        findViewById(R.id.btn_sign_in).setOnClickListener(this);
+
+        findViewById(R.id.btn_ForgPsw).setOnClickListener(this);
         findViewById(R.id.btn_registration).setOnClickListener(this);
         currentUser = mAuth.getCurrentUser();
 
+        tvForgPsw= (TextView) findViewById(R.id.tvForgPsw);
+        tvForgPsw.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, ForgotPswActivity.class);
+                startActivity(intent);
+
+            }
+        });
+
         if (currentUser!= null)
         {
-            Toast.makeText(MainActivity.this, "Online ", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(MainActivity.this, "Online ", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
             startActivity(intent);
+            //updateUI();
             currentUser=null;;
 
         }
@@ -86,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     public void updateUI(FirebaseUser user) {
-
+//        frgEm= "His em:"+user.getEmail();
         if (user != null) {
 
             //textView.setVisibility(View.VISIBLE);
@@ -98,7 +115,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-
 
 
         if (ETemail.getText().toString().isEmpty()  && ETpassword.getText().toString().isEmpty())
@@ -118,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         else
         {
-            if (view.getId() == R.id.btn_sign_in)
+            if (view.getId() == R.id.btn_ForgPsw)
             {
                 signin(ETemail.getText().toString(), ETpassword.getText().toString());
             }
@@ -139,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 {
                     if (task.isSuccessful())
                     {
+
                         Toast.makeText(MainActivity.this, "Aвторизация успешна", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                         startActivity(intent);

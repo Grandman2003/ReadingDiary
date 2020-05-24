@@ -141,6 +141,8 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
         }
 
+        //Toast.makeText(CatalogActivity.this,mein.frgEm,Toast.LENGTH_LONG).show();
+
 
 
         dbHelper = new OpenHelper(this);
@@ -296,24 +298,23 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     @Override
     public void onForgot()
     {
-        mein.mAuth.sendPasswordResetEmail(mein.ETemail.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
-//            String email = admin.auth().getUserByEmail(email);
-
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-               if (task.isSuccessful())
-               {
-                   Toast.makeText(CatalogActivity.this,"На вашу почто отправлено письмо. \nДля сброса пароля перейдите по ссылке в нём.",Toast.LENGTH_SHORT).show();
-               }
-               else
-                   {
-                       Toast.makeText(CatalogActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
-                   }
-            }
-        });
+        Intent intent = new Intent(CatalogActivity.this, ForgotPswActivity.class);
+        startActivity(intent);
+//        mein.mAuth.sendPasswordResetEmail(mein.ETemail.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+//
+//            @Override
+//            public void onComplete(@NonNull Task<Void> task) {
+//               if (task.isSuccessful())
+//               {
+//                   Toast.makeText(CatalogActivity.this,"На вашу почто отправлено письмо. \nДля сброса пароля перейдите по ссылке в нём.",Toast.LENGTH_SHORT).show();
+//               }
+//               else
+//                   {
+//                       Toast.makeText(CatalogActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+//                   }
+//            }
+//        });
     }
-
-
 
 
     @Override

@@ -19,11 +19,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/switchTheme"
         android:layout_marginHorizontal="14dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:layout_marginBottom="20dp"
-        android:text="Выйти"
-        android:textColor="#000"
-        />
+        android:text="Выйти из аккаунта"
+        android:textColor="#000" />
 
     <TextView
         android:id="@+id/textView"
@@ -31,10 +30,11 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/switchTheme"
         android:layout_marginHorizontal="14dp"
-        android:layout_marginTop="35dp"
+        android:layout_marginTop="40dp"
         android:layout_marginBottom="0dp"
         android:text="Сменить пароль"
         android:textColor="#000" />
+
 
     <TextView
         android:id="@+id/textView13"
@@ -42,7 +42,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/switchTheme"
         android:layout_marginHorizontal="14dp"
-        android:layout_marginTop="65dp"
+        android:layout_marginTop="80dp"
         android:layout_marginBottom="0dp"
         android:text="Удалить аккаунт"
         android:textColor="#000" />
