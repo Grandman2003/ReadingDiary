@@ -109,7 +109,7 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if (e != null){
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                 //   Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                     return;
                 }
                 else{
@@ -128,7 +128,7 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
                                         .addOnFailureListener(new OnFailureListener() {
                                             @Override
                                             public void onFailure(@NonNull Exception e) {
-                                                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                                             //   Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                                             }
                                         });
 
