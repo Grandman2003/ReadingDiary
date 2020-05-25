@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -33,6 +35,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.readingdiary.Classes.DeleteNote;
+import com.example.readingdiary.Classes.SaveImage;
 import com.example.readingdiary.Fragments.CreateWithoutNoteDialogFragment;
 import com.example.readingdiary.Fragments.DeleteDialogFragment;
 import com.example.readingdiary.Fragments.DeleteTitleAndAuthorDialogFragment;
@@ -42,9 +46,24 @@ import com.example.readingdiary.R;
 import com.example.readingdiary.data.LiteratureContract.NoteTable;
 import com.example.readingdiary.data.LiteratureContract.PathTable;
 import com.example.readingdiary.data.OpenHelper;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
 import java.security.Key;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EditNoteActivity extends AppCompatActivity implements DeleteDialogFragment.DeleteDialogListener,
         CreateWithoutNoteDialogFragment.CreateWithoutNoteDialogListener,
@@ -61,7 +80,7 @@ private String TAG_DARK = "dark_theme";
     EditText placeView;
     EditText shortCommentView;
     ImageView coverView;
-    String imagePath;
+    String imagePath="";
     SQLiteDatabase sdb;
     OpenHelper dbHelper;
     String id;
@@ -75,6 +94,13 @@ private String TAG_DARK = "dark_theme";
     FloatingActionButton acceptButton;
     FloatingActionButton cancelButton;
     Toolbar toolbar;
+    boolean isNoteNew;
+    private String user = "user0";
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private StorageReference imageStorage;
+    private DocumentReference imagePathsDoc;
+    long time;
+    Bitmap cover;
 
 
     @Override
@@ -90,6 +116,7 @@ private String TAG_DARK = "dark_theme";
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_note);
+        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         dbHelper = new OpenHelper(this);
@@ -101,28 +128,29 @@ private String TAG_DARK = "dark_theme";
         Bundle args = getIntent().getExtras();
 
         if (args != null && args.get("id") != null){
+            isNoteNew=false;
             id = args.get("id").toString();
             select(id);
         }
         else if (args != null && args.get("path") != null){
+            isNoteNew=true;
+            id = db.collection("Notes").document(user).collection("userNotes").document().getId();
             path = args.get("path").toString();
             beforeChanging = new String[]{path, "", "", "0.0", "", "", "", "", ""};
             setViews(beforeChanging);
         }
         else{
+            isNoteNew=true;
+            id = db.collection("Notes").document(user).collection("userNotes").document().getId();
             path = "./";
             beforeChanging = new String[]{"./", "", "", "0.0", "", "", "", "", ""};
             setViews(beforeChanging);
         }
+        imagePathsDoc = FirebaseFirestore.getInstance().collection("Common").document(user).collection(id).document("Images");
+        imageStorage = FirebaseStorage.getInstance().getReference(user).child(id).child("Images");
         Log.d("putExtra", "start");
-
-//        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         setButtons();
-//        pathView.setFocusable(false);
-//        pathView.setFocusableInTouchMode(false);
-
-//        setFocuses();
-//        Window.SetSoftInputMode(SoftInput.StateAlwaysHidden);
 
     }
 
@@ -165,6 +193,9 @@ private String TAG_DARK = "dark_theme";
             beforeChanging[0] = path1;
             savePaths();
         }
+        if (!imagePath.equals("")){
+            new DeleteNote().deleteImages(user, id);
+        }
         Intent returnIntent = new Intent();
         returnIntent.putExtra("noNote", "true");
         returnIntent.putExtra("path", path);
@@ -181,6 +212,17 @@ private String TAG_DARK = "dark_theme";
 
     @Override
     public void onNotSaveClicked() {
+        Log.d("qwerty44", imagePath + " " + beforeChanging[8] + " " + isNoteNew);
+        if (!imagePath.equals(beforeChanging[8])){
+            if (isNoteNew){
+                new DeleteNote().deleteImages(user, id);
+            }
+            else{
+                cancelImageChange();
+            }
+        }
+//            Toast.makeText(getApplicationContext(), "werfgthjk", 1).show();
+
         finish();
     }
 
@@ -237,15 +279,6 @@ private String TAG_DARK = "dark_theme";
             settingsDialogFragment.show(transaction, "dialog");
         }
         return false;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        Log.d("qwerty37", requestCode+"");
-        if (resultCode == GALERY_REQUEST_CODE){
-            updateImage();
-        }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     public void updateImage(){
@@ -355,14 +388,7 @@ private String TAG_DARK = "dark_theme";
     }
 
     public void setViews(String[] strings){
-
-        // String path, String author, String title, String rating, String genre,
-        //                         String time, String place, String shortComment, String imagePath
-        this.pathView.setText(strings[0]);
-//        if (path == null) this.path="./";
-//        else this.path = path;
-//        beforeChanging = {this.pathView,  author, title, rating, genre, time, place, shortComment, imagePath};
-
+        this.pathView.setText(strings[0].substring(strings[0].indexOf('/')+1));
         this.authorView.setText(strings[1]);
         this.titleView.setText(strings[2]);
         if (!strings[3].equals("")){
@@ -372,11 +398,6 @@ private String TAG_DARK = "dark_theme";
         this.timeView.setText(strings[5]);
         this.placeView.setText(strings[6]);
         this.shortCommentView.setText(strings[7]);
-////        File file = new File(imagePath);
-//        if (!imagePath.equals("")){
-//            this.coverView.setImageBitmap(BitmapFactory.decodeFile(strings[8]));
-//            this.imagePath = imagePath;
-//        }
         if (!strings[8].equals("")){
             this.coverView.setImageBitmap(BitmapFactory.decodeFile(strings[8]));
             this.imagePath = imagePath;
@@ -384,25 +405,30 @@ private String TAG_DARK = "dark_theme";
     }
 
     private void setButtons(){
-
-
-
-//        FloatingActionButton accept =  (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
-//        FloatingActionButton cancel =  (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
+        FloatingActionButton accept =  (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
+        FloatingActionButton cancel =  (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
         Button deleteButton = (Button) findViewById(R.id.deleteNoteButton);
-        acceptButton.setOnClickListener(new View.OnClickListener() {
+        accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (saveChanges()){
                     finish();
                 }
-
             }
         });
 
-        cancelButton.setOnClickListener(new View.OnClickListener() {
+        cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!imagePath.equals(beforeChanging[8])){
+                    if (isNoteNew){
+                        DeleteNote.deleteImages(user, id);
+                    }
+                    else{
+                        cancelImageChange();
+                    }
+                }
+
                 finish();
             }
         });
@@ -412,7 +438,7 @@ private String TAG_DARK = "dark_theme";
         {
             @Override
             public void onClick(View view) {
-                if (id!=null) {
+                if (isNoteNew == false) {
                     Intent intent = new Intent(EditNoteActivity.this, GaleryActivity.class);
                     intent.putExtra("id", id);
                     startActivityForResult(intent, GALERY_REQUEST_CODE);
@@ -422,11 +448,6 @@ private String TAG_DARK = "dark_theme";
                     Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                     photoPickerIntent.setType("image/*");
                     startActivityForResult(photoPickerIntent, Pick_image);
-
-                    GaleryActivity GaleryActivity = new GaleryActivity();
-//                        GaleryActivity.onActivityResult(1, 1,null);
-                    GaleryActivity.setResultChanged();
-
                 }
             }
         });
@@ -437,138 +458,82 @@ private String TAG_DARK = "dark_theme";
             @Override
             public void onClick(View v) {
                 openDeletDialog();
-//                deleteNote();
-//                Intent returnIntent = new Intent();
-//                returnIntent.putExtra("deleted", "true");
-//                returnIntent.putExtra("id", id);
-//                setResult(RESULT_OK, returnIntent);
-//                finish();
             }
         });
     }
-
 
     private void openDeletDialog(){
         DeleteDialogFragment dialog = new DeleteDialogFragment();
         dialog.show(getSupportFragmentManager(), "deleteDialog");
     }
 
-    public void select(String id){
-        // Выбор полей из бд
-        // Сейчас тут выбор не всех полей
-        String[] projection = {
-                NoteTable._ID,
-                NoteTable.COLUMN_PATH,
-                NoteTable.COLUMN_AUTHOR,
-                NoteTable.COLUMN_TITLE,
-                NoteTable.COLUMN_COVER_IMAGE,
-                NoteTable.COLUMN_RATING,
-                NoteTable.COLUMN_GENRE,
-                NoteTable.COLUMN_TIME,
-                NoteTable.COLUMN_PLACE,
-                NoteTable.COLUMN_SHORT_COMMENT
-
-        };
-        Cursor cursor = sdb.query(
-                NoteTable.TABLE_NAME,   // таблица
-                projection,            // столбцы
-                NoteTable._ID + " = ?",                  // столбцы для условия WHERE
-                new String[] {id},                  // значения для условия WHERE
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);
-        try{
-            int idColumnIndex = cursor.getColumnIndex(NoteTable._ID);
-            int pathColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_PATH);
-            int authorColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_AUTHOR);
-            int titleColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_TITLE);
-            int coverColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_COVER_IMAGE);
-            int ratingColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_RATING);
-            int genreColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_GENRE);
-            int timeColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_TIME);
-            int placeColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_PLACE);
-            int shortCommentIndex =  cursor.getColumnIndex(NoteTable.COLUMN_SHORT_COMMENT);
-
-            while (cursor.moveToNext()) {
-                beforeChanging = new String[] {cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
-                        cursor.getString(titleColumnIndex), cursor.getString(ratingColumnIndex),
-                        cursor.getString(genreColumnIndex), cursor.getString(timeColumnIndex),
-                        cursor.getString(placeColumnIndex), cursor.getString(shortCommentIndex),
-                        cursor.getString(coverColumnIndex)};
-                if (beforeChanging[0] == null) beforeChanging[0] = "./";
-//                setViews(new String[] {cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
-//                        cursor.getString(titleColumnIndex), cursor.getString(ratingColumnIndex),
-//                        cursor.getString(genreColumnIndex), cursor.getString(timeColumnIndex),
-//                        cursor.getString(placeColumnIndex), cursor.getString(shortCommentIndex),
-//                        cursor.getString(shortCommentIndex)});
-                setViews(beforeChanging);
-            }
-        }
-        finally{
-            if (path==null){
-                path="./";
-            }
-            cursor.close();
-        }
+    public void select(String id) {
+        Log.d("qwerty45", "select");
+        db.collection("Notes").document(user).collection("userNotes").document(id).get().
+                addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        String s = documentSnapshot.get("author").toString();
+                        HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
+                        imagePath = map.get("imagePath").toString();
+                        beforeChanging = new String[]{
+                                map.get("path").toString().replace("\\", "/"), map.get("author").toString(),
+                                map.get("title").toString(), map.get("rating").toString(),
+                                map.get("genre").toString(), map.get("time").toString(),
+                                map.get("place").toString(), map.get("short_comment").toString(),
+                                map.get("imagePath").toString()};
+                        setViews(beforeChanging);
+                    }
+                });
     }
 
-    public boolean saveChanges(){
 
+    public boolean saveChanges(){
         if (authorView.getText().toString().equals("") && titleView.getText().toString().equals(""))
         {
             showNoTitleAndAuthorDialog();
             return false;
         }
-        ContentValues cv = new ContentValues();
-//        cv.put(NoteTable.COLUMN_PATH, );
+
+        if (authorView.length()>50){Toast.makeText(EditNoteActivity.this,"Введено слишком большое имя автора ",Toast.LENGTH_SHORT).show(); return false;}
+        else if (titleView.length()>50){Toast.makeText(EditNoteActivity.this,"Ведено слишком большое название книги ",Toast.LENGTH_SHORT).show();return false;}
+        else if (genreView.length()>50){ Toast.makeText(EditNoteActivity.this,"Введено слишком большое название жанра ",Toast.LENGTH_SHORT).show();return false;}
+        else if (timeView.length()>50){Toast.makeText(EditNoteActivity.this,"Введен слишком большой текст для периода прочтения",Toast.LENGTH_SHORT).show();return false;}
+        else if (placeView.length()>50){Toast.makeText(EditNoteActivity.this,"Введено слишком большое название места прочтения",Toast.LENGTH_SHORT).show();return false;}
+        else if (shortCommentView.length()>50){Toast.makeText(EditNoteActivity.this,"Введен слишком большой короткий комментарий",Toast.LENGTH_SHORT).show();return false;}
+
         String path1 = pathView.getText().toString();
         path1 = fixPath(path1);
-
-        cv.put(NoteTable.COLUMN_PATH, path1);
-        if (authorView.length()<30){cv.put(NoteTable.COLUMN_AUTHOR, authorView.getText().toString());}
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое имя автора ",Toast.LENGTH_SHORT).show(); return false;}
-
-        if (titleView.length()<30){ cv.put(NoteTable.COLUMN_TITLE, titleView.getText().toString());}
-        else {Toast.makeText(EditNoteActivity.this,"Ведено слишком большое название книги ",Toast.LENGTH_SHORT).show();return false;}
-
-        if (genreView.length()<30){ cv.put(NoteTable.COLUMN_GENRE,genreView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название жанра ",Toast.LENGTH_SHORT).show();return false;}
-
-        if (timeView.length()<30){ cv.put(NoteTable.COLUMN_TIME, timeView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введен слишком большой текст для периода прочтения",Toast.LENGTH_SHORT).show();return false;}
-
-        if (placeView.length()<30){ cv.put(NoteTable.COLUMN_PLACE, placeView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введено слишком большое название места прочтения",Toast.LENGTH_SHORT).show();return false;}
-
-        if (shortCommentView.length()<30){ cv.put(NoteTable.COLUMN_SHORT_COMMENT, shortCommentView.getText().toString()); }
-        else {Toast.makeText(EditNoteActivity.this,"Введен слишком большой короткий комментарий",Toast.LENGTH_SHORT).show();return false;}
-
-        cv.put(NoteTable.COLUMN_COVER_IMAGE, imagePath);
-        cv.put(NoteTable.COLUMN_RATING, String.valueOf(ratingView.getRating()));
-//        cv.put(NoteTable.COLUMN_COVER_IMAGE, "");
-
-        if (!beforeChanging[0].equals(path1))
-        {
+        Map<String, Object> note = new HashMap<String, Object>();
+        note.put("path", path1.replace("/", "\\"));
+        note.put("author", authorView.getText().toString());
+        note.put("title", titleView.getText().toString());
+        note.put("imagePath", imagePath);
+        note.put("rating", String.valueOf(ratingView.getRating()));
+        note.put("genre", genreView.getText().toString());
+        note.put("time", timeView.getText().toString());
+        note.put("place", placeView.getText().toString());
+        note.put("short_comment", shortCommentView.getText().toString());
+        if (!beforeChanging[0].equals(path1)){
             beforeChanging[0] = path1;
             savePaths();
         }
-
-        if (id != null)
-        {
-            sdb.update(NoteTable.TABLE_NAME, cv, "_id=" + id, null);
-            changedIntent();
+        if (isNoteNew == true){
+            db.collection("Notes").document(user).collection("userNotes").document(id).set(note);
+            HashMap<String, Boolean> map = new HashMap<String, Boolean>();
+            insertIntent();
         }
         else
         {
-
-            id = sdb.insert(NoteTable.TABLE_NAME, null, cv) + "";
-            insertIntent();
+            db.collection("Notes").document(user).collection("userNotes").document(id).set(note);
+            changedIntent();
         }
         return true;
+
     }
 
     private void showNoTitleAndAuthorDialog(){
-        if (id==null){
+        if (isNoteNew){
             CreateWithoutNoteDialogFragment createDialog = new CreateWithoutNoteDialogFragment();
             createDialog.show(getSupportFragmentManager(), "createWithoutNoteDialog");
         }
@@ -579,11 +544,6 @@ private String TAG_DARK = "dark_theme";
     }
 
     public boolean checkChanges(){
-//        beforeChanging = {cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
-//                cursor.getString(titleColumnIndex), cursor.getString(ratingColumnIndex),
-//                cursor.getString(genreColumnIndex), cursor.getString(timeColumnIndex),
-//                cursor.getString(placeColumnIndex), cursor.getString(shortCommentIndex),
-//                cursor.getString(shortCommentIndex)};
         Log.d("putExtra", ratingView.getRating() +"");
         if (beforeChanging[0].equals(fixPath(pathView.getText().toString())) &&
                 beforeChanging[1].equals(authorView.getText().toString()) &&
@@ -592,7 +552,8 @@ private String TAG_DARK = "dark_theme";
                 beforeChanging[4].equals(genreView.getText().toString()) &&
                 beforeChanging[5].equals(timeView.getText().toString()) &&
                 beforeChanging[6].equals(placeView.getText().toString()) &&
-                beforeChanging[7].equals(shortCommentView.getText().toString()))
+                beforeChanging[7].equals(shortCommentView.getText().toString()) &&
+                beforeChanging[8].equals(imagePath))
         {
             return false;
         }
@@ -600,19 +561,39 @@ private String TAG_DARK = "dark_theme";
     }
 
     public void savePaths(){
-        ContentValues cv = new ContentValues();
-        String pathTokens[] = ((String) beforeChanging[0]).split("/");
-        String prev = pathTokens[0] + "/";
-        for (int i = 1; i < pathTokens.length; i++){
-            if (pathTokens[i].equals("")){
+        final String pathTokens[] = ((String) beforeChanging[0]).split("/");
+        String prev="";
+        for (int i = 0; i < pathTokens.length - 1; i++) {
+            if (pathTokens[i].equals("")) {
                 continue;
             }
-            cv.put(PathTable.COLUMN_PARENT, prev);
-            prev = prev + pathTokens[i] + "/";
-            cv.put(PathTable.COLUMN_CHILD, prev);
-            sdb.insert(PathTable.TABLE_NAME, null, cv);
-            cv.clear();
+            final String prev0 = prev;
+            final String doc = prev + pathTokens[i] + "\\";
+            final String toAdd = prev + pathTokens[i] + "\\" + pathTokens[i+1]+"\\";
+            db.collection("User").document(user).collection("paths").document(doc)
+                    .update("paths", FieldValue.arrayUnion(toAdd))
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Map<String, Object> map = new HashMap<>();
+                            List<String> list = new ArrayList<>();
+                            list.add(toAdd);
+                            map.put("parent", prev0);
+                            map.put("paths", list);
+                            db.collection("User").document(user).collection("paths").document(doc)
+                                    .set(map);
+
+                        }
+                    });
+//                    .set(map, SetOptions.merge());
+            prev += pathTokens[i] + "\\";
         }
+        Map<String, Object> map = new HashMap<>();
+//        map.put("paths", new ArrayList<String>());
+        map.put("parent", prev);
+        db.collection("User").document(user).collection("paths").document(
+                prev+pathTokens[pathTokens.length - 1]+"\\").set(map, SetOptions.merge());
+
     }
 
     public String fixPath(String path){
@@ -632,11 +613,16 @@ private String TAG_DARK = "dark_theme";
     }
 
     private void deleteNote(){
-        sdb.delete(NoteTable.TABLE_NAME, NoteTable._ID + " = ?", new String[]{id});
+        if (!isNoteNew) {
+            DeleteNote.deleteNote(user, id);
+        }
+        else{
+            DeleteNote.deleteImages(user, id);
+        }
     }
-
     public void changedIntent(){
         Intent returnIntent = new Intent();
+        returnIntent.putExtra("changed", "true");
         setResult(RESULT_OK, returnIntent);
     }
 
@@ -646,20 +632,73 @@ private String TAG_DARK = "dark_theme";
         returnIntent.putExtra("id", id);
         returnIntent.putExtra("path", path);
         setResult(RESULT_OK, returnIntent);
-        Log.d("DeleteNote", "insertIntent");
     }
 
     private void saveDialog(){
-        SaveDialogFragment saveDialogFragment = new SaveDialogFragment(getApplicationContext(), 0);
-//        MyDialogFragment myDialogFragment = new MyDialogFragment();
+        SaveDialogFragment saveDialogFragment = new SaveDialogFragment(this);
         FragmentManager manager = getSupportFragmentManager();
-        //myDialogFragment.show(manager, "dialog");
-
         FragmentTransaction transaction = manager.beginTransaction();
         saveDialogFragment.show(transaction, "dialog");
+        FirebaseFirestore.getInstance().collection("Common").document(user).collection(id).document("Images").get().
+                addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.getData()!=null){
+                            Log.d("qwerty43", "saveD1");
+                        }
+                        else{
+                            Log.d("qwerty43", "saveD1Null");
+                        }
+                    }
+                });
     }
 
 
+    private void saveAndOpenImage(final Uri imageUri){
+        time = System.currentTimeMillis();
+        imagePath = time+"";
+        cover = SaveImage.saveImage(user, id, imageUri, time, getApplicationContext());
+        coverView.setImageBitmap(cover);
+    }
+
+    private void cancelImageChange(){
+        db.collection("Notes").document(user).collection("userNotes").document(id).
+                update("imagePath", beforeChanging[8]);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Pick_image){
+            Toast.makeText(getApplicationContext(), "pick_image", Toast.LENGTH_LONG).show();
+            if (data != null){
+                try{
+                    saveAndOpenImage(data.getData());
+                }
+                catch (Exception e){
+                    Log.e("EditNoteResult", e.toString());
+                }
+
+            }
+        }
+        else if (requestCode==GALERY_REQUEST_CODE){
+            db.collection("Notes").document(user).collection("userNotes").document(id).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    if (documentSnapshot != null && documentSnapshot.get("imagePath")!= null && !documentSnapshot.get("imagePath").equals("")){
+                        imagePath = documentSnapshot.get("imagePath").toString();
+                        imageStorage.child(imagePath).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                Picasso.get().load(uri).into(coverView);
+                            }
+                        });
+                    }
+                }
+            });
+            Toast.makeText(getApplicationContext(), "galery_request", Toast.LENGTH_LONG).show();
+        }
+    }
 
 
     @Override

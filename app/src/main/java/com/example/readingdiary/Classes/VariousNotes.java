@@ -5,11 +5,21 @@ public class VariousNotes {
     private String path;
     private long time;
     private boolean changed;
-    public VariousNotes(String text, String path, long time, boolean changed){
+    private boolean needsUpdate;
+    public VariousNotes(String text, String path, long time, boolean changed, boolean needsUpdate){
         this.text = text;
         this.path = path;
         this.changed = changed;
         this.time = time;
+        this.needsUpdate = needsUpdate;
+    }
+
+    public boolean isNeedsUpdate() {
+        return needsUpdate;
+    }
+
+    public void setNeedsUpdate(boolean needsUpdate) {
+        this.needsUpdate = needsUpdate;
     }
 
     public String getText() {

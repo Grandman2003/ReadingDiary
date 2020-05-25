@@ -19,7 +19,6 @@ import com.example.readingdiary.R;
 import java.util.List;
 
 
-// Адаптор путей (кнопочки, для быстрого перемещения назад)
 public class VariousViewAdapter extends RecyclerView.Adapter<VariousViewAdapter.ViewHolder>{
 
     private List<VariousNotes> buttons;
@@ -42,9 +41,6 @@ public class VariousViewAdapter extends RecyclerView.Adapter<VariousViewAdapter.
         this.buttons = buttons; this.actionMode = false;
     }
 
-    /**
-     * Создание новых View и ViewHolder элемента списка, которые впоследствии могут переиспользоваться.
-     */
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View v;
@@ -54,9 +50,6 @@ public class VariousViewAdapter extends RecyclerView.Adapter<VariousViewAdapter.
         return vh;
     }
 
-    /**
-     * Заполнение виджетов View данными из элемента списка с номером i
-     */
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
         if (actionMode == false){
@@ -88,10 +81,6 @@ public class VariousViewAdapter extends RecyclerView.Adapter<VariousViewAdapter.
         buttons.clear();
         notifyDataSetChanged();
     }
-
-    /**
-     * Реализация класса ViewHolder, хранящего ссылки на виджеты.
-     */
 
     class ViewHolder extends RecyclerView.ViewHolder {
         private TextView textView;

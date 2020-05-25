@@ -32,21 +32,14 @@ public class CatalogButtonAdapter extends RecyclerView.Adapter<CatalogButtonAdap
         this.buttons = buttons;
     }
 
-    /**
-     * Создание новых View и ViewHolder элемента списка, которые впоследствии могут переиспользоваться.
-     */
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View v;
         v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recycler_catalog_button, viewGroup, false);
         ViewHolder vh = new ViewHolder(v);
-//        v.setOnClickListener(this);
         return vh;
     }
 
-    /**
-     * Заполнение виджетов View данными из элемента списка с номером i
-     */
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
         String tokens[] = buttons.get(i).split("/");
@@ -75,9 +68,6 @@ public class CatalogButtonAdapter extends RecyclerView.Adapter<CatalogButtonAdap
         notifyDataSetChanged();
     }
 
-    /**
-     * Реализация класса ViewHolder, хранящего ссылки на виджеты.
-     */
 
     class ViewHolder extends RecyclerView.ViewHolder {
         private TextView path1;

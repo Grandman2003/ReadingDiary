@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -28,6 +29,14 @@ import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.data.LiteratureContract.NoteTable;
 import com.example.readingdiary.data.OpenHelper;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.squareup.picasso.Picasso;
+
+import java.util.HashMap;
 
 public class NoteActivity extends AppCompatActivity implements SettingsDialogFragment.SettingsDialogListener {
     // класс отвечает за активность с каталогами
@@ -43,8 +52,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     TextView shortCommentView;
     ImageView coverView;
     String imagePath;
-    SQLiteDatabase sdb;
-    OpenHelper dbHelper;
+    Uri imageUri;
     String id;
     String path;
     boolean changed = false;
@@ -54,6 +62,10 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     private final int GALERY_REQUEST_CODE = 124;
     private final int COMENTS_REQUEST_CODE = 125;
     Toolbar toolbar;
+
+    private String user = "user0";
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
 
     @Override
@@ -68,8 +80,8 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
-        dbHelper = new OpenHelper(this);
-        sdb = dbHelper.getReadableDatabase();
+        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         findViews();
         ratingView.setEnabled(false);
 
@@ -182,22 +194,27 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode==EDIT_REQUEST_CODE){
             if (data != null && data.getExtras() != null)
             {
-                if (data.getExtras().get("changed") != null)
-                {
-                    changed = true;
-                }
                 if (data.getExtras().get("deleted") != null)
                 {
                     setResult(RESULT_OK, data);
                     finish();
                 }
-
+                if (data.getExtras().get("changed") != null)
+                {
+                    changed = true;
+                    changedIntent();
+                    select(id);
+                }
             }
-            select(id);
+            else{
+                select(id);
+            }
+
         }
 
         if (requestCode==GALERY_REQUEST_CODE){
@@ -207,7 +224,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     }
 
     private void setViews(String path, String author, String title, String rating, String genre,
-                          String time, String place, String shortComment, String imagePath){
+                          String time, String place, String shortComment, Uri imageUri){
         this.path = path;
         this.authorView.setText(author);
         Toast.makeText(this, "!" + author + " " + author.equals(""), Toast.LENGTH_SHORT).show();
@@ -243,11 +260,13 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
         }
 //        File file = new File(imagePath);
         Log.d("IMAGE1", imagePath +" !");
-        if (imagePath != null){
-            this.coverView.setImageBitmap(BitmapFactory.decodeFile(imagePath));
-            this.imagePath = imagePath;
+        if (imageUri != null) {
+            Log.d("qwerty123456", imageUri.toString());
+            Picasso.get()
+                    .load(imageUri)
+                    .into(this.coverView);
         }
-        if (imagePath==null || imagePath.equals("")){
+        else{
             this.coverView.setVisibility(View.GONE);
         }
     }
@@ -316,58 +335,55 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     private void select(String id){
         // Выбор полей из бд
         // Сейчас тут выбор не всех полей
-
-        String[] projection = {
-                NoteTable._ID,
-                NoteTable.COLUMN_PATH,
-                NoteTable.COLUMN_AUTHOR,
-                NoteTable.COLUMN_TITLE,
-                NoteTable.COLUMN_COVER_IMAGE,
-                NoteTable.COLUMN_RATING,
-                NoteTable.COLUMN_GENRE,
-                NoteTable.COLUMN_TIME,
-                NoteTable.COLUMN_PLACE,
-                NoteTable.COLUMN_SHORT_COMMENT
-
-        };
-        Cursor cursor = sdb.query(
-                NoteTable.TABLE_NAME,   // таблица
-                projection,            // столбцы
-                NoteTable._ID + " = ?",                  // столбцы для условия WHERE
-                new String[] {id},                  // значения для условия WHERE
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);
-        try{
-            int idColumnIndex = cursor.getColumnIndex(NoteTable._ID);
-            int pathColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_PATH);
-            int authorColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_AUTHOR);
-            int titleColumnIndex = cursor.getColumnIndex(NoteTable.COLUMN_TITLE);
-            int coverColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_COVER_IMAGE);
-            int ratingColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_RATING);
-            int genreColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_GENRE);
-            int timeColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_TIME);
-            int placeColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_PLACE);
-            int shortCommentIndex =  cursor.getColumnIndex(NoteTable.COLUMN_SHORT_COMMENT);
-
-            while (cursor.moveToNext()) {
-                setViews(cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
-                        cursor.getString(titleColumnIndex), cursor.getString(ratingColumnIndex),
-                        cursor.getString(genreColumnIndex), cursor.getString(timeColumnIndex),
-                        cursor.getString(placeColumnIndex), cursor.getString(shortCommentIndex),
-                        cursor.getString(coverColumnIndex));
-            }
-        }
-        finally{
-            cursor.close();
-        }
+        Log.d("qwerty16", id);
+        final String id0 = id;
+        db.collection("Notes").document(user).collection("userNotes").document(id).get().
+                addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        String s = documentSnapshot.get("author").toString();
+                        Log.d("qwerty16", s);
+                        final HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
+                        Log.d("qwerty16", map.toString());
+                        imagePath = "";
+                        if (map.get("imagePath") != null && !map.get("imagePath").equals("")){
+                            FirebaseStorage.getInstance().getReference(user).child(id0).child("Images")
+                                    .child(map.get("imagePath").toString()).getDownloadUrl().
+                                    addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                        @Override
+                                        public void onSuccess(Uri uri) {
+                                            Log.d("qwerty123456", "hiStart " + uri);
+                                            imageUri = uri;
+                                            setViews(
+                                                    map.get("path").toString(), map.get("author").toString(),
+                                                    map.get("title").toString(), map.get("rating").toString(),
+                                                    map.get("genre").toString(), map.get("time").toString(),
+                                                    map.get("place").toString(), map.get("short_comment").toString(),
+                                                    imageUri
+                                            );
+                                        }
+                                    });
+                        }
+                        else{
+                            setViews(
+                                    map.get("path").toString(), map.get("author").toString(),
+                                    map.get("title").toString(), map.get("rating").toString(),
+                                    map.get("genre").toString(), map.get("time").toString(),
+                                    map.get("place").toString(), map.get("short_comment").toString(),
+                                    null
+                            );
+                        }
+                    }
+                });
     }
 
     private void changedIntent(){
         Intent returnIntent = new Intent();
         returnIntent.putExtra("path", path);
+        returnIntent.putExtra("id", id);
         setResult(RESULT_OK, returnIntent);
         Log.d("qwertyu", "changeIntent");
     }
+
 
 }

@@ -8,14 +8,12 @@ import java.util.Scanner;
 
 public class QuickSort
 {
-    int testLen = 0;
-   public int [] array = new int[testLen];
-    public void main(String[] args) // по идеи его тут не должно быть, это для тестов. потом будем просто вызывать нужный метод из класса
+    public static void main(String[] args) // по идеи его тут не должно быть, это для тестов. потом будем просто вызывать нужный метод из класса
     {
         // cортировка чисел от меньшего к большему
-//        System.out.println("Выполняется выстрая сортировка:");
-         testLen = 10000; // количпество чисел, которым заполять массив
-
+        System.out.println("Выполняется выстрая сортировка:");
+        int testLen = 10000; // количпество чисел, которым заполять массив
+        int [] array = new int[testLen];
         for (int i = 0; i < testLen; i++) // заполнение array случайными числами
         {
             array[i] = (int)Math.round(Math.random() * 10000);
@@ -56,11 +54,6 @@ public class QuickSort
             quickSort(arr, divideIndex, to);
 
         }
-        else
-        {
-            return;
-
-        }
     }
 
     private static int partition(int[] arr, int from, int to)
@@ -98,15 +91,15 @@ public class QuickSort
         array[index1] = array[index2];
         array[index2] = tmp;
     }
-//    private static void measureTime(Runnable task)
-//{
-//    long startTime = System.currentTimeMillis();
-//    task.run();
-//    long elapsed = System.currentTimeMillis() - startTime;
-//    System.out.println("Затраченное время: " + elapsed + " ms");
-//}
+    private static void measureTime(Runnable task)
+    {
+        long startTime = System.currentTimeMillis();
+        task.run();
+        long elapsed = System.currentTimeMillis() - startTime;
+        System.out.println("Затраченное время: " + elapsed + " ms");
+    }
 
-    public static List<String> StrSort(String [] words, String x, List<String> coincide )
+    public static void StrSort(String [] words, String x,List<String> coincide )
     // worbs массив, котрый нужно сортировать
     // в x передаём слово, которое нужно искать
     //  coincide лист, в который переаются совпадения
@@ -114,20 +107,19 @@ public class QuickSort
         for (int i = 0; i < words.length; i++) // проверка неупорядоченного массива на предмет совпадений и переброс совпадений в пустой массив
         {                                       // из массива worbs в массив coincide
 
-            if (words[i]==x) //.contains(x) для поиска любых совпадений
-            {
+            if (words[i].contains(x)) {
+
                 coincide.add(words[i]);
 
             }
         }
 
-//        for (int z = 0; z < coincide.size(); z++) // вывод массива coincide
-//        {
-//
-//            System.out.println(coincide.get(z));
-//
-//        }
-     return coincide;
+        for (int z = 0; z < coincide.size(); z++) // вывод массива coincide
+        {
+
+            System.out.println(coincide.get(z));
+
+        }
     }
 
 }

@@ -1,11 +1,5 @@
 package com.example.readingdiary.adapters;
 
-//package com.example.galeryproject;
-
-//package com.example.readingdiary;
-
-//package com.example.readingdiary;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.DisplayMetrics;
@@ -17,14 +11,17 @@ import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.readingdiary.Classes.ImageClass;
+import com.example.readingdiary.Classes.SmallGaleryTransform;
 import com.example.readingdiary.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 // Адаптер для GaleryActivity.
 public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecyclerViewAdapter.ViewHolder>{
 
-    private List<Bitmap> buttons;
+    private List<ImageClass> buttons;
     private GaleryRecyclerViewAdapter.OnItemClickListener mListener;
     private Context context;
     public interface OnItemClickListener{
@@ -36,7 +33,7 @@ public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecycl
         mListener = listener;
     }
 
-    public GaleryRecyclerViewAdapter(List<Bitmap> buttons, Context context) {
+    public GaleryRecyclerViewAdapter(List<ImageClass> buttons, Context context) {
         this.buttons = buttons;
         this.context = context;
     }
@@ -51,61 +48,32 @@ public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecycl
         return vh;
     }
 
-    /**
-     * Заполнение виджетов View данными из элемента списка с номером i
-     */
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-//        String path = buttons.get(i);
-//        FileInputStream fileInputStream = openFileInput(path);
-//        Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream);
-        Bitmap source = buttons.get(i);
-//        Display display = context.getResources().getDisplayMetrics()
-        DisplayMetrics metricsB = context.getResources().getDisplayMetrics();
-//        display.getMetrics(metricsB);
-        float size = metricsB.widthPixels / 3;
-        float size1 = Math.min(source.getWidth(), source.getHeight());
-        float k = size / size1;
-        Log.d("SCALE", k+" " + size + " " + size1);
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(source, (int)(source.getWidth() * k), (int)(source.getHeight() * k), false);
-        int x = (int)((resizedBitmap.getWidth() - size) / 2);
-        int y = (int)((resizedBitmap.getHeight() - size) / 2);
-        Bitmap result = Bitmap.createBitmap(resizedBitmap, x, y, (int)size, (int)size);
+        if (buttons.get(i).getType()==1){
+            DisplayMetrics metricsB = context.getResources().getDisplayMetrics();
+            float size = metricsB.widthPixels / 3;
+            SmallGaleryTransform smallGaleryTransform = new SmallGaleryTransform(metricsB.widthPixels, metricsB.heightPixels);
+            Picasso.get()
+                    .load(buttons.get(i).getUri())
+                    .transform(new SmallGaleryTransform(metricsB.widthPixels, metricsB.heightPixels))
+                    .into(viewHolder.imageView);
+        }
+        else{
+            Bitmap source = buttons.get(i).getBitmap();
+            DisplayMetrics metricsB = context.getResources().getDisplayMetrics();
+            float size = metricsB.widthPixels / 3;
+            float size1 = Math.min(source.getWidth(), source.getHeight());
+            float k = size / size1;
+            Log.d("SCALE", k+" " + size + " " + size1);
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(source, (int)(source.getWidth() * k), (int)(source.getHeight() * k), false);
+            int x = (int)((resizedBitmap.getWidth() - size) / 2);
+            int y = (int)((resizedBitmap.getHeight() - size) / 2);
+            Bitmap result = Bitmap.createBitmap(resizedBitmap, x, y, (int)size, (int)size);
 
-        viewHolder.imageView.setImageBitmap(result);
-//        viewHolder.imageView.setImageBitmap(buttons.get(i);
-
-
-//        viewHolder.imageview.setText(tokens[tokens.length - 1] + " > ");
-//        int type = getItemViewType(i);
-//        if (type == TYPE_ITEM1){
-//            RealNote realNote = (RealNote) notes.get(i);
-//            viewHolder.path1.setText(realNote.getPath());
-//            viewHolder.author.setText(realNote.getAuthor());
-//            viewHolder.title.setText(realNote.getTitle());
-//        }
-//        if (type == TYPE_ITEM2){
-//            Directory directory = (Directory) notes.get(i);
-//            viewHolder.path2.setText(directory.getDirectory());
-//        }
-
-//
-//
-//        Note note = notes.get(i);
-//        viewHolder.path.setText(note.getPath());
-//        viewHolder.title.setText(note.getTitle());
-//        viewHolder.author.setText(note.getAuthor());
-
+            viewHolder.imageView.setImageBitmap(result);
+        }
     }
-//
-//    @Override
-//    public int getItemViewType(int position) {
-//        // определяем какой тип в текущей позиции
-//        int type = notes.get(position).getItemType();
-//        if (type == 0) return TYPE_ITEM1;
-//        else return TYPE_ITEM2;
-//
-//    }
 
     @Override
     public int getItemCount() {
@@ -122,10 +90,6 @@ public class GaleryRecyclerViewAdapter extends RecyclerView.Adapter<GaleryRecycl
         buttons.clear();
         notifyDataSetChanged();
     }
-
-    /**
-     * Реализация класса ViewHolder, хранящего ссылки на виджеты.
-     */
 
     class ViewHolder extends RecyclerView.ViewHolder {
         //        private TextView path1;

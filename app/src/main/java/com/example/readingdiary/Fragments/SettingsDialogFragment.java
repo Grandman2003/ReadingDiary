@@ -32,11 +32,12 @@ public class SettingsDialogFragment extends DialogFragment {
     boolean isChecked;
     AlertDialog materialDialogs;
     int position;
-    public SettingsDialogFragment(int y, int x, boolean isChecked){
+    public SettingsDialogFragment(int y, int x, boolean isChecked) {
         this.y = y;
         this.x = x;
         this.isChecked = isChecked;
     }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -45,10 +46,12 @@ public class SettingsDialogFragment extends DialogFragment {
         builder.setCancelable(true);
         materialDialogs = builder.create();
         WindowManager.LayoutParams wmlp = materialDialogs.getWindow().getAttributes();
-        wmlp.y=-y / 2 + 260;
+//        Log.d("qwerty47", toolbarHeight + " " + y + " " + wmlp.height + " " + materialDialogs.findViewById(R.id.switchTheme).getHeight() + " " +  materialDialogs.findViewById(R.id.exitButton).getHeight());
+        wmlp.y=-2*y / 7;
         wmlp.x = x/2;
         materialDialogs.show();
         SwitchMaterial switchMaterial = materialDialogs.findViewById(R.id.switchTheme);
+
         if (isChecked==true){
             switchMaterial.setChecked(true);
         }
@@ -82,9 +85,11 @@ public class SettingsDialogFragment extends DialogFragment {
         });
 
 
-
         Window w = materialDialogs.getWindow();
-            w.setLayout(400, w.getAttributes().height);
+            w.setLayout(3 * x / 4, w.getAttributes().height);
+        wmlp = materialDialogs.getWindow().getAttributes();
+//        wmlp.y=300;
+        wmlp.x = x/2;
         return materialDialogs;
     }
 

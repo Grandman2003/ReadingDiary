@@ -16,6 +16,7 @@ import com.example.readingdiary.Classes.Note;
 import com.example.readingdiary.Classes.RealNote;
 import com.example.readingdiary.R;
 import com.google.android.material.card.MaterialCardView;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,9 +46,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         this.actionMode = false;
     }
 
-    /**
-     * Создание новых View и ViewHolder элемента списка, которые впоследствии могут переиспользоваться.
-     */
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View v;
@@ -58,13 +56,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recycler_catalog_item1, viewGroup, false);
         }
         ViewHolder vh = new ViewHolder(v);
-//        v.setOnClickListener(this);
         return vh;
     }
 
-    /**
-     * Заполнение виджетов View данными из элемента списка с номером i
-     */
+
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
         int type = getItemViewType(i);
@@ -78,32 +73,18 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         if (type == TYPE_ITEM1){
 
             RealNote realNote = (RealNote) notes.get(i);
-//            viewHolder.path1.setText(realNote.getPath());
             viewHolder.author.setText(realNote.getAuthor());
             viewHolder.title.setText(realNote.getTitle());
             viewHolder.ratingBar.setRating((float)realNote.getRating());
-//            if (actionMode == false){
-//                viewHolder.checkBox.setVisibility(View.GONE);
-//            }
-//            else{
-//                viewHolder.checkBox.setVisibility(View.VISIBLE);
-//                viewHolder.checkBox.setChecked(false);
-//            }
-            if (!realNote.getCoverPath().equals("")){
-                // TODO
+            if (realNote.getCoverUri() !=null){
+                Picasso.get().load(realNote.getCoverUri()).into(viewHolder.cover);
             }
         }
         if (type == TYPE_ITEM2){
             Directory directory = (Directory) notes.get(i);
-            viewHolder.path2.setText(directory.getDirectory());
+            String[] dir = directory.getDirectory().split("/");
+            viewHolder.path2.setText(dir[dir.length-1]);
         }
-
-//
-//
-//        Note note = notes.get(i);
-//        viewHolder.path.setText(note.getPath());
-//        viewHolder.title.setText(note.getTitle());
-//        viewHolder.author.setText(note.getAuthor());
 
     }
 
@@ -137,10 +118,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         }
         notifyDataSetChanged();
     }
-
-    /**
-     * Реализация класса ViewHolder, хранящего ссылки на виджеты.
-     */
 
     class ViewHolder extends RecyclerView.ViewHolder {
 //        private TextView path1;

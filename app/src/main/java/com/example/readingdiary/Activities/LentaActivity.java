@@ -34,10 +34,10 @@ public class LentaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lenta);
 
-        bUpdateLent = (Button)  findViewById(R.id.bUpdateLent);
-        rvPosts = (RecyclerView) findViewById(R.id.rvPosts);
+        bUpdateLent = findViewById(R.id.bUpdateLent);
+        rvPosts = findViewById(R.id.rvPosts);
 //        ArrayList<Note> notes;
-        list = new ArrayList<Note>(); // можешь назвать подругому, выбрать другой тип.
+        list = new ArrayList<>(); // можешь назвать подругому, выбрать другой тип.
         // Если будешь менять тип данных, то не забудь про адаптер
         post = new PostAdapter(list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -54,8 +54,8 @@ public class LentaActivity extends AppCompatActivity {
                 // будем отображать только 20 последних записей
                 int allsub = 1; // переменная, в которую мы передаём количество подписок
                     // вывод этих записей в ленту
-                Toast.makeText(getApplicationContext(), list.size()+"", 1).show();
-                list.add(new RealNote(1, "qwertyu", "qwertyu", "qwertyu", 3));
+//                Toast.makeText(getApplicationContext(), list.size()+"", 1).show();
+                list.add(new RealNote("1", "qwertyu", "qwertyu", "qwertyu", 3));
                 post.notifyItemInserted(list.size()-1);
 //                post.onCreateViewHolder(rvPosts,allsub);
 

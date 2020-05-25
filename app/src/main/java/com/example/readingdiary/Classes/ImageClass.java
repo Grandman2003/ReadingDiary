@@ -3,9 +3,6 @@ package com.example.readingdiary.Classes;
 import android.graphics.Bitmap;
 import android.net.Uri;
 
-import com.example.readingdiary.R;
-import com.google.common.io.Resources;
-
 public class ImageClass {
     int type;
     Uri uri;

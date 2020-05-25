@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,10 +25,22 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.readingdiary.Classes.ImageClass;
+import com.example.readingdiary.Classes.SaveImage;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.GaleryFullViewAdapter;
 import com.example.readingdiary.adapters.GaleryRecyclerViewAdapter;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,7 +48,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 public class GaleryActivity extends AppCompatActivity implements SettingsDialogFragment.SettingsDialogListener {
     // класс отвечает за активность с каталогами
@@ -46,12 +62,17 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
     private RecyclerView galeryView;;
     private GaleryRecyclerViewAdapter adapter;
     private GaleryFullViewAdapter adapter1;
-    private List<Bitmap> images;
-    private List<String> names;
+    private List<ImageClass> images;
+    private List<Long> names;
     private final int FULL_GALERY_CODE = 8800;
     Toolbar toolbar;
     private int count = 3;
     String id;
+    String user;
+    private StorageReference imageStorage;
+    private DocumentReference imagePathsDoc;
+    long time;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
@@ -68,29 +89,108 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
         setSupportActionBar(toolbar);
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
+        user = FirebaseAuth.getInstance().getUid();
+        imagePathsDoc = FirebaseFirestore.getInstance().collection("Common").document(user).collection(id).document("Images");
+        imageStorage = FirebaseStorage.getInstance().getReference(user).child(id).child("Images");
         images = new ArrayList<>(); // список bitmap изображений
-        names = new ArrayList<>(); // список путей к изображениями в файловой системе
-        File fileDir1 = getApplicationContext().getDir(getResources().getString(R.string.imagesDir) + File.pathSeparator + id, MODE_PRIVATE); // путь к папке с изображениями
-        File[] files = fileDir1.listFiles(); // список файлов в папке
-        if (files != null){
-            for (int i = 0; i < files.length; i++){
-                images.add(BitmapFactory.decodeFile(files[i].getAbsolutePath()));
-                names.add(files[i].getAbsolutePath());
-            }
-        }
+        names = new ArrayList<Long>(); // список путей к изображениями в файловой системе
+//        newImages = new ArrayList<>();
 
         galeryView = (RecyclerView) findViewById(R.id.galery_recycle_view);
-        adapter = new GaleryRecyclerViewAdapter(images, getApplicationContext());
-
         GridLayoutManager layoutManager = new GridLayoutManager(this, 3); // отображение изображений в 3 колонки
-        final LinearLayoutManager layoutManager1 = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
         RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
-
+        adapter = new GaleryRecyclerViewAdapter(images, getApplicationContext());
         galeryView.setAdapter(adapter);
+        galeryView.setItemAnimator(itemAnimator);
         galeryView.setLayoutManager(layoutManager);
 
-        galeryView.setItemAnimator(itemAnimator);
 
+        imagePathsDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null){
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                    return;
+                }
+                else{
+                    HashMap<String, Boolean> hashMap = (HashMap) documentSnapshot.getData();
+                    if (hashMap != null){
+                        for (String key : hashMap.keySet()){
+                            final Long l = Long.parseLong(key);
+                            if (names.contains(l) && hashMap.get(key) == true && images.get(names.indexOf(l)).getType()==0){
+                                imageStorage.child(key).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        images.set(names.indexOf(l), new ImageClass(uri));
+                                        adapter.notifyItemChanged(names.indexOf(l));
+                                    }
+                                })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+
+                            }
+                            else if (!names.contains(l)){
+                                if (hashMap.get(key)==false){
+                                    int index = -1;
+                                    for (int i = 0; i < names.size(); i++){
+                                        if (names.get(i) > l){
+                                            index = i;
+                                            break;
+                                        }
+                                    }
+                                    if (index==-1){
+                                        names.add(l);
+                                        images.add(new ImageClass(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.no_image)));
+                                        adapter.notifyItemInserted(images.size()-1);
+                                    }
+                                    else{
+                                        names.add(index, l);
+                                        images.add(index, new ImageClass(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.no_image)));
+                                        adapter.notifyItemInserted(index);
+                                    }
+                                }
+                                else{
+                                    imageStorage.child(key).getDownloadUrl().
+                                            addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                @Override
+                                                public void onSuccess(Uri uri) {
+                                                    Toast.makeText(getApplicationContext(), "uri ", Toast.LENGTH_LONG).show();
+                                                    int index = -1;
+                                                    for (int i = 0; i < names.size(); i++){
+                                                        if (names.get(i) > l){
+                                                            index = i;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (index==-1){
+                                                        names.add(l);
+                                                        images.add(new ImageClass(uri));
+                                                        adapter.notifyItemInserted(images.size()-1);
+                                                    }
+                                                    else{
+                                                        names.add(index, l);
+                                                        images.add(index, new ImageClass(uri));
+                                                        adapter.notifyItemInserted(index);
+                                                    }
+                                                }
+                                            })
+                                            .addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                                                }
+                                            });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         // при нажатии на изображение переходим в активность с полным изображением
         adapter.setOnItemClickListener(new GaleryRecyclerViewAdapter.OnItemClickListener() {
@@ -103,7 +203,6 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
 
             }
         });
-
 
 
 
@@ -191,78 +290,28 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
 
 
     // методы проверки размера изображения до открытия. Если размер слишком большой - сжимаем
-    public Bitmap decodeSampledBitmapFromResource(Uri imageUri,
-                                                  int reqWidth, int reqHeight) throws Exception{
-
-        // Читаем с inJustDecodeBounds=true для определения размеров
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        InputStream imageStream = getContentResolver().openInputStream(imageUri);
-        BitmapFactory.decodeStream(imageStream, null, options);
-
-        // Вычисляем inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth,
-                reqHeight);
-
-        // Читаем с использованием inSampleSize коэффициента
-        options.inJustDecodeBounds = false;
-        imageStream.close();
-        imageStream = getContentResolver().openInputStream(imageUri);
-        return BitmapFactory.decodeStream(imageStream, null, options);
-    }
-
-    public int calculateInSampleSize(BitmapFactory.Options options,
-                                     int reqWidth, int reqHeight) {
-        // Реальные размеры изображения
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        Log.d("SCALE", "OPTIONS " + height + " "  + width);
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Вычисляем наибольший inSampleSize, который будет кратным двум
-            // и оставит полученные размеры больше, чем требуемые
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-
-        return inSampleSize;
-    }
-
     private void saveAndOpenImage(Uri imageUri) throws Exception{
         int px = 600;
-        Bitmap bitmap = decodeSampledBitmapFromResource(imageUri, px, px); // файл сжимается
-        long time = new GregorianCalendar().getTimeInMillis();
-        File fileDir1 = getApplicationContext().getDir(getResources().getString(R.string.imagesDir) + File.pathSeparator + id, MODE_PRIVATE);
-        File file2 = new File(fileDir1, time + ".png"); // создаем файл в директории изображений записи. Имя выбирается на основе времени.
-        file2.createNewFile();
-        OutputStream stream = null;
-        stream = new FileOutputStream(file2);
-        bitmap.compress(Bitmap.CompressFormat.PNG, 60, stream);// сохранение
-        stream.close();
-        String name = file2.getAbsolutePath();
+        time = System.currentTimeMillis();
+//        imagePath = time+"";
+//
+        Bitmap bitmap = SaveImage.saveImage(user, id, imageUri, time, getApplicationContext());
+
         int pos = names.size();
         int n = names.size();
         for (int i = 0; i < n; i++){
-            if (names.get(i).compareTo(name) > 0){
+            if (names.get(i) > time){
                 pos = i;
                 break;
             }
         }
-        images.add(pos, bitmap);
-        names.add(pos, name);
-        adapter.notifyDataSetChanged();
+        images.add(pos, new ImageClass(bitmap));
+        names.add(pos, time);
+        adapter.notifyItemInserted(pos);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d("DELETEIMAGE1", "request0 " + requestCode + " " + (requestCode == FULL_GALERY_CODE) + " " + FULL_GALERY_CODE);
         if (requestCode == Pick_image)
         {
             if (resultCode == RESULT_OK) {
@@ -276,33 +325,40 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
         }
 
         else if (requestCode == FULL_GALERY_CODE) {
-            if (data!= null && data.getExtras().get("delete")!= null) {
-                Log.d("DELETEIMAGE1", "request");
+            Log.d("DELETEIMAGE123", "request");
 
-                // Вернулись из показа полных изображений. Если там удалили изображение, то меняем список имен и изображений
-                if (resultCode == RESULT_OK) {
-                    List<Integer> index = new ArrayList<>();
-                    for (int i = 0; i < names.size(); i++) {
-                        if (!(new File(names.get(i)).exists())) {
-                            index.add(i);
+            // Вернулись из показа полных изображений. Если там удалили изображение, то меняем список имен и изображений
+            if (resultCode == RESULT_OK) {
+
+                imagePathsDoc.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot != null){
+                            List<Integer> index = new ArrayList<>();
+                            HashMap<String, Boolean> map = (HashMap) documentSnapshot.getData();
+                            if (map!=null){
+                                for (int i = 0; i < names.size(); i++) {
+                                    if (!map.containsKey(names.get(i).toString())){
+                                        index.add(i);
+                                    }
+                                }
+                                int minus = 0;
+                                for (int i : index) {
+                                    names.remove(i - minus);
+                                    images.remove(i - minus);
+                                    adapter.notifyItemRemoved(i - minus);
+                                    minus++;
+                                }
+                            }
                         }
                     }
-
-                    int minus = 0;
-                    for (int i : index) {
-                        names.remove(i - minus);
-                        images.remove(i - minus);
-                        adapter.notifyItemRemoved(i - minus);
-                        minus++;
-                    }
-//                adapter.notifyDataSetChanged();
-                }
-            }
-            else if (data != null && data.getExtras().get("cover") != null){
-                Log.d("qwerty38", "cover");
+                });
             }
         }
 
 
     }
+
+
+
 }

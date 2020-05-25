@@ -1,32 +1,34 @@
 package com.example.readingdiary.Classes;
 
+import android.net.Uri;
+
 // класс для записей
 public class RealNote implements Note {
     private String path;
     private String author;
     private String title;
-    private long id;
+    private String id;
     private final int type = 0;
     private double rating;
-    String coverPath;
+    Uri coverUri;
 
 
 
-    public RealNote(long id, String path, String author, String title, double rating, String coverPath){
+    public RealNote(String id, String path, String author, String title, double rating, Uri coverUri){
         this.id = id;
         this.path = path;
         this.title = title;
         this.author = author;
         this.rating = rating;
-        this.coverPath=coverPath;
+        this.coverUri = coverUri;
     }
-    public RealNote(long id, String path, String author, String title, double rating){
+    public RealNote(String id, String path, String author, String title, double rating){
         this.id = id;
         this.path = path;
         this.title = title;
         this.author = author;
         this.rating = rating;
-        this.coverPath="";
+//        this.coverPath="";
     }
 
 
@@ -62,12 +64,12 @@ public class RealNote implements Note {
         this.rating = rating;
     }
 
-    public String getCoverPath() {
-        return coverPath;
+    public Uri getCoverUri() {
+        return coverUri;
     }
 
-    public void setCoverPath(String coverPath) {
-        this.coverPath = coverPath;
+    public void setCoverPath(Uri coverUri) {
+        this.coverUri = coverUri;
     }
 
     @Override
@@ -76,7 +78,7 @@ public class RealNote implements Note {
     }
 
     @Override
-    public long getID() {
+    public String getID() {
         return id;
     }
 

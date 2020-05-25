@@ -26,7 +26,17 @@ import com.example.readingdiary.Classes.VariousNotes;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.VariousViewAdapter;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -35,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class VariousShow extends AppCompatActivity implements SettingsDialogFragment.SettingsDialogListener {
     // класс отвечает за активность с каталогами
@@ -45,13 +56,19 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
     VariousViewAdapter viewAdapter;
     RecyclerView recyclerView;
     ArrayList<VariousNotes> variousNotes;
+    ArrayList<Long> variousNotesNames;
+
     private final int ADD_VIEW_RESULT_CODE = 666;
     File fileDir1;
     MaterialToolbar toolbar;
     TextView counterText;
     int count=0;
+
     boolean action_mode=false;
     ArrayList<VariousNotes> selectedNotes = new ArrayList<>();
+    String user;
+    private DocumentReference variousNotePaths;
+    private CollectionReference variousNoteStorage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +86,11 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
         type = args.get("type").toString();
+        user = FirebaseAuth.getInstance().getUid();        variousNoteStorage = FirebaseFirestore.getInstance().collection("VariousNotes").document(user).collection(id);
+        variousNotePaths = variousNoteStorage.document(type);
         variousNotes = new ArrayList<>();
-        fileDir1 = getApplicationContext().getDir(type + File.pathSeparator + id, MODE_PRIVATE);
+        variousNotesNames = new ArrayList<>();
+
         openNotes();
         findViews();
         toolbar.getMenu().clear();
@@ -165,30 +185,22 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
             if (requestCode == ADD_VIEW_RESULT_CODE && resultCode == RESULT_OK){
                 Bundle args = data.getExtras();
                 if (args.get("time") != null){
-                    long time = Long.parseLong(args.get("time").toString());
-                    File file = new File(fileDir1, time+".txt");
-                    BufferedReader br = new BufferedReader(new FileReader(file));
-                    StringBuilder str = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null){
-                        str.append(line);
-                        str.append('\n');
-                    }
-                    variousNotes.add(new VariousNotes(str.toString(), file.getAbsolutePath(), time, false));
-                    viewAdapter.notifyDataSetChanged();
+//                    long time = Long.parseLong(args.get("time").toString());
+//                    File file = new File(fileDir1, time+".txt");
+//                    BufferedReader br = new BufferedReader(new FileReader(file));
+//                    StringBuilder str = new StringBuilder();
+//                    String line;
+//                    while ((line = br.readLine()) != null){
+//                        str.append(line);
+//                        str.append('\n');
+//                    }
+//                    variousNotes.add(new VariousNotes(str.toString(), file.getAbsolutePath(), time, false));
+//                    viewAdapter.notifyDataSetChanged();
                 }
                 else if (args.get("updatePath") != null){
-                    File file = new File(args.get("updatePath").toString());
-                    BufferedReader br = new BufferedReader(new FileReader(file));
-                    StringBuilder str = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null){
-                        str.append(line);
-                        str.append('\n');
-                    }
                     int position = Integer.parseInt(args.get("position").toString());
-                    variousNotes.get(position).setText(str.toString());
-                    viewAdapter.notifyItemChanged(position);
+                    variousNotes.get(position).setNeedsUpdate(true);
+
                 }
 
             }
@@ -200,14 +212,22 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
     }
 
     private void deleteVariousNotes(){
-        File deleteArr[] = new File[selectedNotes.size()];
-        for (int i = 0; i < deleteArr.length; i++){
+        String[] deletePaths = new String[selectedNotes.size()];
+        for (int i = 0; i < deletePaths.length; i++){
             variousNotes.remove(selectedNotes.get(i));
-            deleteArr[i] = new File(selectedNotes.get(i).getPath());
+            deletePaths[i] = selectedNotes.get(i).getPath();
+            variousNotesNames.remove((Long)Long.parseLong(deletePaths[i]));
+            variousNotePaths.update(deletePaths[i], FieldValue.delete());
         }
-        DeleteFilesClass deleteClass = new DeleteFilesClass(deleteArr);
-        deleteClass.start();
         selectedNotes.clear();
+        WriteBatch writeBatch = FirebaseFirestore.getInstance().batch();
+        for (int i = 0; i < deletePaths.length; i++){
+            writeBatch.delete(variousNoteStorage.document(deletePaths[i]));
+//            variousNotes.remove(selectedNotes.get(i));
+//            deleteArr[i] = new File(selectedNotes.get(i).getPath());
+        }
+        writeBatch.commit();
+
     }
 
     private void findViews(){
@@ -241,7 +261,6 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
                 counterText.setText(count + " элементов выбрано");
                 toolbar.getMenu().clear();
                 toolbar.inflateMenu(R.menu.menu_long_click);
-//                toolbar.setMenu(m);
                 viewAdapter.notifyDataSetChanged();
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             }
@@ -282,51 +301,59 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
 
     private void openNotes(){
         try{
-
-
-            File[] files = fileDir1.listFiles();
-            if (files != null) {
-                for (int i = 0; i < files.length; i++) {
-                    BufferedReader br = new BufferedReader(new FileReader(files[i]));
-                    StringBuilder str = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        str.append(line);
-                        str.append('\n');
+            variousNotePaths.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    if (e != null){
+                        Log.e("VariousShowOpenNotes", e.toString());
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                        return;
                     }
-                    String[] pathTokens = files[i].getAbsolutePath().split(File.pathSeparator);
+                    else{
+                        HashMap<String, Boolean> hashMap = (HashMap) documentSnapshot.getData();
+                        if (hashMap!= null){
+                            for (String key : hashMap.keySet()){
+                                final Long l = Long.parseLong(key);
+                                if (!variousNotesNames.contains(l) && hashMap.get(key)==true){
+                                    variousNoteStorage.document(key).get()
+                                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                    if (documentSnapshot != null && documentSnapshot.get("text")!=null){
+                                                        variousNotes.add(new VariousNotes(documentSnapshot.get("text").toString(), l+"",
+                                                                l, false, false));
+                                                        viewAdapter.notifyItemInserted(variousNotes.size());
+                                                        variousNotesNames.add(l);
+                                                    }
 
+                                                }
+                                            });
+                                }
+                                else if (hashMap.get(key)==true && variousNotesNames.contains(l) &&
+                                        variousNotes.get(variousNotesNames.indexOf(l)).isNeedsUpdate()){
+                                    variousNoteStorage.document(key).get()
+                                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                    variousNotes.set(variousNotesNames.indexOf(l), new VariousNotes(documentSnapshot.get("text").toString(), l+"",
+                                                            l, false, false));
+                                                    viewAdapter.notifyItemChanged(variousNotesNames.indexOf(l));
+//                                                    variousNotesNames.add(l);
+                                                }
+                                            });
+                                }
 
-                    variousNotes.add(new VariousNotes(str.toString(), files[i].getAbsolutePath(),
-                            Long.parseLong(pathTokens[pathTokens.length - 1].split("\\.")[0].split("/")[1]),
-                            false));
+                            }
+                        }
 
+                    }
                 }
-            }
+            });
         }
         catch (Exception e){
             Log.e("openShowException", e.toString());
         }
-    }
 
-    private void saveChanges(){
-        try {
-            for (VariousNotes note : variousNotes) {
-                if (note.isChanged()) {
-                    if (!fileDir1.exists()) fileDir1.mkdirs();
-                    File file = new File(fileDir1, note.getTime() + ".txt");
-                    if (!file.exists()) file.createNewFile();
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-                    // пишем данные
-                    bw.write(note.getText());
-                    // закрываем поток
-                    bw.close();
-                }
-            }
-        }
-        catch (Exception e){
-            Log.e("saveShowException", e.toString());
-        }
     }
 
 }

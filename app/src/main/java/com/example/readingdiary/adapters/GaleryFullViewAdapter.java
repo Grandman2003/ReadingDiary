@@ -16,14 +16,16 @@ import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.readingdiary.Classes.ImageClass;
 import com.example.readingdiary.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 // Адаптер поолнога показа изображений
 public class GaleryFullViewAdapter extends RecyclerView.Adapter<GaleryFullViewAdapter.ViewHolder>{
 
-    private List<Bitmap> buttons;
+    private List<ImageClass> buttons;
     private GaleryFullViewAdapter.OnItemClickListener mListener;
     private GaleryFullViewAdapter.OnItemDeleteListener delListener;
     private Context context;
@@ -44,16 +46,13 @@ public class GaleryFullViewAdapter extends RecyclerView.Adapter<GaleryFullViewAd
 
 
 
-    public GaleryFullViewAdapter(List<Bitmap> buttons, Context context) {
+    public GaleryFullViewAdapter(List<ImageClass> buttons, Context context) {
         this.buttons = buttons;
         this.context = context;
         Log.d("BUTTONS", "1");
 
     }
 
-    /**
-     * Создание новых View и ViewHolder элемента списка, которые впоследствии могут переиспользоваться.
-     */
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View v;
@@ -64,32 +63,22 @@ public class GaleryFullViewAdapter extends RecyclerView.Adapter<GaleryFullViewAd
         return vh;
     }
 
-    /**
-     * Заполнение виджетов View данными из элемента списка с номером i
-     */
-//    private void removeAt(int position) {
-//        buttons.remove(position);
-//        notifyItemRemoved(position);
-//        notifyItemRangeChanged(position, buttons.size());
-//    }
-
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-        Log.d("BUTTONS", "3");
-        Bitmap source = buttons.get(i);
-        Log.d("BUTTONS", ""+buttons.get(i));
-
         final int el = i;
+        if (buttons.get(i).getType()==0){
+            Bitmap source = buttons.get(i).getBitmap();
+            viewHolder.imageView.setImageBitmap(source);
+        }
+        else{
+            Picasso.get()
+                    .load(buttons.get(i).getUri())
+                    .into(viewHolder.imageView);
+        }
 
-        viewHolder.imageView.setImageBitmap(source);
-//        viewHolder.deleteButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                delListener.onItemDelete(el);
-//            }
-//        });
 
     }
+
 
     @Override
     public int getItemCount() {
@@ -107,30 +96,12 @@ public class GaleryFullViewAdapter extends RecyclerView.Adapter<GaleryFullViewAd
         notifyDataSetChanged();
     }
 
-    /**
-     * Реализация класса ViewHolder, хранящего ссылки на виджеты.
-     */
-
     class ViewHolder extends RecyclerView.ViewHolder {
-        //        private TextView path1;
-//        private TextView path2;
-//
-//        private TextView title;
-//        private TextView author;
         private ImageView imageView;
-//        private Button deleteButton;
-
-//        private ImageView icon;
-
         public ViewHolder(View itemView) {
             super(itemView);
             Log.d("BUTTONS", "4");
             imageView = (ImageView) itemView.findViewById(R.id.galery_image_el1);
-//            deleteButton = (Button) itemView.findViewById(R.id.delede_image_full);
-//            title = (TextView) itemView.findViewById(R.id.titleViewCatalog);
-//            author = (TextView) itemView.findViewById(R.id.authorViewCatalog);
-//            path2 = (TextView) itemView.findViewById(R.id.pathViewCatalog1);
-
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
