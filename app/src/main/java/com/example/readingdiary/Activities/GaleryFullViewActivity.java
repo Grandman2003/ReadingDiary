@@ -271,7 +271,7 @@ private String TAG_DARK = "dark_theme";
                                         .addOnFailureListener(new OnFailureListener() {
                                             @Override
                                             public void onFailure(@NonNull Exception e) {
-                                                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                                               // Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                                             }
                                         });
 
@@ -328,7 +328,7 @@ private String TAG_DARK = "dark_theme";
                                                 @Override
                                                 public void onFailure(@NonNull Exception e) {
                                                     Log.d("qwerty31", "HI5");
-                                                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                                                   // Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                                                 }
                                             });
                                 }

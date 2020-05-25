@@ -229,7 +229,6 @@ private String TAG_DARK = "dark_theme";
                 cancelImageChange();
             }
         }
-//            Toast.makeText(getApplicationContext(), "werfgthjk", 1).show();
 
         finish();
     }
@@ -678,7 +677,7 @@ private String TAG_DARK = "dark_theme";
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Pick_image){
-            Toast.makeText(getApplicationContext(), "pick_image", Toast.LENGTH_LONG).show();
+          //  Toast.makeText(getApplicationContext(), "pick_image", Toast.LENGTH_LONG).show();
             if (data != null){
                 try{
                     saveAndOpenImage(data.getData());
@@ -704,7 +703,7 @@ private String TAG_DARK = "dark_theme";
                     }
                 }
             });
-            Toast.makeText(getApplicationContext(), "galery_request", Toast.LENGTH_LONG).show();
+         //   Toast.makeText(getApplicationContext(), "galery_request", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -726,7 +725,7 @@ private String TAG_DARK = "dark_theme";
 
     @Override
     public void onBackPressed() {
-        Toast.makeText(getApplicationContext(), "backPressed", Toast.LENGTH_LONG).show();
+   //     Toast.makeText(getApplicationContext(), "backPressed", Toast.LENGTH_LONG).show();
         Log.d("QWERTY", "backPressed");
         if (checkChanges()){
             saveDialog();

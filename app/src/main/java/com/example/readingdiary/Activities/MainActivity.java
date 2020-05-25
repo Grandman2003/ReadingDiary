@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             progressBar2.setVisibility(View.GONE);
-                            Toast toast = Toast.makeText(getApplicationContext(), "sign-up is unsuccessful: "
+                            Toast toast = Toast.makeText(getApplicationContext(), "Ошибка: "
                                     + e.getMessage(), Toast.LENGTH_SHORT);
                             toast.show();
                         }

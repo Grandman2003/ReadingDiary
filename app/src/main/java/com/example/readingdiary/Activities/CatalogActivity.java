@@ -71,7 +71,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     String parent = "./";
     ArrayList<Note> notes;
     ArrayList<String> buttons;
-    //    ArrayList<String> directories;
     RecyclerView recyclerView;
     RecyclerView buttonView;
     CatalogButtonAdapter buttonAdapter;
@@ -147,21 +146,14 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
         }
 
-        //Toast.makeText(CatalogActivity.this,mein.frgEm,Toast.LENGTH_LONG).show();
-
-
-
-
         notes = new ArrayList<Note>(); // список того, что будет отображаться в каталоге.
         buttons = new ArrayList<String>(); // Список пройденный каталогов до текущего
         setSortTitles();
-//        initSortsList();
         findViews();
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         counterText.setText("Каталог");
-//        toolbar.inflateMenu(R.menu.menu_catalog);
 
         buttons.add(parent);
         selectAll(); // чтение данных из бд
@@ -211,7 +203,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_catalog, menu);
         getMenuInflater().inflate(R.menu.base_menu, menu);
 
@@ -224,7 +215,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (data != null && requestCode == NOTE_REQUEST_CODE){
-//            Toast.makeText(getApplicationContext(), "! " + data.getExtras().get("id").toString(), 1).show();
             // если изменился путь до записи, добавилась новая запись, то переходим к этой записи
             if (data.getExtras().get("deleted") != null){
                 String id = data.getExtras().get("id").toString();
@@ -286,7 +276,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     @Override
     public void onChangeThemeClick(boolean isChecked) {
         if (isChecked){
-//                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean(TAG_DARK, true);
             editor.apply();
@@ -340,20 +329,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     {
         Intent intent = new Intent(CatalogActivity.this, ForgotPswActivity.class);
         startActivity(intent);
-//        mein.mAuth.sendPasswordResetEmail(mein.ETemail.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
-//
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//               if (task.isSuccessful())
-//               {
-//                   Toast.makeText(CatalogActivity.this,"На вашу почто отправлено письмо. \nДля сброса пароля перейдите по ссылке в нём.",Toast.LENGTH_SHORT).show();
-//               }
-//               else
-//                   {
-//                       Toast.makeText(CatalogActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
-//                   }
-//            }
-//        });
     }
 
 
@@ -364,7 +339,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             toolbar.getLocationInWindow(location);
             int y = getResources().getDisplayMetrics().heightPixels;
             int x = getResources().getDisplayMetrics().widthPixels;
-            Toast.makeText(getApplicationContext(), "height " + toolbarHeight, Toast.LENGTH_LONG).show();
+          //  Toast.makeText(getApplicationContext(), "height " + toolbarHeight, Toast.LENGTH_LONG).show();
 
             SettingsDialogFragment settingsDialogFragment = new SettingsDialogFragment(y, x, sharedPreferences.getBoolean(TAG_DARK, false));
             FragmentManager manager = getSupportFragmentManager();
@@ -525,7 +500,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
 
         private void selectAll() {
-            Toast.makeText(this, parent, Toast.LENGTH_LONG).show();
+          //  Toast.makeText(this, parent, Toast.LENGTH_LONG).show();
             final String par1 = parent.replace("/", "\\");
             final String par2 = parent;
             final long old_active = active;
@@ -571,7 +546,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                                     .addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-                                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                                           // Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                                             Log.e("qwerty9", e.toString());
                                         }
                                     });
@@ -580,7 +555,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                           // Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                             Log.e("qwerty10", e.toString());
                         }
                     });
@@ -602,7 +577,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                          //  Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                             Log.e("qwerty9", e.toString());
                         }
                     });
@@ -805,7 +780,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                         RealNote realNote = (RealNote) notes.get(position);
                         Intent intent = new Intent(CatalogActivity.this, NoteActivity.class);
                         // чтобы понять какую запись нужно отобразить в NoteActivity, запихиваем в intent id записи из бд
-                        intent.putExtra("id", realNote.getID());
+                        //intent.putExtra("id", realNote.getID());
                         startActivityForResult(intent, NOTE_REQUEST_CODE); // в NoteActivity пользователь может изменить путь.
                         //Если изменит, то вернется intent, чтобы можно было изменить отображение каталогов
                     }
@@ -842,11 +817,11 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     Note note = notes.get(position);
                     if (note.getItemType()==1){
                         selectionDirectoriesList.add((Directory) note);
-                        Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
+                     //   Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
                     }
                     else{
                         selectionRealNotesList.add((RealNote) note);
-                        Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
+                      //  Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
                     }
 
                 }
@@ -858,11 +833,11 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     Note note = notes.get(position);
                     if (note.getItemType()==1){
                         selectionDirectoriesList.remove((Directory) note);
-                        Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
+                      //  Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
                     }
                     else{
                         selectionRealNotesList.remove((RealNote) note);
-                        Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
+                      //  Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
                     }
 
                 }
