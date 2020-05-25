@@ -227,7 +227,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
                           String time, String place, String shortComment, Uri imageUri){
         this.path = path;
         this.authorView.setText(author);
-        Toast.makeText(this, "!" + author + " " + author.equals(""), Toast.LENGTH_SHORT).show();
+       // Toast.makeText(this, "!" + author + " " + author.equals(""), Toast.LENGTH_SHORT).show();
         if (author.equals("")){
             this.authorView.setVisibility(View.GONE);
         }

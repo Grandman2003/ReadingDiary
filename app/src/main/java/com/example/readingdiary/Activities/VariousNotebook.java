@@ -204,7 +204,7 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
-                                            Toast.makeText(getApplicationContext(), "success", Toast.LENGTH_LONG).show();
+                                           // Toast.makeText(getApplicationContext(), "success", Toast.LENGTH_LONG).show();
                                             variousNotePaths.update(time+"", true);
                                         }
                                     })

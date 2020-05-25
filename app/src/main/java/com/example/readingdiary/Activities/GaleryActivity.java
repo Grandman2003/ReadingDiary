@@ -158,7 +158,7 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
                                             addOnSuccessListener(new OnSuccessListener<Uri>() {
                                                 @Override
                                                 public void onSuccess(Uri uri) {
-                                                    Toast.makeText(getApplicationContext(), "uri ", Toast.LENGTH_LONG).show();
+                                                   // Toast.makeText(getApplicationContext(), "uri ", Toast.LENGTH_LONG).show();
                                                     int index = -1;
                                                     for (int i = 0; i < names.size(); i++){
                                                         if (names.get(i) > l){
@@ -181,7 +181,7 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
                                             .addOnFailureListener(new OnFailureListener() {
                                                 @Override
                                                 public void onFailure(@NonNull Exception e) {
-                                                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                                                  //  Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                                                 }
                                             });
                                 }

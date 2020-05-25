@@ -270,7 +270,7 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
                 selectedNotes.add(variousNotes.get(position));
                 count++;
                 counterText.setText(count + " элементов выбрано");
-                Toast.makeText(getApplicationContext(), selectedNotes.size() + " items selected", Toast.LENGTH_LONG).show();
+               // Toast.makeText(getApplicationContext(), selectedNotes.size() + " items selected", Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -279,7 +279,7 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
                 count--;
                 counterText.setText(count + " элементов выбрано");
 
-                Toast.makeText(getApplicationContext(), selectedNotes.size() + " items selected", Toast.LENGTH_LONG).show();
+               // Toast.makeText(getApplicationContext(), selectedNotes.size() + " items selected", Toast.LENGTH_LONG).show();
 
             }
         });
@@ -306,7 +306,7 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
                 public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
                     if (e != null){
                         Log.e("VariousShowOpenNotes", e.toString());
-                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                      //  Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                         return;
                     }
                     else{

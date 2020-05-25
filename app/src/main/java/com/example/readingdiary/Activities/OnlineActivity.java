@@ -39,9 +39,9 @@ public class OnlineActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-            if (etShareUser.getText().equals("")) {
-                x[x.length] = etShareUser.getText().toString();
-                ShareUser(etShareUser.getText().toString());
+            if (!etShareUser.getText().equals("")) {
+//                x[x.length] = etShareUser.getText().toString();
+//                ShareUser(etShareUser.getText().toString());
                 // добавление usID к списку подписок
                 Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();
             }
