@@ -1,10 +1,13 @@
 package com.example.readingdiary.adapters;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -29,21 +32,23 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     private OnItemClickListener mListener;
     private final int TYPE_ITEM1 = 0;
     private final int TYPE_ITEM2 = 1;
+    private Context context;
 
     public interface OnItemClickListener{
         void onItemClick(int position);
         void onItemLongClick(int position);
         void onCheckClick(int position);
         void onUncheckClick(int position);
+        void onPrivacyChanged(int position);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener){
-        mListener = listener;
-    }
+        mListener = listener;    }
 
-    public RecyclerViewAdapter(List<Note> notes) {
+    public RecyclerViewAdapter(List<Note> notes, Context context) {
         this.notes = notes;
         this.actionMode = false;
+        this.context=context;
     }
 
     @Override
@@ -76,6 +81,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             viewHolder.author.setText(realNote.getAuthor());
             viewHolder.title.setText(realNote.getTitle());
             viewHolder.ratingBar.setRating((float)realNote.getRating());
+            if (realNote.getPrivate()){
+                viewHolder.privacyButton.setImageDrawable(
+                        context.getResources().getDrawable(R.drawable.ic_action_private_dark));
+            }
+            else{
+                viewHolder.privacyButton.setImageDrawable(
+                        context.getResources().getDrawable(R.drawable.ic_action_public_dark));
+            }
             if (realNote.getCoverUri() !=null){
                 Picasso.get().load(realNote.getCoverUri()).into(viewHolder.cover);
             }
@@ -130,6 +143,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         private RatingBar ratingBar;
         private MaterialCardView cardView;
         private MaterialCardView cardView2;
+        private ImageButton privacyButton;
 
 
 //        private ImageView icon;
@@ -146,6 +160,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             path2 = (TextView) itemView.findViewById(R.id.pathViewCatalog1);
             cardView = (MaterialCardView) itemView.findViewById(R.id.catalogNoteCardView);
             cardView2 = (MaterialCardView) itemView.findViewById(R.id.catalogDirectoryCardView);
+            privacyButton = (ImageButton) itemView.findViewById(R.id.privacyButton);
+
 
 
             Log.d("toBeOrNotToBe", cardView + "! ");
@@ -196,6 +212,21 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 });
             }
 
+            if (privacyButton != null){
+                privacyButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mListener != null){
+                            int position = getAdapterPosition();
+                            if (position != RecyclerView.NO_POSITION){
+                                mListener.onPrivacyChanged(position);
+                            }
+//                            privacyButton.setImageDrawable();
+                        }
+                    }
+                });
+            }
+
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -207,6 +238,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     }
                 }
             });
+
+
 
 //            cardView.setOnLongClickListener(new View.OnLongClickListener() {
 //                @Override

@@ -10,24 +10,28 @@ public class RealNote implements Note {
     private String id;
     private final int type = 0;
     private double rating;
-    Uri coverUri;
+    private boolean isPrivate;
+    private Uri coverUri;
 
 
 
-    public RealNote(String id, String path, String author, String title, double rating, Uri coverUri){
+    public RealNote(String id, String path, String author, String title, double rating, boolean isPrivate, Uri coverUri){
         this.id = id;
         this.path = path;
         this.title = title;
         this.author = author;
         this.rating = rating;
         this.coverUri = coverUri;
+        this.isPrivate = isPrivate;
+
     }
-    public RealNote(String id, String path, String author, String title, double rating){
+    public RealNote(String id, String path, String author, String title, double rating, boolean isPrivate){
         this.id = id;
         this.path = path;
         this.title = title;
         this.author = author;
         this.rating = rating;
+        this.isPrivate = isPrivate;
 //        this.coverPath="";
     }
 
@@ -62,6 +66,19 @@ public class RealNote implements Note {
 
     public void setRating(double rating) {
         this.rating = rating;
+    }
+
+    public boolean getPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(boolean aPrivate) {
+        isPrivate = aPrivate;
+    }
+
+    public boolean changePrivate(){
+        isPrivate = !isPrivate;
+        return isPrivate;
     }
 
     public Uri getCoverUri() {

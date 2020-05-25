@@ -54,11 +54,14 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class CatalogActivity extends AppCompatActivity implements SortDialogFragment.SortDialogListener,
@@ -630,7 +633,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                             final HashMap<String, Object> map = (HashMap) documentSnapshot.getData();
                             final RealNote realNote = new RealNote(id, map.get("path").toString(), map.get("author").toString(),
-                                    map.get("title").toString(), Double.valueOf(map.get("rating").toString()));
+                                    map.get("title").toString(), Double.valueOf(map.get("rating").toString()), (boolean)map.get("private"));
                             if (map.get("imagePath")!= null && !map.get("imagePath").toString().equals("")){
                                 FirebaseStorage.getInstance().getReference(user).child(documentSnapshot.getId()).child("Images").child(map.get("imagePath").toString()).getDownloadUrl()
                                         .addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -773,103 +776,119 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     }
 
     private void setAdapters(){
-        mAdapter = new RecyclerViewAdapter(notes);
+        mAdapter = new RecyclerViewAdapter(notes, this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
         recyclerView.setAdapter(mAdapter);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
 
-//
-//        Button sigout = (Button) findViewById(R.id.button2);
-//        sigout.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                ext =1;
-//                MainActivity MainActivity = new MainActivity();
-//                MainActivity.currentUser=null;
-//                MainActivity. mAuth.signOut();
-//                onBackPressed();
-//            }
-//        });
-
-
-            mAdapter.setOnItemClickListener(new RecyclerViewAdapter.OnItemClickListener() {
-                @Override
-                public void onItemClick(int position) {
-                    // В notes хранятся объекты двух классов, имплементирующих Note - RealNote и Directory
-                    // RealNote - собственно запись пользователя. При клике нужно перейти к записи, т.е к NoteActivity
-                    // Directory - директория. При клике нужно перейти в эту директорию.
-                    int type = notes.get(position).getItemType();
-                    if (type == 0){
-                        RealNote realNote = (RealNote) notes.get(position);
-                        Intent intent = new Intent(CatalogActivity.this, NoteActivity.class);
-                        // чтобы понять какую запись нужно отобразить в NoteActivity, запихиваем в intent id записи из бд
-                        intent.putExtra("id", realNote.getID());
-                        startActivityForResult(intent, NOTE_REQUEST_CODE); // в NoteActivity пользователь может изменить путь.
-                        //Если изменит, то вернется intent, чтобы можно было изменить отображение каталогов
-                    }
-                    if (type == 1){
-                        active++;
-                        Directory directory = (Directory) notes.get(position);
-                        parent = directory.getDirectory(); // устанавливаем директорию, на которую нажали в качестве отправной
-                        notes.clear();
-                        Log.d("qwerty17", parent);
-                        buttons.add(parent);
-                        buttonAdapter.notifyDataSetChanged();
-                        selectAll(); // выбираем новые данные из бд
-                        mAdapter.notifyDataSetChanged();
-                    }
+        mAdapter.setOnItemClickListener(new RecyclerViewAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                // В notes хранятся объекты двух классов, имплементирующих Note - RealNote и Directory
+                // RealNote - собственно запись пользователя. При клике нужно перейти к записи, т.е к NoteActivity
+                // Directory - директория. При клике нужно перейти в эту директорию.
+                int type = notes.get(position).getItemType();
+                if (type == 0){
+                    RealNote realNote = (RealNote) notes.get(position);
+                    Intent intent = new Intent(CatalogActivity.this, NoteActivity.class);
+                    // чтобы понять какую запись нужно отобразить в NoteActivity, запихиваем в intent id записи из бд
+                    intent.putExtra("id", realNote.getID());
+                    startActivityForResult(intent, NOTE_REQUEST_CODE); // в NoteActivity пользователь может изменить путь.
+                    //Если изменит, то вернется intent, чтобы можно было изменить отображение каталогов
                 }
-
-                @Override
-                public void onItemLongClick(int position) {
-                    mAdapter.setActionMode(true);
-                    action_mode = true;
-                    counterText.setText(count + " элементов выбрано");
-                    toolbar.getMenu().clear();
-                    toolbar.inflateMenu(R.menu.menu_long_click);
-                    menuType=1;
-//                toolbar.setMenu(m);
+                if (type == 1){
+                    active++;
+                    Directory directory = (Directory) notes.get(position);
+                    parent = directory.getDirectory(); // устанавливаем директорию, на которую нажали в качестве отправной
+                    notes.clear();
+                    Log.d("qwerty17", parent);
+                    buttons.add(parent);
+                    buttonAdapter.notifyDataSetChanged();
+                    selectAll(); // выбираем новые данные из бд
                     mAdapter.notifyDataSetChanged();
-                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                 }
+            }
 
-                @Override
-                public void onCheckClick(int position) {
-                    count++;
-                    counterText.setText(count + " элементов выбрано");
-                    Note note = notes.get(position);
-                    if (note.getItemType()==1){
-                        selectionDirectoriesList.add((Directory) note);
-                        Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
+            @Override
+            public void onItemLongClick(int position) {
+                mAdapter.setActionMode(true);
+                action_mode = true;
+                counterText.setText(count + " элементов выбрано");
+                toolbar.getMenu().clear();
+                toolbar.inflateMenu(R.menu.menu_long_click);
+                menuType=1;
+//                toolbar.setMenu(m);
+                mAdapter.notifyDataSetChanged();
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+
+            @Override
+            public void onCheckClick(int position) {
+                count++;
+                counterText.setText(count + " элементов выбрано");
+                Note note = notes.get(position);
+                if (note.getItemType()==1){
+                    selectionDirectoriesList.add((Directory) note);
+                    Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
+                }
+                else{
+                    selectionRealNotesList.add((RealNote) note);
+                    Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onUncheckClick(int position) {
+                count--;
+                counterText.setText(count + " элементов выбрано");
+                Note note = notes.get(position);
+                if (note.getItemType()==1){
+                    selectionDirectoriesList.remove((Directory) note);
+                    Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
+                }
+                else{
+                    selectionRealNotesList.remove((RealNote) note);
+                    Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onPrivacyChanged(final int position) {
+                if (notes.get(position).getItemType()==0){
+                    boolean isPrivate = ((RealNote)notes.get(position)).changePrivate();
+                    if (!isPrivate)
+                    {
+                        db.collection("Publicly").document(user)
+                                .update("notesId", FieldValue.arrayUnion(notes.get(position).getID()))
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        HashMap<String, List> map = new HashMap<>();
+                                        ArrayList<String> list = new ArrayList<>();
+                                        list.add(notes.get(position).getID());
+                                        map.put("notesId", list);
+                                        db.collection("Publicly").document(user).set(map);
+                                        db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).update("private", false);
+                                    }
+                                });
+                        HashMap<String, Object> map = new HashMap<>();
+
                     }
                     else{
-                        selectionRealNotesList.add((RealNote) note);
-                        Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
-                    }
+                        db.collection("Publicly").document(user)
+                                .update("notesId", FieldValue.arrayRemove(notes.get(position).getID()));
+                        db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).update("private", true);
 
+                    }
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("private", isPrivate);
+                    db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).set(map, SetOptions.merge());
+                    mAdapter.notifyItemChanged(position);
                 }
-
-                @Override
-                public void onUncheckClick(int position) {
-                    count--;
-                    counterText.setText(count + " элементов выбрано");
-                    Note note = notes.get(position);
-                    if (note.getItemType()==1){
-                        selectionDirectoriesList.remove((Directory) note);
-                        Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
-                    }
-                    else{
-                        selectionRealNotesList.remove((RealNote) note);
-                        Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
-                    }
-
-                }
-            });
-
-
-
+            }
+        });
 
             buttonAdapter = new CatalogButtonAdapter(buttons);
             LinearLayoutManager layoutManager1 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -937,7 +956,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     private void quickSort(int from, int to) {
         if (from < to) {
             int divideIndex;
-            if (comp != "rating"){
+            if (!comp.equals("rating")){
                 divideIndex = partitionString(from, to);
             }
             else{

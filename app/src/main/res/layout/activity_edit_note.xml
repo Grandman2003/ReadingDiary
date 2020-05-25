@@ -206,6 +206,12 @@
                 android:layout_marginTop="0dp"
                 android:focusedByDefault="false"/>
 
+            <CheckBox
+                android:id="@+id/privacyCheckBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Сделать публичным" />
+
             <DatePicker
                 android:id="@+id/startPicker"
                 android:layout_width="match_parent"

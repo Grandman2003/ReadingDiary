@@ -20,6 +20,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -56,6 +57,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -103,6 +105,8 @@ private String TAG_DARK = "dark_theme";
     private DocumentReference imagePathsDoc;
     long time;
     Bitmap cover;
+    CheckBox privacyView;
+    boolean isPrivate;
 
 
     @Override
@@ -139,14 +143,16 @@ private String TAG_DARK = "dark_theme";
             id = db.collection("Notes").document(user).collection("userNotes").document().getId();
             path = args.get("path").toString();
             beforeChanging = new String[]{path, "", "", "0.0", "", "", "", "", ""};
-            setViews(beforeChanging);
+            isPrivate=false;
+            setViews();
         }
         else{
             isNoteNew=true;
             id = db.collection("Notes").document(user).collection("userNotes").document().getId();
             path = "./";
             beforeChanging = new String[]{"./", "", "", "0.0", "", "", "", "", ""};
-            setViews(beforeChanging);
+            isPrivate = false;
+            setViews();
         }
         imagePathsDoc = FirebaseFirestore.getInstance().collection("Common").document(user).collection(id).document("Images");
         imageStorage = FirebaseStorage.getInstance().getReference(user).child(id).child("Images");
@@ -374,6 +380,7 @@ private String TAG_DARK = "dark_theme";
         coverView = (ImageView) findViewById(R.id.editCoverImage);
         acceptButton = (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
         cancelButton = (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
+        privacyView = (CheckBox) findViewById(R.id.privacyCheckBox);
 //        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.relativeViewEditNote);
 //        relativeLayout.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -395,21 +402,22 @@ private String TAG_DARK = "dark_theme";
 //        changeViews = {pathView, authorView, titleView, ratingView, genreView, timeView, placeView, shortCommentView, imageView};
     }
 
-    public void setViews(String[] strings){
-        this.pathView.setText(strings[0].substring(strings[0].indexOf('/')+1));
-        this.authorView.setText(strings[1]);
-        this.titleView.setText(strings[2]);
-        if (!strings[3].equals("")){
-            this.ratingView.setRating(Float.parseFloat(strings[3]));
+    public void setViews(){
+        this.pathView.setText(beforeChanging[0].substring(beforeChanging[0].indexOf('/')+1));
+        this.authorView.setText(beforeChanging[1]);
+        this.titleView.setText(beforeChanging[2]);
+        if (!beforeChanging[3].equals("")){
+            this.ratingView.setRating(Float.parseFloat(beforeChanging[3]));
         }
-        this.genreView.setText(strings[4]);
-        this.timeView.setText(strings[5]);
-        this.placeView.setText(strings[6]);
-        this.shortCommentView.setText(strings[7]);
-        if (!strings[8].equals("")){
-            this.coverView.setImageBitmap(BitmapFactory.decodeFile(strings[8]));
+        this.genreView.setText(beforeChanging[4]);
+        this.timeView.setText(beforeChanging[5]);
+        this.placeView.setText(beforeChanging[6]);
+        this.shortCommentView.setText(beforeChanging[7]);
+        if (!beforeChanging[8].equals("")){
+            this.coverView.setImageBitmap(BitmapFactory.decodeFile(beforeChanging[8]));
             this.imagePath = imagePath;
         }
+        this.privacyView.setChecked(!isPrivate);
     }
 
     private void setButtons(){
@@ -476,7 +484,6 @@ private String TAG_DARK = "dark_theme";
     }
 
     public void select(String id) {
-        Log.d("qwerty45", "select");
         db.collection("Notes").document(user).collection("userNotes").document(id).get().
                 addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
@@ -484,13 +491,14 @@ private String TAG_DARK = "dark_theme";
                         String s = documentSnapshot.get("author").toString();
                         HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
                         imagePath = map.get("imagePath").toString();
+                        isPrivate = (boolean)map.get("private");
                         beforeChanging = new String[]{
                                 map.get("path").toString().replace("\\", "/"), map.get("author").toString(),
                                 map.get("title").toString(), map.get("rating").toString(),
                                 map.get("genre").toString(), map.get("time").toString(),
                                 map.get("place").toString(), map.get("short_comment").toString(),
                                 map.get("imagePath").toString()};
-                        setViews(beforeChanging);
+                        setViews();
                     }
                 });
     }
@@ -522,6 +530,26 @@ private String TAG_DARK = "dark_theme";
         note.put("time", timeView.getText().toString());
         note.put("place", placeView.getText().toString());
         note.put("short_comment", shortCommentView.getText().toString());
+        if (privacyView.isChecked() && (isPrivate || isNoteNew)){
+            db.collection("Publicly").document(user).update("notesId", FieldValue.arrayUnion(id))
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            if (((FirebaseFirestoreException)e).getCode().equals(FirebaseFirestoreException.Code.NOT_FOUND)){
+                                Map<String, List> map = new HashMap<>();
+                                List<String> list = new ArrayList<>();
+                                list.add(id);
+                                map.put("notesId", list);
+                                db.collection("Publicly").document(user).set(map);
+                            }
+                        }
+                    });
+        }
+        else if (!privacyView.isChecked() && !isPrivate){
+            db.collection("Publicly").document(user).update("notesId", FieldValue.arrayRemove(id));
+        }
+        note.put("private", !privacyView.isChecked());
+        note.put("publiclyRating", "0.0");
         if (!beforeChanging[0].equals(path1)){
             beforeChanging[0] = path1;
             savePaths();
@@ -561,7 +589,7 @@ private String TAG_DARK = "dark_theme";
                 beforeChanging[5].equals(timeView.getText().toString()) &&
                 beforeChanging[6].equals(placeView.getText().toString()) &&
                 beforeChanging[7].equals(shortCommentView.getText().toString()) &&
-                beforeChanging[8].equals(imagePath))
+                beforeChanging[8].equals(imagePath) && isPrivate==privacyView.isChecked())
         {
             return false;
         }

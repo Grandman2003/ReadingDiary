@@ -55,7 +55,7 @@ public class LentaActivity extends AppCompatActivity {
                 int allsub = 1; // переменная, в которую мы передаём количество подписок
                     // вывод этих записей в ленту
 //                Toast.makeText(getApplicationContext(), list.size()+"", 1).show();
-                list.add(new RealNote("1", "qwertyu", "qwertyu", "qwertyu", 3));
+//                list.add(new RealNote("1", "qwertyu", "qwertyu", "qwertyu", 3));
                 post.notifyItemInserted(list.size()-1);
 //                post.onCreateViewHolder(rvPosts,allsub);
 
