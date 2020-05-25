@@ -367,7 +367,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             toolbar.getLocationInWindow(location);
             int y = getResources().getDisplayMetrics().heightPixels;
             int x = getResources().getDisplayMetrics().widthPixels;
-            Toast.makeText(getApplicationContext(), "height " + toolbarHeight, Toast.LENGTH_LONG).show();
+          //  Toast.makeText(getApplicationContext(), "height " + toolbarHeight, Toast.LENGTH_LONG).show();
 
             SettingsDialogFragment settingsDialogFragment = new SettingsDialogFragment(y, x, sharedPreferences.getBoolean(TAG_DARK, false));
             FragmentManager manager = getSupportFragmentManager();
@@ -535,7 +535,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
 
         private void selectAll() {
-            Toast.makeText(this, parent, Toast.LENGTH_LONG).show();
+          //  Toast.makeText(this, parent, Toast.LENGTH_LONG).show();
             final String par1 = parent.replace("/", "\\");
             final String par2 = parent;
             final long old_active = active;
@@ -581,7 +581,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                                     .addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-                                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                                          // Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                                             Log.e("qwerty9", e.toString());
                                         }
                                     });
@@ -590,7 +590,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                           // Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                             Log.e("qwerty10", e.toString());
                         }
                     });
@@ -612,7 +612,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                          //  Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                             Log.e("qwerty9", e.toString());
                         }
                     });
