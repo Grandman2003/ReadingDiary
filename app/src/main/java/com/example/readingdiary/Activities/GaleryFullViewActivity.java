@@ -160,14 +160,16 @@ private String TAG_DARK = "dark_theme";
     }
 
     @Override
-    public void onDeleteClicked() {
+    public void onDeleteClicked()
+    {
         String toDel = ""+names.get(position);
         names.remove(position);
         images.remove(position);
         adapter.notifyDataSetChanged();
         imageStorage.child(toDel).delete();
         imagePathsDoc.update(toDel, FieldValue.delete());
-        if (!changed){
+        if (!changed)
+        {
             changed=true;
             setResultChanged();
         }
@@ -191,7 +193,7 @@ private String TAG_DARK = "dark_theme";
     @Override
     public void onChangeThemeClick(boolean isChecked) {
         if (isChecked){
-//                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
+//          boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean(TAG_DARK, true);
             editor.apply();

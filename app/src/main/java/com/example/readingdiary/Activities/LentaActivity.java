@@ -18,6 +18,7 @@ import com.example.readingdiary.Classes.QuickSort;
 import com.example.readingdiary.Classes.RealNote;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.PostAdapter;
+import com.example.readingdiary.adapters.VariousViewAdapter;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -86,6 +87,5 @@ public class LentaActivity extends AppCompatActivity {
 
 
     }
-
 
 }

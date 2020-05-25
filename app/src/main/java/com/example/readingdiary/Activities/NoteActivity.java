@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -62,7 +63,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     private final int COMENTS_REQUEST_CODE = 125;
     Toolbar toolbar;
 
-
+    ImageButton bUpload;
 
 
     private String user = "user0";
@@ -285,6 +286,15 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
                 Intent intent = new Intent(NoteActivity.this, GaleryActivity.class);
                 intent.putExtra("id", id);
                 startActivityForResult(intent, GALERY_REQUEST_CODE);
+            }
+        });
+
+        ImageButton bUpload = (ImageButton) findViewById(R.id.bUpload); // переход в галерею
+        bUpload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //загрузка записи в сеть
+                Toast.makeText(NoteActivity.this,"Запись опубликована \n(допиши добавление в бд NoteActivity стр 293)",Toast.LENGTH_SHORT).show();
             }
         });
 
