@@ -20,6 +20,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -37,6 +38,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.readingdiary.Classes.DeleteNote;
 import com.example.readingdiary.Classes.SaveImage;
+//import com.example.readingdiary.Fragments.ChooseDataDialogFragment;
 import com.example.readingdiary.Fragments.CreateWithoutNoteDialogFragment;
 import com.example.readingdiary.Fragments.DeleteDialogFragment;
 import com.example.readingdiary.Fragments.DeleteTitleAndAuthorDialogFragment;
@@ -151,6 +153,12 @@ private String TAG_DARK = "dark_theme";
         Log.d("putExtra", "start");
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         setButtons();
+//        ChooseDataDialogFragment saveDialogFragment = new ChooseDataDialogFragment();
+//        FragmentManager manager = getSupportFragmentManager();
+//        FragmentTransaction transaction = manager.beginTransaction();
+//        saveDialogFragment.show(transaction, "dialog");
+
+
 
     }
 

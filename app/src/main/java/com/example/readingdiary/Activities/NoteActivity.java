@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -261,8 +262,12 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
         Log.d("IMAGE1", imagePath +" !");
         if (imageUri != null) {
             Log.d("qwerty123456", imageUri.toString());
+            DisplayMetrics metricsB = getResources().getDisplayMetrics();
+            float size = metricsB.widthPixels / 3;
             Picasso.get()
                     .load(imageUri)
+                    .resize(metricsB.widthPixels, metricsB.heightPixels)
+                    .centerInside()
                     .into(this.coverView);
         }
         else{

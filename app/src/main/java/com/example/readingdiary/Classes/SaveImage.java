@@ -60,11 +60,11 @@ public class SaveImage {
             Log.d("qwerty42", id);
             final StorageReference imageStorage = FirebaseStorage.getInstance().getReference(user).child(id).child("Images");
             final DocumentReference imagePathsDoc = FirebaseFirestore.getInstance().collection("Common").document(user).collection(id).document("Images");
-            int px = 500;
+            int px = 800;
             Bitmap cover = decodeSampledBitmapFromResource(imageUri, px, px, context); // файл сжимается
             final long time = time1;
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            cover.compress(Bitmap.CompressFormat.PNG, 60, stream);// сохранение
+            cover.compress(Bitmap.CompressFormat.PNG, 100, stream);// сохранение
             Map<String, Boolean> map = new HashMap<>();
             map.put(time+"", false);
             imagePathsDoc.set(map, SetOptions.merge())
