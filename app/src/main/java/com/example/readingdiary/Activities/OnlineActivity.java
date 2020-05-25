@@ -20,6 +20,7 @@ public class OnlineActivity extends AppCompatActivity
     Button bShareUser;
     Button bGoLent;
     EditText etShareUser;
+    String [] x = new String[] {"wsdsaddaads","adsdsaa ","dsadsdsad " };// тестовый массив подписок
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -38,11 +39,13 @@ public class OnlineActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-//                Intent intent = new Intent(OnlineActivity.this, OnlineActivity.class);
-//                startActivity(intent);
+            if (etShareUser.getText().equals("")) {
+                x[x.length] = etShareUser.getText().toString();
                 ShareUser(etShareUser.getText().toString());
                 // добавление usID к списку подписок
-                Toast.makeText(OnlineActivity.this,"Пользователь добавлен в подписки",Toast.LENGTH_SHORT).show();
+                Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();
+            }
+            else {Toast.makeText(OnlineActivity.this, "Введите id пользователя", Toast.LENGTH_SHORT).show();}
             }
         });
 
@@ -63,10 +66,10 @@ public class OnlineActivity extends AppCompatActivity
     {
 
         //обращение к списку id, на которые подписан usID
-        String[] ids = new String[] {""," "," " }; // массив подписок
+        //String[] ids = new String[] {""," "," " }; // массив подписок
         ArrayList <String> gotcha = new ArrayList<>(); // список совпадений
         QuickSort Share = new QuickSort(); // класс сортировки
-        Share.StrSort(ids,usID,gotcha); // сортировка и поиск совпадений
+        Share.StrSort(x,usID,gotcha); // сортировка и поиск совпадений
         usID = String.valueOf(gotcha); // поскльку совпадение может быть только одно записываем его в str для добавления
 
 

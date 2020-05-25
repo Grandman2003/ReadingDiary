@@ -39,7 +39,9 @@ public class ForgotPswActivity extends AppCompatActivity
     }
 
     public void onForgot()
-    {
+        {
+        if (!etForg.getText().equals(""))
+        {
         mein.mAuth.sendPasswordResetEmail(etForg.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
 
             @Override
@@ -60,5 +62,10 @@ public class ForgotPswActivity extends AppCompatActivity
                 }
             }
         });
+        }
+        else
+            {
+                Toast.makeText(ForgotPswActivity.this,"Введите ваш email",Toast.LENGTH_LONG).show();
+            }
     }
 }
