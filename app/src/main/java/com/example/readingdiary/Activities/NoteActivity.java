@@ -28,8 +28,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
-import com.example.readingdiary.data.LiteratureContract.NoteTable;
-import com.example.readingdiary.data.OpenHelper;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -63,6 +61,9 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     private final int GALERY_REQUEST_CODE = 124;
     private final int COMENTS_REQUEST_CODE = 125;
     Toolbar toolbar;
+
+
+
 
     private String user = "user0";
     private FirebaseFirestore db = FirebaseFirestore.getInstance();

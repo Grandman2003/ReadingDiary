@@ -70,14 +70,19 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
     private DocumentReference variousNotePaths;
     private CollectionReference variousNoteStorage;
 
+    private String idUser="ssad";
+    Button addVariousItem;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
         boolean dark = sharedPreferences.getBoolean(TAG_DARK, false);
-        if (dark){
+        if (dark)
+        {
             setTheme(R.style.DarkTheme);
         }
-        else{
+        else
+        {
             setTheme(R.style.AppTheme);
         }
         super.onCreate(savedInstanceState);
@@ -98,15 +103,27 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
         counterText.setText(type);
         setSupportActionBar(toolbar);
 
-//        counterText.setText("Каталог");
         setAdapters();
         setButtons();
+
+
+
+//        user= idUser;// Для тестов, обязательно поменяй
+
+
+
+        if (user!=idUser)//проверка на автора
+        {
+            addVariousItem.setVisibility(View.INVISIBLE);
+            //recyclerView.setClickable(false);
+
+        }
+
     }
 
     @Override
     public void onChangeThemeClick(boolean isChecked) {
         if (isChecked){
-//                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean(TAG_DARK, true);
             editor.apply();
@@ -123,7 +140,6 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
 
     @Override
     public void onExitClick() {
-//        ext =1;
         MainActivity MainActivity = new MainActivity();
         MainActivity.currentUser=null;
         MainActivity.mAuth.signOut();
@@ -243,14 +259,16 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
         recyclerView.setAdapter(viewAdapter);
+        if (user==idUser){
         viewAdapter.setOnItemClickListener(new VariousViewAdapter.OnItemClickListener() {
+
             @Override
             public void onItemClick(int position) {
                 Intent intent = new Intent(VariousShow.this, VariousNotebook.class);
                 intent.putExtra("id", id);
                 intent.putExtra("type", type);
                 intent.putExtra("path", variousNotes.get(position).getPath());
-                intent.putExtra("position", position+"");
+                intent.putExtra("position", position + "");
                 startActivityForResult(intent, ADD_VIEW_RESULT_CODE);
             }
 
@@ -270,7 +288,7 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
                 selectedNotes.add(variousNotes.get(position));
                 count++;
                 counterText.setText(count + " элементов выбрано");
-               // Toast.makeText(getApplicationContext(), selectedNotes.size() + " items selected", Toast.LENGTH_LONG).show();
+                // Toast.makeText(getApplicationContext(), selectedNotes.size() + " items selected", Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -279,14 +297,15 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
                 count--;
                 counterText.setText(count + " элементов выбрано");
 
-               // Toast.makeText(getApplicationContext(), selectedNotes.size() + " items selected", Toast.LENGTH_LONG).show();
+                // Toast.makeText(getApplicationContext(), selectedNotes.size() + " items selected", Toast.LENGTH_LONG).show();
 
             }
-        });
+
+        });}
     }
 
     private void setButtons(){
-        Button addVariousItem = (Button) findViewById(R.id.addVariousItem);
+         addVariousItem = (Button) findViewById(R.id.addVariousItem);
         addVariousItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -306,21 +325,22 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
                 public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
                     if (e != null){
                         Log.e("VariousShowOpenNotes", e.toString());
-                      //  Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                         return;
                     }
-                    else{
+                    else {
                         HashMap<String, Boolean> hashMap = (HashMap) documentSnapshot.getData();
-                        if (hashMap!= null){
-                            for (String key : hashMap.keySet()){
+                        if (hashMap != null) {
+
+                            for (String key : hashMap.keySet()) {
                                 final Long l = Long.parseLong(key);
-                                if (!variousNotesNames.contains(l) && hashMap.get(key)==true){
+                                if (!variousNotesNames.contains(l) && hashMap.get(key) == true) {
                                     variousNoteStorage.document(key).get()
                                             .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                                 @Override
                                                 public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                                    if (documentSnapshot != null && documentSnapshot.get("text")!=null){
-                                                        variousNotes.add(new VariousNotes(documentSnapshot.get("text").toString(), l+"",
+                                                    if (documentSnapshot != null && documentSnapshot.get("text") != null) {
+                                                        variousNotes.add(new VariousNotes(documentSnapshot.get("text").toString(), l + "",
                                                                 l, false, false));
                                                         viewAdapter.notifyItemInserted(variousNotes.size());
                                                         variousNotesNames.add(l);
@@ -329,13 +349,14 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
                                                 }
                                             });
                                 }
-                                else if (hashMap.get(key)==true && variousNotesNames.contains(l) &&
-                                        variousNotes.get(variousNotesNames.indexOf(l)).isNeedsUpdate()){
+                                else if (hashMap.get(key) == true && variousNotesNames.contains(l) &&
+                                        variousNotes.get(variousNotesNames.indexOf(l)).isNeedsUpdate()   )
+                                {
                                     variousNoteStorage.document(key).get()
                                             .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                                 @Override
                                                 public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                                    variousNotes.set(variousNotesNames.indexOf(l), new VariousNotes(documentSnapshot.get("text").toString(), l+"",
+                                                    variousNotes.set(variousNotesNames.indexOf(l), new VariousNotes(documentSnapshot.get("text").toString(), l + "",
                                                             l, false, false));
                                                     viewAdapter.notifyItemChanged(variousNotesNames.indexOf(l));
 //                                                    variousNotesNames.add(l);
