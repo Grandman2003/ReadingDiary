@@ -86,7 +86,7 @@ public class SettingsDialogFragment extends DialogFragment {
 
 
         Window w = materialDialogs.getWindow();
-            w.setLayout(3 * x / 4, w.getAttributes().height);
+            w.setLayout(x / 2, w.getAttributes().height);
         wmlp = materialDialogs.getWindow().getAttributes();
 //        wmlp.y=300;
         wmlp.x = x/2;
