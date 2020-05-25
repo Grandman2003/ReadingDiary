@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public EditText ETemail;
     public EditText ETpassword;
     public TextView tvForgPsw;
-  //  public String frgEm="nope";
+    ProgressBar progressBar2;
 
 
     // Привет, зеленая обезьянка
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_ForgPsw).setOnClickListener(this);
         findViewById(R.id.btn_registration).setOnClickListener(this);
         currentUser = mAuth.getCurrentUser();
+        progressBar2 =findViewById(R.id.progressBar2);
 
         tvForgPsw= (TextView) findViewById(R.id.tvForgPsw);
         tvForgPsw.setOnClickListener(new View.OnClickListener() {
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         else if (currentUser==null)
         {
 
-            Toast.makeText(MainActivity.this, "Offline ", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(MainActivity.this, "Offline ", Toast.LENGTH_SHORT).show();
 
         }
 
@@ -153,9 +155,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task)
                 {
+                    progressBar2.setVisibility(View.VISIBLE);
                     if (task.isSuccessful())
                     {
-
+                        progressBar2.setVisibility(View.GONE);
                         Toast.makeText(MainActivity.this, "Aвторизация успешна", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                         startActivity(intent);
@@ -163,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     else
                     {
+                        progressBar2.setVisibility(View.GONE);
                         Toast.makeText(MainActivity.this, "Aвторизация провалена", Toast.LENGTH_SHORT).show();
 
                     }
@@ -175,12 +179,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mAuth.createUserWithEmailAndPassword(email.trim(), password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
+                progressBar2.setVisibility(View.VISIBLE);
                 if (task.isSuccessful()) {
                     FirebaseAuth.getInstance().getCurrentUser()
                             .sendEmailVerification()
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
+                                    progressBar2.setVisibility(View.GONE);
                                     //смотри когда пользователь регестрируется ему отправляется письмо
                                     FirebaseAuth.getInstance().getCurrentUser()
                                             .sendEmailVerification()
@@ -202,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            progressBar2.setVisibility(View.GONE);
                             Toast toast = Toast.makeText(getApplicationContext(), "sign-up is unsuccessful: "
                                     + e.getMessage(), Toast.LENGTH_SHORT);
                             toast.show();

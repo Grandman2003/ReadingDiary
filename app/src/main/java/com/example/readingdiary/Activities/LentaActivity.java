@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +27,7 @@ public class LentaActivity extends AppCompatActivity {
     RecyclerView rvPosts;
     List<Note> list;
     PostAdapter post;
-
+    ProgressBar progressBar;
 
 
     @Override
@@ -36,6 +37,7 @@ public class LentaActivity extends AppCompatActivity {
 
         bUpdateLent = findViewById(R.id.bUpdateLent);
         rvPosts = findViewById(R.id.rvPosts);
+        progressBar =findViewById(R.id.progressBar);
 //        ArrayList<Note> notes;
         list = new ArrayList<>(); // можешь назвать подругому, выбрать другой тип.
         // Если будешь менять тип данных, то не забудь про адаптер
@@ -46,10 +48,13 @@ public class LentaActivity extends AppCompatActivity {
         rvPosts.setLayoutManager(layoutManager);
         rvPosts.setItemAnimator(itemAnimator);
 
+        progressBar.setVisibility(View.INVISIBLE);
+//        progressBar.setVisibility(View.VISIBLE);
 
         bUpdateLent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+              // if onCompete progressBar.setVisibility(View.GONE);
                 //для каждой записи нужно сделать отдельную разметку
                 // будем отображать только 20 последних записей
                 int allsub = 1; // переменная, в которую мы передаём количество подписок

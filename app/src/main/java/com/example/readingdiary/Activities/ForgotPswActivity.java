@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.readingdiary.R;
@@ -21,6 +22,8 @@ public class ForgotPswActivity extends AppCompatActivity
     MainActivity mein = new MainActivity();
     EditText  etForg;
     Button btn_ForgPsw;
+    ProgressBar progressBar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +39,7 @@ public class ForgotPswActivity extends AppCompatActivity
                 onForgot();
             }
         });
+        progressBar =findViewById(R.id.progressBar3);
     }
 
     public void onForgot()
@@ -46,8 +50,10 @@ public class ForgotPswActivity extends AppCompatActivity
 
             @Override
             public void onComplete(@NonNull Task<Void> task) {
+                progressBar.setVisibility(View.VISIBLE);
                 if (task.isSuccessful())
                 {
+                    progressBar.setVisibility(View.GONE);
                     if (mein.currentUser==null)
                     {
 
@@ -58,6 +64,7 @@ public class ForgotPswActivity extends AppCompatActivity
                 }
                 else
                 {
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(ForgotPswActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_LONG).show();
                 }
             }
