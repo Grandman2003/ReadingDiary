@@ -6,6 +6,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -18,10 +19,15 @@ public class DeleteNote {
 
     public static void deleteNote(String user, String id){
         db.collection("Notes").document(user).collection("userNotes").document(id).delete();
+        deletePublicly(user, id);
         deleteImages(user, id);
         deleteVariousNote(user, id, "comment");
         deleteVariousNote(user, id, "description");
         deleteVariousNote(user, id, "quotes");
+    }
+
+    public static void deletePublicly(String user, String id){
+        db.collection("Publicly").document(user).update("notesId", FieldValue.arrayRemove(id));
     }
 
     public static void deleteVariousNote(String user, String id, final String type){

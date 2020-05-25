@@ -653,6 +653,9 @@ private String TAG_DARK = "dark_theme";
         }
         else{
             DeleteNote.deleteImages(user, id);
+            if (!isPrivate){
+                DeleteNote.deletePublicly(user, id);
+            }
         }
     }
     public void changedIntent(){

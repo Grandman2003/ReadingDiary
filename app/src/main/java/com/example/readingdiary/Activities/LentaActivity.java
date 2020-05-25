@@ -59,7 +59,7 @@ public class LentaActivity extends AppCompatActivity {
                 // будем отображать только 20 последних записей
                 int allsub = 1; // переменная, в которую мы передаём количество подписок
                     // вывод этих записей в ленту
-                list.add(new RealNote("1", "qwertyu", "qwertyu", "qwertyu", 3));
+//                list.add(new RealNote("1", "qwertyu", "qwertyu", "qwertyu", 3));
 //                Toast.makeText(getApplicationContext(), list.size()+"", 1).show();
 //                list.add(new RealNote("1", "qwertyu", "qwertyu", "qwertyu", 3));
                 post.notifyItemInserted(list.size()-1);

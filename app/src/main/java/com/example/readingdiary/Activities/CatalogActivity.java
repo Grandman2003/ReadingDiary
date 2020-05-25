@@ -467,8 +467,12 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         public void deleteSelectedRealNote(){
             for (int i = 0; i < selectionRealNotesList.size(); i++){
                 String id = selectionRealNotesList.get(i).getID();
+                if (!((RealNote)notes.get(i)).getPrivate()){
+                    DeleteNote.deletePublicly(user, id);
+                }
                 notes.remove(selectionRealNotesList.get(i));
                 DeleteNote.deleteNote(user, id);
+
             }
             mAdapter.notifyDataSetChanged();
         }
@@ -515,6 +519,9 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                             if (queryDocumentSnapshots != null){
                                 for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                                     DeleteNote.deleteNote(user, documentSnapshot.getId());
+                                    if (!(boolean)documentSnapshot.get("private")){
+                                        DeleteNote.deletePublicly(user, documentSnapshot.getId());
+                                    }
                                 }
                             }
 
@@ -633,7 +640,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                             final HashMap<String, Object> map = (HashMap) documentSnapshot.getData();
                             final RealNote realNote = new RealNote(id, map.get("path").toString(), map.get("author").toString(),
-                                    map.get("title").toString(), Double.valueOf(map.get("rating").toString()));
+                                    map.get("title").toString(), Double.valueOf(map.get("rating").toString()), (boolean)map.get("private"));
                             if (map.get("imagePath")!= null && !map.get("imagePath").toString().equals("")){
                                 FirebaseStorage.getInstance().getReference(user).child(documentSnapshot.getId()).child("Images").child(map.get("imagePath").toString()).getDownloadUrl()
                                         .addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -785,47 +792,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
         mAdapter.setOnItemClickListener(new RecyclerViewAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(int position) {
-                // В notes хранятся объекты двух классов, имплементирующих Note - RealNote и Directory
-                // RealNote - собственно запись пользователя. При клике нужно перейти к записи, т.е к NoteActivity
-                // Directory - директория. При клике нужно перейти в эту директорию.
-                int type = notes.get(position).getItemType();
-                if (type == 0){
-                    RealNote realNote = (RealNote) notes.get(position);
-                    Intent intent = new Intent(CatalogActivity.this, NoteActivity.class);
-                    // чтобы понять какую запись нужно отобразить в NoteActivity, запихиваем в intent id записи из бд
-                    intent.putExtra("id", realNote.getID());
-                    startActivityForResult(intent, NOTE_REQUEST_CODE); // в NoteActivity пользователь может изменить путь.
-                    //Если изменит, то вернется intent, чтобы можно было изменить отображение каталогов
-                }
-                if (type == 1){
-                    active++;
-                    Directory directory = (Directory) notes.get(position);
-                    parent = directory.getDirectory(); // устанавливаем директорию, на которую нажали в качестве отправной
-                    notes.clear();
-                    Log.d("qwerty17", parent);
-                    buttons.add(parent);
-                    buttonAdapter.notifyDataSetChanged();
-                    selectAll(); // выбираем новые данные из бд
-                    mAdapter.notifyDataSetChanged();
-                }
-            }
-//
-//        Button sigout = (Button) findViewById(R.id.button2);
-//        sigout.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                ext =1;
-//                MainActivity MainActivity = new MainActivity();
-//                MainActivity.currentUser=null;
-//                MainActivity. mAuth.signOut();
-//                onBackPressed();
-//            }
-//        });
 
-
-            mAdapter.setOnItemClickListener(new RecyclerViewAdapter.OnItemClickListener() {
-                @Override
                 public void onItemClick(int position) {
                     // В notes хранятся объекты двух классов, имплементирующих Note - RealNote и Directory
                     // RealNote - собственно запись пользователя. При клике нужно перейти к записи, т.е к NoteActivity
@@ -835,7 +802,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                         RealNote realNote = (RealNote) notes.get(position);
                         Intent intent = new Intent(CatalogActivity.this, NoteActivity.class);
                         // чтобы понять какую запись нужно отобразить в NoteActivity, запихиваем в intent id записи из бд
-                        //intent.putExtra("id", realNote.getID());
+                        intent.putExtra("id", realNote.getID());
                         startActivityForResult(intent, NOTE_REQUEST_CODE); // в NoteActivity пользователь может изменить путь.
                         //Если изменит, то вернется intent, чтобы можно было изменить отображение каталогов
                     }
@@ -865,20 +832,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             }
 
-            @Override
-            public void onCheckClick(int position) {
-                count++;
-                counterText.setText(count + " элементов выбрано");
-                Note note = notes.get(position);
-                if (note.getItemType()==1){
-                    selectionDirectoriesList.add((Directory) note);
-                    Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
-                }
-                else{
-                    selectionRealNotesList.add((RealNote) note);
-                    Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
-                }
-            }
+
                 @Override
                 public void onCheckClick(int position) {
                     count++;
@@ -895,33 +849,20 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
                 }
 
-            @Override
-            public void onUncheckClick(int position) {
-                count--;
-                counterText.setText(count + " элементов выбрано");
-                Note note = notes.get(position);
-                if (note.getItemType()==1){
-                    selectionDirectoriesList.remove((Directory) note);
-                    Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
-                }
-                else{
-                    selectionRealNotesList.remove((RealNote) note);
-                    Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
-                }
-            }
+
                 @Override
                 public void onUncheckClick(int position) {
                     count--;
                     counterText.setText(count + " элементов выбрано");
                     Note note = notes.get(position);
-                    if (note.getItemType()==1){
+                    if (note.getItemType() == 1) {
                         selectionDirectoriesList.remove((Directory) note);
-                      //  Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
-                    }
-                    else{
+                        //  Toast.makeText(getApplicationContext(), selectionDirectoriesList.size() + " Directory", Toast.LENGTH_LONG).show();
+                    } else {
                         selectionRealNotesList.remove((RealNote) note);
-                      //  Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
+                        //  Toast.makeText(getApplicationContext(), selectionRealNotesList.size() + " RealNote", Toast.LENGTH_LONG).show();
                     }
+                }
 
             @Override
             public void onPrivacyChanged(final int position) {
