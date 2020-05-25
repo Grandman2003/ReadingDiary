@@ -10,17 +10,29 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.readingdiary.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Transaction;
+
+import org.w3c.dom.Document;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -31,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public EditText ETpassword;
     public TextView tvForgPsw;
     ProgressBar progressBar2;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
 
     // Привет, зеленая обезьянка
@@ -52,11 +65,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null)
                 {
-
                 }
                 else
                 {
-
                 }
                 updateUI(user);
 
@@ -194,14 +205,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
                                                     Toast.makeText(MainActivity.this, "Вам отправленно ссылка на email. Для подтверждения email перейдите по ней", Toast.LENGTH_LONG).show();
-                                                    FirebaseUser userAuth = mAuth.getCurrentUser();
+                                                    final FirebaseUser userAuth = mAuth.getCurrentUser();
                                                     UserProfileChangeRequest.Builder builder = new UserProfileChangeRequest.Builder();
                                                     UserProfileChangeRequest u = builder.build();
                                                     userAuth.updateProfile(u);
+                                                    db.runTransaction(new Transaction.Function<Long>() {
+                                                        @Nullable
+                                                        @Override
+                                                        public Long apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                                                            Log.d("qwerty55", "qwerty");
+                                                            DocumentReference documentReference = db.collection("PublicID").document("LastID");
+                                                            DocumentSnapshot lastID = transaction.get(documentReference);
+                                                            if (lastID != null){
+                                                                Log.d("qwerty55", "qwerty!");
+                                                                long newID = lastID.getLong("id") + 1;
+                                                                transaction.update(documentReference, "id", newID);
+                                                                Log.d("qwerty55", "qwerty!" + newID);
+                                                                return newID;
+                                                            }
+                                                            else{
+                                                                Map<String, Long> map = new HashMap<>();
+                                                                map.put("id", (Long)(long)0);
+                                                                transaction.set(documentReference, map);
+                                                                return (Long)(long)0;
+                                                            }
+                                                        }
+                                                    }).addOnSuccessListener(new OnSuccessListener<Long>() {
+                                                        @Override
+                                                        public void onSuccess(Long aLong) {
+                                                            Map<String, String> map = new HashMap<>();
+                                                            map.put("id", aLong+"");
+                                                            db.collection("PublicID").document(userAuth.getUid()).set(map);
+                                                        }
+                                                    });
                                                 }
                                             });
                                     Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
                                     startActivity(intent);
+
+//                                    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 //                                    finish();
                                 }
                             })

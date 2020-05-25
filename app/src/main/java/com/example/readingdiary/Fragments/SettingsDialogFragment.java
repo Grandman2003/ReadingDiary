@@ -20,10 +20,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.readingdiary.R;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.dialog.MaterialDialogs;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SettingsDialogFragment extends DialogFragment {
     SettingsDialogListener listener;
@@ -64,6 +68,19 @@ public class SettingsDialogFragment extends DialogFragment {
         TextView textView = materialDialogs.findViewById(R.id.exitButton);
         TextView txtDel = materialDialogs.findViewById(R.id.textView13);
         TextView txtForg = materialDialogs.findViewById(R.id.textView);
+        final TextView idTextView = materialDialogs.findViewById(R.id.idText);
+//        idTextView.setText();
+        String user = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore.getInstance().collection("PublicID").document(user).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot != null)    {
+                            idTextView.setText(""+documentSnapshot.get("id"));
+                        }
+                    }
+                });
+
 
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,6 +100,8 @@ public class SettingsDialogFragment extends DialogFragment {
                 listener.onForgot();
             }
         });
+
+
 
 
         Window w = materialDialogs.getWindow();

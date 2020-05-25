@@ -18,6 +18,10 @@ import com.example.readingdiary.Classes.QuickSort;
 import com.example.readingdiary.Classes.RealNote;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.PostAdapter;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +32,14 @@ public class LentaActivity extends AppCompatActivity {
     List<Note> list;
     PostAdapter post;
     ProgressBar progressBar;
+    ArrayList<String> subUsersId;
+    String user;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lenta);
-
         bUpdateLent = findViewById(R.id.bUpdateLent);
         rvPosts = findViewById(R.id.rvPosts);
         progressBar =findViewById(R.id.progressBar);
@@ -47,13 +52,21 @@ public class LentaActivity extends AppCompatActivity {
         rvPosts.setAdapter(post);
         rvPosts.setLayoutManager(layoutManager);
         rvPosts.setItemAnimator(itemAnimator);
-
         progressBar.setVisibility(View.INVISIBLE);
-//        progressBar.setVisibility(View.VISIBLE);
+        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore.getInstance().collection("Subscriptions").document(user).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+//                         subUsersId = new ArrayList<String>(documentSnapshot.getData().keySet());
+                    }
+                });
+
 
         bUpdateLent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
               // if onCompete progressBar.setVisibility(View.GONE);
                 //для каждой записи нужно сделать отдельную разметку
                 // будем отображать только 20 последних записей
