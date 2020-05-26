@@ -214,21 +214,6 @@
                 android:layout_height="wrap_content"
                 android:text="Сделать публичным" />
 
-            <DatePicker
-                android:id="@+id/startPicker"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:calendarViewShown="false"
-                android:datePickerMode="spinner"
-                />
-            <DatePicker
-                android:id="@+id/endPicker"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:calendarViewShown="false"
-                android:datePickerMode="spinner"
-                />
-
             <Button
                 android:id="@+id/deleteNoteButton"
                 android:layout_width="match_parent"

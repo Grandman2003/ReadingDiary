@@ -164,8 +164,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         counterText.setText("Каталог");
-//        toolbar.inflateMenu(R.menu.menu_catalog);
-
         buttons.add(parent);
         selectAll(); // чтение данных из бд
 

@@ -1,5 +1,7 @@
 package com.example.readingdiary.adapters;
 
+import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
 {
     public interface OnItemClickListener{
         void onItemClick(int position);
+        void onRatingChanged(int position, float rating);
     }
 
     public PostAdapter.OnItemClickListener listener;
@@ -50,8 +53,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
         holder.tvTextPost.setText(realNote.getAuthor());
         holder.tvNamePost.setText(realNote.getTitle());
         holder.ratingBar2.setRating((float)realNote.getRating());
+        Log.d("qwerty53", position + " " +realNote.getID());
         if (realNote.getCoverUri() !=null){
-            Picasso.get().load(realNote.getCoverUri()).into(holder.imageView2);
+            holder.imageView3.setVisibility(View.VISIBLE);
+            Log.d("qwerty53", position + " " +realNote.getID() + " " + realNote.getCoverUri().toString());
+            Picasso.get().load(realNote.getCoverUri()).into(holder.imageView3);
+        }
+        else{
+            holder.imageView3.setVisibility(View.INVISIBLE);
+//            Picasso.get().load(realNote.getCoverUri()).into(holder.imageView3);
         }
         if (realNote.getPublicRatingCount() != 0){
             holder.tvReitPost.setText(String.valueOf(realNote.getPublicRatingSum() / realNote.getPublicRatingCount()));
@@ -73,16 +83,42 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
         private TextView tvNamePost;
         private TextView tvTextPost;
         private TextView tvReitPost;
-        private ImageView imageView2;
+        private ImageView imageView3;
         private RatingBar ratingBar2;
 
-        public PostPosts(final View itemView) {
+        PostPosts(final View itemView) {
             super(itemView);
             tvNamePost = (TextView) itemView.findViewById(R.id.tvNamePost);
             tvTextPost = (TextView) itemView.findViewById(R.id.tvTextPost);
             tvReitPost = (TextView) itemView.findViewById(R.id.tvReitPost);
-            imageView2 = (ImageView) itemView.findViewById(R.id.imageView2);
+            imageView3 = (ImageView) itemView.findViewById(R.id.imageView3);
             ratingBar2 = (RatingBar) itemView.findViewById(R.id.ratingBar2);
+
+            ratingBar2.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+                @Override
+                public void onRatingChanged(final RatingBar ratingBar, float rating, boolean fromUser) {
+                    if (fromUser){
+                        final Handler uiHandler = new Handler();
+
+                        final Runnable makeLayoutGone = new Runnable(){
+                            @Override
+                            public void run(){
+                                ratingBar2.setClickable(true);
+                            }
+                        };
+                        ratingBar2.setClickable(false);
+                        uiHandler.postDelayed(makeLayoutGone, 500);
+
+
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION){
+                            ratingBar2.setClickable(false);
+                            listener.onRatingChanged(position, rating);
+                        }
+                    }
+
+                }
+            });
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -95,6 +131,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
                     }
                 }
             });
+
+
+
         }
 
     }
