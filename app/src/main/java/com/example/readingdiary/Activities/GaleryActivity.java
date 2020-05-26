@@ -72,9 +72,11 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
     private StorageReference imageStorage;
     private DocumentReference imagePathsDoc;
     long time;
+    private String idUser; // в неё передаём id текущего пользовтеля
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         sharedPreferences = this.getSharedPreferences(TAG_DARK, Context.MODE_PRIVATE);
         boolean dark = sharedPreferences.getBoolean(TAG_DARK, false);
         if (dark){
@@ -90,6 +92,14 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
         user = FirebaseAuth.getInstance().getUid();
+
+
+
+
+        idUser = user; // только для тестов, потом обязательно удали
+
+
+
         imagePathsDoc = FirebaseFirestore.getInstance().collection("Common").document(user).collection(id).document("Images");
         imageStorage = FirebaseStorage.getInstance().getReference(user).child(id).child("Images");
         images = new ArrayList<>(); // список bitmap изображений
@@ -103,7 +113,9 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
         galeryView.setAdapter(adapter);
         galeryView.setItemAnimator(itemAnimator);
         galeryView.setLayoutManager(layoutManager);
+        Button pickImage = (Button) findViewById(R.id.button);
 
+        if (user!=idUser){pickImage.setVisibility(View.INVISIBLE);} //проверка на автора
 
         imagePathsDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -206,7 +218,7 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
 
 
 
-        Button pickImage = (Button) findViewById(R.id.button);
+
 
         // Выбор изображений из галереи
         pickImage.setOnClickListener(new View.OnClickListener() {
