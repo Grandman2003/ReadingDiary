@@ -77,21 +77,24 @@ public class OnlineActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                if (!etShareUser.getText().toString().equals("")) {
+                if (!etShareUser.getText().toString().equals("") && etShareUser.getText().toString()!= user )
+                {
                     FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", etShareUser.getText().toString()).get()
                             .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                 @Override
-                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                                public void onSuccess(QuerySnapshot queryDocumentSnapshots)
+                                {
+                                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots)
+                                    {
                                         Map<String, String> map = new HashMap<>();
                                         map.put(documentSnapshot.getId(), etShareUser.getText().toString());
                                         FirebaseFirestore.getInstance().collection("Subscriptions").document(user).set(map, SetOptions.merge());
                                     }
                                 }
                             });
-                Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();
-            }
-            else {Toast.makeText(OnlineActivity.this, "Введите id пользователя", Toast.LENGTH_SHORT).show();}
+                    Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();
+                }
+                  else {Toast.makeText(OnlineActivity.this, "Введите корректный id пользователя", Toast.LENGTH_SHORT).show();}
             }
         });
 

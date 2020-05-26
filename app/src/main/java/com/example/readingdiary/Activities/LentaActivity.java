@@ -255,7 +255,8 @@ public class LentaActivity extends AppCompatActivity {
                                                             }
                                                         });
                                             }
-                                            else{
+                                            else
+                                                {
                                                 if (curAction!=action){
                                                     return;
                                                 }
