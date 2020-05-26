@@ -315,8 +315,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                      startActivity(intent);
                  }
-                 else
-                     {
+                 else {
                          Toast.makeText(CatalogActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
                      }
              }

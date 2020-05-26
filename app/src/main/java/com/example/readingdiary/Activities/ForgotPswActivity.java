@@ -46,7 +46,7 @@ public class ForgotPswActivity extends AppCompatActivity
         {
         if (!etForg.getText().equals(""))
         {
-        mein.mAuth.sendPasswordResetEmail(etForg.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+        mein.mAuth.sendPasswordResetEmail(etForg.getText().toString().trim()).addOnCompleteListener(new OnCompleteListener<Void>() {
 
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -56,7 +56,6 @@ public class ForgotPswActivity extends AppCompatActivity
                     progressBar.setVisibility(View.GONE);
                     if (mein.currentUser==null)
                     {
-
                         Intent intent = new Intent( ForgotPswActivity .this, MainActivity.class);
                         startActivity(intent);
                     }
