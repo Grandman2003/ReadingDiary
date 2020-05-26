@@ -70,7 +70,6 @@ public class SettingsDialogFragment extends DialogFragment {
         TextView txtDel = materialDialogs.findViewById(R.id.textView13);
         TextView txtForg = materialDialogs.findViewById(R.id.textView);
         final TextView idTextView = materialDialogs.findViewById(R.id.idText);
-//        idTextView.setText();
         String user = FirebaseAuth.getInstance().getCurrentUser().getUid();
         FirebaseFirestore.getInstance().collection("PublicID").document(user).get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -108,7 +107,6 @@ public class SettingsDialogFragment extends DialogFragment {
         Window w = materialDialogs.getWindow();
             w.setLayout(x / 2, w.getAttributes().height);
         wmlp = materialDialogs.getWindow().getAttributes();
-//        wmlp.y=300;
         wmlp.x = x/2;
         return materialDialogs;
     }

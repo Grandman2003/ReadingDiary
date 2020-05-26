@@ -41,7 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class LentaActivity extends AppCompatActivity {
+public class LentaActivity extends AppCompatActivity
+{
     Button bUpdateLent;
     RecyclerView rvPosts;
     PostAdapter postAdapter;
@@ -52,10 +53,12 @@ public class LentaActivity extends AppCompatActivity {
     ArrayList<RealNote> notes=new ArrayList<>();
     ArrayList<String[]> notesRef=new ArrayList<>();
     long action=0;
+    boolean load=false;
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lenta);
         bUpdateLent = findViewById(R.id.bUpdateLent);
@@ -70,10 +73,12 @@ public class LentaActivity extends AppCompatActivity {
         progressBar.setVisibility(View.INVISIBLE);
         user = FirebaseAuth.getInstance().getCurrentUser().getUid();
         db.collection("Subscriptions").document(user).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+                {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot != null && documentSnapshot.getData() != null){
+                        if (documentSnapshot != null && documentSnapshot.getData() != null)
+                        {
                             Log.d("qwertyu58", "notNull");
                             subUsersId = new ArrayList<String>(documentSnapshot.getData().keySet());
                             chooseNotes();
@@ -82,9 +87,11 @@ public class LentaActivity extends AppCompatActivity {
                     }
                 });
 
-        postAdapter.setOnItemClickListener(new PostAdapter.OnItemClickListener() {
+        postAdapter.setOnItemClickListener(new PostAdapter.OnItemClickListener()
+        {
             @Override
-            public void onItemClick(int position) {
+            public void onItemClick(int position)
+            {
                 Intent intent = new Intent(LentaActivity.this, NoteActivity.class);
                 intent.putExtra("security", "guest");
                 intent.putExtra("owner", notes.get(position).getOwner());
@@ -93,11 +100,12 @@ public class LentaActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onRatingChanged(final int position, final float rating) {
-                if (notes.get(position).getOwner()==null){
+            public void onRatingChanged(final int position, final float rating)
+            {
+                if (notes.get(position).getOwner()==null)
+                {
                     return;
                 }
-//                if (true) return;
                 Log.d("qwerty57", "hi");
                 HashMap<String, HashMap> hashMap0 = new HashMap<>();
                 HashMap<String, Double> hashMap= new HashMap<>();
@@ -115,17 +123,21 @@ public class LentaActivity extends AppCompatActivity {
                         DocumentSnapshot noteSnapshot = transaction.get(noteRef);
                         double newSum = noteSnapshot.getDouble("publicRatingSum") - notes.get(position).getRating() + rating;
                         long newCount = noteSnapshot.getLong("publicRatingCount");
-                        if (notes.get(position).getRating() == 0.0){
+                        if (notes.get(position).getRating() == 0.0)
+                        {
                             newCount++;
                             transaction.update(noteRef, "publicRatingCount", newCount);
                         }
                         transaction.update(noteRef, "publicRatingSum", newSum);
                         return new Number[]{newSum, newCount};
                     }
-                }).addOnSuccessListener(new OnSuccessListener<Number[]>() {
+                }).addOnSuccessListener(new OnSuccessListener<Number[]>()
+                {
                     @Override
-                    public void onSuccess(Number[] longs) {
-                        if (notes.size() > position){
+                    public void onSuccess(Number[] longs)
+                    {
+                        if (notes.size() > position)
+                        {
                             notes.get(position).setPublicRatingSum((double)longs[0]);
                             notes.get(position).setPublicRatingCount((long)longs[1]);
                             notes.get(position).setRating(rating);
@@ -137,31 +149,30 @@ public class LentaActivity extends AppCompatActivity {
             }
         });
 
-
         final Handler uiHandler = new Handler();
 
-        final Runnable makeLayoutGone = new Runnable(){
+        final Runnable makeLayoutGone = new Runnable()
+        {
             @Override
-            public void run(){
+            public void run()
+            {
                 bUpdateLent.setClickable(true);
             }
         };
 
-
-
-
-        bUpdateLent.setOnClickListener(new View.OnClickListener() {
+        bUpdateLent.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
-                if (subUsersId != null && subUsersId.size()!=0){
+            public void onClick(View view)
+            {
+                if (subUsersId != null && subUsersId.size()!=0&& load==true)
+                {
                     bUpdateLent.setClickable(false);
                     uiHandler.postDelayed(makeLayoutGone, 500);
                     action++;
-                    Toast.makeText(getApplicationContext(), action+" ", Toast.LENGTH_LONG).show();
                     notes.clear();
                     notesRef.clear();
                     chooseNotes();
-
                 }
 
             }
@@ -172,59 +183,75 @@ public class LentaActivity extends AppCompatActivity {
 
     }
 
-    public void showNotes(){
+    public void showNotes()
+    {
         Log.d("qwerty58", "show");
         final long curAction = action;
         db.collection("UsersRating").document(user).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+                {
                 @Override
-                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                public void onSuccess(DocumentSnapshot documentSnapshot)
+                {
                     final Map<String, Object> userRatingMap;
-                    if (documentSnapshot!=null){
+                    if (documentSnapshot!=null)
+                    {
                         userRatingMap = documentSnapshot.getData();
                     }
-                    else{
+                    else
+                    {
                         userRatingMap =null;
                     }
                     notes.clear();
-                    for (int i = 0; i < notesRef.size(); i++){
+                    for (int i = 0; i < notesRef.size(); i++)
+                    {
                         notes.add(new RealNote("", "", "", "", 0.0, false, 0.0, 0));
                     }
                     postAdapter.notifyDataSetChanged();
-                    for (int i = 0; i < notesRef.size(); i++){
+                    for (int i = 0; i < notesRef.size(); i++)
+                    {
                         final String[] arr = notesRef.get(i);
                         final int j = i;
                         db.collection("Notes").document(arr[0]).collection("userNotes").document(arr[1]).get()
-                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+                                {
                                     @Override
-                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                    public void onSuccess(DocumentSnapshot documentSnapshot)
+                                    {
                                         final HashMap map = (HashMap) documentSnapshot.getData();
                                         if (map != null){
                                             final double rating;
                                             if (userRatingMap != null &&
                                                     userRatingMap.containsKey(arr[0])
-                                                    && ((Map<String, Double>)userRatingMap.get(arr[0])).containsKey(arr[1])){
+                                                    && ((Map<String, Double>)userRatingMap.get(arr[0])).containsKey(arr[1]))
+                                            {
                                                 rating = Double.valueOf(((Map<String, Double>)userRatingMap.get(arr[0])).get(arr[1]));
                                             }
-                                            else{
+                                            else
+                                            {
                                                 rating=0.0;
                                             }
                                             if (map.get("imagePath")!= null && !map.get("imagePath").toString().equals("")){
                                                 FirebaseStorage.getInstance().getReference(arr[0]).child(arr[1]).child("Images").child(map.get("imagePath").toString()).getDownloadUrl()
-                                                        .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                        .addOnSuccessListener(new OnSuccessListener<Uri>()
+                                                        {
                                                             @Override
-                                                            public void onSuccess(Uri uri) {
-                                                                if (curAction!=action){
+                                                            public void onSuccess(Uri uri)
+                                                            {
+                                                                if (curAction!=action)
+                                                                {
                                                                     return;
                                                                 }
-                                                                else{
+                                                                else
+                                                                {
                                                                     final RealNote realNote = new RealNote(arr[1], map.get("path").toString(), map.get("author").toString(),
                                                                             map.get("title").toString(), rating, (boolean)map.get("private"), (double)map.get("publicRatingSum"), (long)map.get("publicRatingCount"));
                                                                     realNote.setOwner(arr[0]);
                                                                     realNote.setCoverPath(uri);
                                                                     int index = -1;
                                                                     Log.d("qwerty52", realNote.getID());
-                                                                    if (curAction!=action){
+                                                                    if (curAction!=action)
+                                                                    {
                                                                         return;
                                                                     }
                                                                     notes.set(j, realNote);
@@ -233,17 +260,22 @@ public class LentaActivity extends AppCompatActivity {
 
                                                             }
                                                         })
-                                                        .addOnFailureListener(new OnFailureListener() {
+                                                        .addOnFailureListener(new OnFailureListener()
+                                                        {
                                                             @Override
-                                                            public void onFailure(@NonNull Exception e) {
-                                                                if (curAction!=action){
+                                                            public void onFailure(@NonNull Exception e)
+                                                            {
+                                                                if (curAction!=action)
+                                                                {
                                                                     return;
                                                                 }
-                                                                else{
+                                                                else
+                                                                {
                                                                     final RealNote realNote = new RealNote(arr[1], map.get("path").toString(), map.get("author").toString(),
                                                                             map.get("title").toString(), rating, (boolean)map.get("private"), (double)map.get("publicRatingSum"), (long)map.get("publicRatingCount"));
                                                                     realNote.setOwner(arr[0]);
-                                                                    if (curAction!=action){
+                                                                    if (curAction!=action)
+                                                                    {
                                                                         return;
                                                                     }
                                                                     notes.set(j, realNote);
@@ -256,23 +288,23 @@ public class LentaActivity extends AppCompatActivity {
                                                         });
                                             }
                                             else
+                                            {
+                                                if (curAction!=action)
                                                 {
-                                                if (curAction!=action){
                                                     return;
                                                 }
-                                                else{
+                                                else
+                                                {
                                                     final RealNote realNote = new RealNote(arr[1], map.get("path").toString(), map.get("author").toString(),
                                                             map.get("title").toString(), rating, (boolean)map.get("private"), (double)map.get("publicRatingSum"), (long)map.get("publicRatingCount"));
                                                     realNote.setOwner(arr[0]);
-                                                    if (curAction!=action){
+                                                    if (curAction!=action)
+                                                    {
                                                         return;
                                                     }
                                                     notes.set(j, realNote);
                                                     postAdapter.notifyItemChanged(j);
                                                 }
-
-
-
                                             }
                                         }
                                     }
@@ -284,10 +316,11 @@ public class LentaActivity extends AppCompatActivity {
             });
 
 
-
+        load=true;
     }
 
-    public void chooseNotes(){
+    public void chooseNotes()
+    {
         final long curAction = action;
         final TreeMap<Long, ArrayList<String[]>> treeMap = new TreeMap<>();
         final int[] arr = {0, subUsersId.size()};
