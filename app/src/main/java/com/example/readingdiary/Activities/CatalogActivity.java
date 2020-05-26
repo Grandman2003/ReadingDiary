@@ -628,6 +628,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                             final RealNote realNote = new RealNote(id, map.get("path").toString(), map.get("author").toString(),
                                     map.get("title").toString(), Double.valueOf(map.get("rating").toString()), (boolean)map.get("private"),
                                     (double) map.get("publicRatingSum"), (long)map.get("publicRatingCount"));
+                            realNote.setTime(Long.parseLong(map.get("timeAdd").toString()));
                             if (map.get("imagePath")!= null && !map.get("imagePath").toString().equals("")){
                                 FirebaseStorage.getInstance().getReference(user).child(documentSnapshot.getId()).child("Images").child(map.get("imagePath").toString()).getDownloadUrl()
                                         .addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -857,6 +858,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     boolean isPrivate = ((RealNote)notes.get(position)).changePrivate();
                     if (!isPrivate)
                     {
+
                         db.collection("Publicly").document(user)
                                 .update("notesId", FieldValue.arrayUnion(notes.get(position).getID()))
                                 .addOnFailureListener(new OnFailureListener() {

@@ -90,7 +90,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                         context.getResources().getDrawable(R.drawable.ic_action_public_dark));
             }
             if (realNote.getCoverUri() !=null){
+                viewHolder.cover.setVisibility(View.VISIBLE);
                 Picasso.get().load(realNote.getCoverUri()).into(viewHolder.cover);
+            }
+            else{
+                viewHolder.cover.setVisibility(View.INVISIBLE);
             }
         }
         if (type == TYPE_ITEM2){
