@@ -26,7 +26,9 @@ import com.example.readingdiary.Classes.VariousNotes;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.VariousViewAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
@@ -75,6 +77,7 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
     private String idUser;
     Button addVariousItem;
     boolean editAccess;
+    MainActivity mein = new MainActivity();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -153,13 +156,32 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
     @Override
     public void onDelete()
     {
-
+        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>()
+        {
+            @Override
+            public void onComplete(@NonNull Task<Void> task)
+            {
+                if (task.isSuccessful())
+                {
+                    Toast.makeText(VariousShow.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(VariousShow.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                }
+                else
+                {
+                    Toast.makeText(VariousShow.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override
     public void onForgot()
     {
-
+        Intent intent = new Intent(VariousShow.this, ForgotPswActivity.class);
+        startActivity(intent);
     }
 
     @Override
