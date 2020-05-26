@@ -453,10 +453,11 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         public void deleteSelectedRealNote(){
             for (int i = 0; i < selectionRealNotesList.size(); i++){
                 String id = selectionRealNotesList.get(i).getID();
-                if (!((RealNote)notes.get(i)).getPrivate()){
+                if (!((RealNote)selectionRealNotesList.get(i)).getPrivate()){
                     DeleteNote.deletePublicly(user, id);
                 }
                 notes.remove(selectionRealNotesList.get(i));
+                mAdapter.notifyItemRemoved(i);
                 DeleteNote.deleteNote(user, id);
 
             }
