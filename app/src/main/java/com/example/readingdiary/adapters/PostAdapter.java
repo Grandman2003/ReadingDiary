@@ -19,6 +19,7 @@ import com.example.readingdiary.R;
 import com.google.android.material.card.MaterialCardView;
 import com.squareup.picasso.Picasso;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
@@ -63,9 +64,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostPosts>
             holder.imageView3.setVisibility(View.INVISIBLE);
 //            Picasso.get().load(realNote.getCoverUri()).into(holder.imageView3);
         }
-        if (realNote.getPublicRatingCount() != 0){
-            holder.tvReitPost.setText(String.valueOf(realNote.getPublicRatingSum() / realNote.getPublicRatingCount()));
-        }
+        if (realNote.getPublicRatingCount() != 0)
+            holder.tvReitPost.setText(new DecimalFormat("#0.00").format(realNote.getPublicRatingSum() / realNote.getPublicRatingCount()));
         else{
             holder.tvReitPost.setText("0.0");
         }

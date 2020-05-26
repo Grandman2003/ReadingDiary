@@ -1,6 +1,9 @@
 package com.example.readingdiary.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,10 +28,12 @@ import android.widget.Toast;
 
 import com.example.readingdiary.Classes.QuickSort;
 import com.example.readingdiary.R;
+import com.example.readingdiary.adapters.SubscriptionsShowAdapter;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -52,6 +57,7 @@ public class OnlineActivity extends AppCompatActivity
     EditText etShareUser;
     String user = FirebaseAuth.getInstance().getCurrentUser().getUid();
     String [] x = new String[] {"wsdsaddaads","adsdsaa ","dsadsdsad " };// тестовый массив подписок
+    ArrayList<String> subscriptions = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -99,7 +105,13 @@ public class OnlineActivity extends AppCompatActivity
             }
         });
 
-        final TextView subscriptions = (TextView) findViewById(R.id.subscriptions_id_view);
+        RecyclerView subscriptionsRecycler = findViewById(R.id.subscriptions_id_recycler);
+        final SubscriptionsShowAdapter subscriptionsAdapter = new SubscriptionsShowAdapter(subscriptions);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
+        subscriptionsRecycler.setAdapter(subscriptionsAdapter);
+        subscriptionsRecycler.setLayoutManager(layoutManager);
+        subscriptionsRecycler.setItemAnimator(itemAnimator);
         FirebaseFirestore.getInstance().collection("Subscriptions").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
@@ -107,34 +119,39 @@ public class OnlineActivity extends AppCompatActivity
                     Log.e("onlineE", e.toString());
                 }
                 else{
-                    String str = "";
+                    subscriptions.clear();
+                    subscriptionsAdapter.notifyDataSetChanged();
                     HashMap<String, String> hashMap = (HashMap) documentSnapshot.getData();
                     if (hashMap != null){
                         for (String key : hashMap.keySet()){
-                            str += hashMap.get(key)+"\n";
-                            Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG).show();
+                            subscriptions.add(hashMap.get(key));
+                            subscriptionsAdapter.notifyItemInserted(subscriptions.size());
                         }
-                        subscriptions.setText(str);
                     }
 
                 }
             }
         });
 
+        subscriptionsAdapter.setOnItemClickListener(new SubscriptionsShowAdapter.OnItemClickListener() {
+            @Override
+            public void onRemoveSubscription(final int position) {
+                FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", subscriptions.get(position)).get()
+                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            @Override
+                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                                  FirebaseFirestore.getInstance().collection("Subscriptions")
+                                            .document(user).update(documentSnapshot.getId(), FieldValue.delete());
+                                }
+                                subscriptions.remove(position);
+                                subscriptionsAdapter.notifyItemRemoved(position);
+                            }
+                        });
+            }
+        });
+
     }
 
-    public String ShareUser(String usID) // usID искомый user
-    {
-
-        //обращение к списку id, на которые подписан usID
-        //String[] ids = new String[] {""," "," " }; // массив подписок
-        ArrayList <String> gotcha = new ArrayList<>(); // список совпадений
-        QuickSort Share = new QuickSort(); // класс сортировки
-        Share.StrSort(x,usID,gotcha); // сортировка и поиск совпадений
-        usID = String.valueOf(gotcha); // поскльку совпадение может быть только одно записываем его в str для добавления
-
-
-        return usID;
-    }
 
 }
