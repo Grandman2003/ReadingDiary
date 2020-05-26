@@ -15,6 +15,7 @@ public class RealNote implements Note {
     private double publicRatingSum;
     private long publicRatingCount;
     private String owner;
+    private long time;
 
 
 
@@ -117,6 +118,14 @@ public class RealNote implements Note {
 
     public Uri getCoverUri() {
         return coverUri;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 
     public void setCoverPath(Uri coverUri) {
