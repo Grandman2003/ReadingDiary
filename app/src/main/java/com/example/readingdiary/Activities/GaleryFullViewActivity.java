@@ -74,6 +74,7 @@ private String TAG_DARK = "dark_theme";
     String user;
     private StorageReference imageStorage;
     private DocumentReference imagePathsDoc;
+    boolean editAccess;
 
 
     @Override
@@ -92,9 +93,16 @@ private String TAG_DARK = "dark_theme";
         toolbar = (MaterialToolbar)findViewById(R.id.base_toolbar);
         setSupportActionBar(toolbar);
         // открываем и сохраняем в список изображения для данной записи
-        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
+        if (args.get("owner")==null){
+            user = FirebaseAuth.getInstance().getUid();
+            editAccess = true;
+        }
+        else{
+            user = args.get("owner").toString();
+            editAccess = false;
+        }
         imagePathsDoc = FirebaseFirestore.getInstance().collection("Common").document(user).collection(id).document("Images");
         imageStorage = FirebaseStorage.getInstance().getReference(user).child(id).child("Images");
         position = Integer.parseInt(args.get("position").toString());
@@ -123,7 +131,7 @@ private String TAG_DARK = "dark_theme";
         final Runnable makeLayoutGone = new Runnable(){
             @Override
             public void run(){
-                buttonsLayout.setVisibility(View.INVISIBLE);
+                buttonsLayout.setVisibility(View.GONE);
             }
         };
 
@@ -131,11 +139,14 @@ private String TAG_DARK = "dark_theme";
         adapter.setOnItemClickListener(new GaleryFullViewAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
-                buttonsLayout.setVisibility(View.VISIBLE);
-                position = pos;
+                if (editAccess){
+                    buttonsLayout.setVisibility(View.VISIBLE);
+                    position = pos;
 
-                // через 8 секунд меню пропадает
-                uiHandler.postDelayed(makeLayoutGone, 8000);
+                    // через 8 секунд меню пропадает
+                    uiHandler.postDelayed(makeLayoutGone, 8000);
+                }
+
             }
         });
 

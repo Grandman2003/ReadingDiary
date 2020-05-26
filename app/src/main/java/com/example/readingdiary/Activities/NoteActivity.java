@@ -62,12 +62,11 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     private final int GALERY_REQUEST_CODE = 124;
     private final int COMENTS_REQUEST_CODE = 125;
     Toolbar toolbar;
-
     ImageButton bUpload;
-
-
     private String user = "user0";
+    private String currentUser;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private boolean editAccess;
 
 
 
@@ -96,11 +95,14 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
         if (args.get("changed") != null && args.get("changed").equals("true")){
             changed = true;
         }
+        currentUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
         if (args.get("owner")!= null){
             user = args.get("owner").toString();
+            editAccess = false;
         }
         else{
-            user=FirebaseAuth.getInstance().getCurrentUser().getUid();
+            user=currentUser;
+            editAccess = true;
         }
         select(id); // Заполнение полей из бд
         setButtons();
@@ -111,7 +113,9 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_note, menu);
+        if (editAccess){
+            getMenuInflater().inflate(R.menu.menu_note, menu);
+        }
         getMenuInflater().inflate(R.menu.base_menu, menu);
 
         return true;
@@ -291,18 +295,28 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
             public void onClick(View v) {
                 Intent intent = new Intent(NoteActivity.this, GaleryActivity.class);
                 intent.putExtra("id", id);
+                Log.d("qwerty49", "access" + editAccess);
+                if (!editAccess){
+                    intent.putExtra("owner", user);
+                }
                 startActivityForResult(intent, GALERY_REQUEST_CODE);
             }
         });
 
         ImageButton bUpload = (ImageButton) findViewById(R.id.bUpload); // переход в галерею
-        bUpload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //загрузка записи в сеть
-                Toast.makeText(NoteActivity.this,"Запись опубликована \n(допиши добавление в бд NoteActivity стр 293)",Toast.LENGTH_SHORT).show();
-            }
-        });
+        if (editAccess){
+            bUpload.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //загрузка записи в сеть
+                    Toast.makeText(NoteActivity.this,"Запись опубликована \n(допиши добавление в бд NoteActivity стр 293)",Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        else{
+            bUpload.setVisibility(View.GONE);
+            findViewById(R.id.textView11).setVisibility(View.GONE);
+        }
 
         Button coments = (Button) findViewById(R.id.comentsButton);
         coments.setOnClickListener(new View.OnClickListener() {
@@ -310,6 +324,9 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
             public void onClick(View v) {
                 Intent intent = new Intent(NoteActivity.this, VariousShow.class);
                 intent.putExtra("id", id);
+                if (!editAccess){
+                    intent.putExtra("owner", user);
+                }
                 intent.putExtra("type", getResources().getString(R.string.commentDir));
                 startActivityForResult(intent, COMENTS_REQUEST_CODE);
             }
@@ -322,6 +339,9 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
                 Intent intent = new Intent(NoteActivity.this, VariousShow.class);
                 intent.putExtra("id", id);
                 intent.putExtra("type", getResources().getString(R.string.descriptionDir));
+                if (!editAccess){
+                    intent.putExtra("owner", user);
+                }
                 startActivityForResult(intent, COMENTS_REQUEST_CODE);
             }
         });
@@ -333,6 +353,9 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
                 Intent intent = new Intent(NoteActivity.this, VariousShow.class);
                 intent.putExtra("id", id);
                 intent.putExtra("type", getResources().getString(R.string.quoteDir));
+                if (!editAccess){
+                    intent.putExtra("owner", user);
+                }
                 startActivityForResult(intent, COMENTS_REQUEST_CODE);
             }
         });

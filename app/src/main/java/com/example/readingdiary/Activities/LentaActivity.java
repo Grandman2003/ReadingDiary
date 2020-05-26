@@ -69,8 +69,11 @@ public class LentaActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
-                         subUsersId = new ArrayList<String>(documentSnapshot.getData().keySet());
-                        showNotes();
+                        if (documentSnapshot != null && documentSnapshot.getData() != null){
+                            subUsersId = new ArrayList<String>(documentSnapshot.getData().keySet());
+                            chooseNotes();
+                        }
+
                     }
                 });
 

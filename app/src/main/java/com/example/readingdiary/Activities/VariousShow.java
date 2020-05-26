@@ -74,6 +74,7 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
     String user;
     private String idUser;
     Button addVariousItem;
+    boolean editAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -94,7 +95,15 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
         type = args.get("type").toString();
-        user = FirebaseAuth.getInstance().getUid();
+        if (args.get("owner")!= null){
+            user = args.get("owner").toString();
+            editAccess = false;
+        }
+        else{
+            user = FirebaseAuth.getInstance().getUid();
+            editAccess = true;
+        }
+
         variousNoteStorage = FirebaseFirestore.getInstance().collection("VariousNotes").document(user).collection(id);
         variousNotePaths = variousNoteStorage.document(type);
         variousNotes = new ArrayList<>();
@@ -277,7 +286,7 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
         recyclerView.setAdapter(viewAdapter);
-        if (user==idUser)
+        if (editAccess)
         {
             viewAdapter.setOnItemClickListener(new VariousViewAdapter.OnItemClickListener()
             {
@@ -285,6 +294,7 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
                 @Override
                 public void onItemClick(int position)
                 {
+
                     Intent intent = new Intent(VariousShow.this, VariousNotebook.class);
                     intent.putExtra("id", id);
                     intent.putExtra("type", type);
@@ -331,18 +341,25 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
 
     private void setButtons()
     {
-         addVariousItem = (Button) findViewById(R.id.addVariousItem);
-        addVariousItem.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
+        addVariousItem = (Button) findViewById(R.id.addVariousItem);
+        if(!editAccess){
+            addVariousItem.setVisibility(View.GONE);
+        }
+        else{
+            addVariousItem.setOnClickListener(new View.OnClickListener()
             {
-                Intent intent = new Intent(VariousShow.this, VariousNotebook.class);
-                intent.putExtra("id", id);
-                intent.putExtra("type", type);
-                startActivityForResult(intent, ADD_VIEW_RESULT_CODE);
-            }
-        });
+                @Override
+                public void onClick(View v)
+                {
+                    Intent intent = new Intent(VariousShow.this, VariousNotebook.class);
+                    intent.putExtra("id", id);
+                    intent.putExtra("type", type);
+                    startActivityForResult(intent, ADD_VIEW_RESULT_CODE);
+                }
+            });
+        }
+//         addVariousItem = (Button) findViewById(R.id.addVariousItem);
+
     }
 
 

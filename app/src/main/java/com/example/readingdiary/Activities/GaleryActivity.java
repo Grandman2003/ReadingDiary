@@ -72,6 +72,7 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
     private StorageReference imageStorage;
     private DocumentReference imagePathsDoc;
     long time;
+    boolean editAccess;
     private String idUser; // в неё передаём id текущего пользовтеля
 
     @Override
@@ -91,12 +92,22 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
         setSupportActionBar(toolbar);
         Bundle args = getIntent().getExtras();
         id = args.get("id").toString();
-        user = FirebaseAuth.getInstance().getUid();
+        if (args.get("owner")==null){
+            user = FirebaseAuth.getInstance().getUid();
+            editAccess = true;
+        }
+        else{
+
+            user = args.get("owner").toString();
+            Log.d("qwerty49", "owner " + user);
+            editAccess = false;
+        }
 
 
 
 
-        idUser = user; // только для тестов, потом обязательно удали
+
+//        idUser = user; // только для тестов, потом обязательно удали
 
 
 
@@ -115,7 +126,7 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
         galeryView.setLayoutManager(layoutManager);
         Button pickImage = (Button) findViewById(R.id.button);
 
-        if (user!=idUser){pickImage.setVisibility(View.INVISIBLE);} //проверка на автора
+        if (!editAccess){pickImage.setVisibility(View.GONE);} //проверка на автора
 
         imagePathsDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -210,9 +221,11 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
             public void onItemClick(int position) {
                 Intent intent = new Intent(GaleryActivity.this, GaleryFullViewActivity.class);
                 intent.putExtra("id", id);
+                if (!editAccess){
+                    intent.putExtra("owner", user);
+                }
                 intent.putExtra("position", position);
                 startActivityForResult(intent, FULL_GALERY_CODE);
-
             }
         });
 
