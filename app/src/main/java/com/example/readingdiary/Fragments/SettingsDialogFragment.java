@@ -76,7 +76,7 @@ public class SettingsDialogFragment extends DialogFragment {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if (documentSnapshot != null)    {
-                            idTextView.setText(""+documentSnapshot.get("id"));
+                            idTextView.setText("Ваш ник\n"+documentSnapshot.get("id"));
                         }
                     }
                 });

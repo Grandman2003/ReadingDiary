@@ -87,7 +87,6 @@ public class OnlineActivity extends AppCompatActivity
                                         Map<String, String> map = new HashMap<>();
                                         map.put(documentSnapshot.getId(), etShareUser.getText().toString());
                                         FirebaseFirestore.getInstance().collection("Subscriptions").document(user).set(map, SetOptions.merge());
-
                                     }
                                     if (queryDocumentSnapshots.size()!=0){Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();}
                                     else {Toast.makeText(OnlineActivity.this, "Пользователь не найден", Toast.LENGTH_SHORT).show();}
