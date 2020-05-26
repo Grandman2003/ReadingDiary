@@ -94,7 +94,7 @@ public class OnlineActivity extends AppCompatActivity
                                 }
                             });
                 }
-                  else {Toast.makeText(OnlineActivity.this, "Введите id пользователя", Toast.LENGTH_SHORT).show(); etShareUser.setText("");}
+                  else {Toast.makeText(OnlineActivity.this, "Введите ник пользователя", Toast.LENGTH_SHORT).show(); etShareUser.setText("");}
 
             }
         });
