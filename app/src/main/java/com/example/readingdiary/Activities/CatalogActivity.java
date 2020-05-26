@@ -640,7 +640,8 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                             final HashMap<String, Object> map = (HashMap) documentSnapshot.getData();
                             final RealNote realNote = new RealNote(id, map.get("path").toString(), map.get("author").toString(),
-                                    map.get("title").toString(), Double.valueOf(map.get("rating").toString()), (boolean)map.get("private"));
+                                    map.get("title").toString(), Double.valueOf(map.get("rating").toString()), (boolean)map.get("private"),
+                                    (double) map.get("publicRatingSum"), (long)map.get("publicRatingCount"));
                             if (map.get("imagePath")!= null && !map.get("imagePath").toString().equals("")){
                                 FirebaseStorage.getInstance().getReference(user).child(documentSnapshot.getId()).child("Images").child(map.get("imagePath").toString()).getDownloadUrl()
                                         .addOnSuccessListener(new OnSuccessListener<Uri>() {

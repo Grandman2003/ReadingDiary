@@ -81,7 +81,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
-        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         findViews();
         ratingView.setEnabled(false);
@@ -93,6 +93,12 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
         id = args.get("id").toString();
         if (args.get("changed") != null && args.get("changed").equals("true")){
             changed = true;
+        }
+        if (args.get("owner")!= null){
+            user = args.get("owner").toString();
+        }
+        else{
+            user=FirebaseAuth.getInstance().getCurrentUser().getUid();
         }
         select(id); // Заполнение полей из бд
         setButtons();

@@ -142,7 +142,7 @@ private String TAG_DARK = "dark_theme";
             isNoteNew=true;
             id = db.collection("Notes").document(user).collection("userNotes").document().getId();
             path = args.get("path").toString();
-            beforeChanging = new String[]{path, "", "", "0.0", "", "", "", "", ""};
+            beforeChanging = new String[]{path, "", "", "0.0", "", "", "", "", "", "0"};
             isPrivate=false;
             setViews();
         }
@@ -150,7 +150,7 @@ private String TAG_DARK = "dark_theme";
             isNoteNew=true;
             id = db.collection("Notes").document(user).collection("userNotes").document().getId();
             path = "./";
-            beforeChanging = new String[]{"./", "", "", "0.0", "", "", "", "", ""};
+            beforeChanging = new String[]{"./", "", "", "0.0", "", "", "", "", "", "0"};
             isPrivate = false;
             setViews();
         }
@@ -330,42 +330,7 @@ private String TAG_DARK = "dark_theme";
         }
 
     }
-    //
-//    private void setFocuses(){
-//        setFocuse(pathView);
-//        setFocuse(titleView);
-//        setFocuse(authorView);
-//        setFocuse(timeView);
-//        setFocuse(placeView);
-//        setFocuse(shortCommentView);
-//
-//    }
 
-//    private void setFocuse(final EditText editText){
-//        editText.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                if (event.getAction() == MotionEvent.ACTION_UP){
-////                    acceptButton.setVisibility(View.GONE);
-////                    cancelButton.setVisibility(View.GONE);
-//                    editText.setCursorVisible(true);
-//                }
-//                return false;
-//            }
-//        });
-//    }
-
-//    private void setCursorsVisible(boolean arg){
-//        pathView.setCursorVisible(arg);
-//        titleView.setCursorVisible(arg);
-//        authorView.setCursorVisible(arg);
-//        timeView.setCursorVisible(arg);
-//        placeView.setCursorVisible(arg);
-//        shortCommentView.setCursorVisible(arg);
-//        genreView.setCursorVisible(arg);
-//
-//
-//    }
 
     public void findViews(){
         pathView = (EditText) findViewById(R.id.editPath);
@@ -380,26 +345,7 @@ private String TAG_DARK = "dark_theme";
         acceptButton = (FloatingActionButton) findViewById(R.id.acceptAddingNote2);
         cancelButton = (FloatingActionButton) findViewById(R.id.cancelAddingNote2);
         privacyView = (CheckBox) findViewById(R.id.privacyCheckBox);
-//        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.relativeViewEditNote);
-//        relativeLayout.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(), "CLICK", Toast.LENGTH_LONG).show();
-//                acceptButton.setVisibility(View.VISIBLE);
-//                cancelButton.setVisibility(View.VISIBLE);
-//            }
-//        });
-//        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linearLayoutEditNote);
-//        linearLayout.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(), "CLICK L", Toast.LENGTH_LONG).show();
-//                acceptButton.setVisibility(View.VISIBLE);
-//                cancelButton.setVisibility(View.VISIBLE);
-//            }
-//        });
-//        changeViews = {pathView, authorView, titleView, ratingView, genreView, timeView, placeView, shortCommentView, imageView};
-    }
+ }
 
     public void setViews(){
         this.pathView.setText(beforeChanging[0].substring(beforeChanging[0].indexOf('/')+1));
@@ -496,7 +442,7 @@ private String TAG_DARK = "dark_theme";
                                 map.get("title").toString(), map.get("rating").toString(),
                                 map.get("genre").toString(), map.get("time").toString(),
                                 map.get("place").toString(), map.get("short_comment").toString(),
-                                map.get("imagePath").toString()};
+                                map.get("imagePath").toString(), map.get("timeAdd").toString()};
                         setViews();
                     }
                 });
@@ -516,7 +462,7 @@ private String TAG_DARK = "dark_theme";
         else if (timeView.length()>50){Toast.makeText(EditNoteActivity.this,"Введен слишком большой текст для периода прочтения",Toast.LENGTH_SHORT).show();return false;}
         else if (placeView.length()>50){Toast.makeText(EditNoteActivity.this,"Введено слишком большое название места прочтения",Toast.LENGTH_SHORT).show();return false;}
         else if (shortCommentView.length()>50){Toast.makeText(EditNoteActivity.this,"Введен слишком большой короткий комментарий",Toast.LENGTH_SHORT).show();return false;}
-
+        String time = (beforeChanging[9].equals("0"))?System.currentTimeMillis()+"":beforeChanging[9];
         String path1 = pathView.getText().toString();
         path1 = fixPath(path1);
         Map<String, Object> note = new HashMap<String, Object>();
@@ -529,38 +475,34 @@ private String TAG_DARK = "dark_theme";
         note.put("time", timeView.getText().toString());
         note.put("place", placeView.getText().toString());
         note.put("short_comment", shortCommentView.getText().toString());
+        note.put("timeAdd", time);
         if (privacyView.isChecked() && (isPrivate || isNoteNew)){
-            db.collection("Publicly").document(user).update("notesId", FieldValue.arrayUnion(id))
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            if (((FirebaseFirestoreException)e).getCode().equals(FirebaseFirestoreException.Code.NOT_FOUND)){
-                                Map<String, List> map = new HashMap<>();
-                                List<String> list = new ArrayList<>();
-                                list.add(id);
-                                map.put("notesId", list);
-                                db.collection("Publicly").document(user).set(map);
-                            }
-                        }
-                    });
+            Map<String, String> map = new HashMap<>();
+            List<String> list = new ArrayList<>();
+            map.put(time, id);
+            db.collection("Publicly").document(user).set(map, SetOptions.merge());
         }
         else if (!privacyView.isChecked() && !isPrivate){
-            db.collection("Publicly").document(user).update("notesId", FieldValue.arrayRemove(id));
+            db.collection("Publicly").document(user).update(time, FieldValue.delete());
         }
         note.put("private", !privacyView.isChecked());
-        note.put("publiclyRating", "0.0");
+//        note.put("publicRatingSum", 0);
+//        note.put("publicRatingCount", 0);
+
         if (!beforeChanging[0].equals(path1)){
             beforeChanging[0] = path1;
             savePaths();
         }
         if (isNoteNew == true){
+            note.put("publicRatingSum", (double)0.0);
+            note.put("publicRatingCount", 0);
             db.collection("Notes").document(user).collection("userNotes").document(id).set(note);
             HashMap<String, Boolean> map = new HashMap<String, Boolean>();
             insertIntent();
         }
         else
         {
-            db.collection("Notes").document(user).collection("userNotes").document(id).set(note);
+            db.collection("Notes").document(user).collection("userNotes").document(id).set(note, SetOptions.merge());
             changedIntent();
         }
         return true;

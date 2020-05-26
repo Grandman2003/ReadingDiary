@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                             Log.d("qwerty55", "qwerty");
                                                             DocumentReference documentReference = db.collection("PublicID").document("LastID");
                                                             DocumentSnapshot lastID = transaction.get(documentReference);
-                                                            if (lastID != null){
+                                                            if (lastID != null && lastID.getLong("id")!=null){
                                                                 Log.d("qwerty55", "qwerty!");
                                                                 long newID = lastID.getLong("id") + 1;
                                                                 transaction.update(documentReference, "id", newID);

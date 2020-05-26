@@ -12,10 +12,14 @@ public class RealNote implements Note {
     private double rating;
     private boolean isPrivate;
     private Uri coverUri;
+    private double publicRatingSum;
+    private long publicRatingCount;
+    private String owner;
 
 
 
-    public RealNote(String id, String path, String author, String title, double rating, boolean isPrivate, Uri coverUri){
+
+    public RealNote(String id, String path, String author, String title, double rating, boolean isPrivate, double publicRatingSum, long publicRatingCount, Uri coverUri){
         this.id = id;
         this.path = path;
         this.title = title;
@@ -23,16 +27,22 @@ public class RealNote implements Note {
         this.rating = rating;
         this.coverUri = coverUri;
         this.isPrivate = isPrivate;
+        this.publicRatingSum=publicRatingSum;
+        this.publicRatingCount=publicRatingCount;
+
+
 
     }
-    public RealNote(String id, String path, String author, String title, double rating, boolean isPrivate){
+    public RealNote(String id, String path, String author, String title, double rating, boolean isPrivate, double publicRatingSum, long publicRatingCount){
         this.id = id;
         this.path = path;
         this.title = title;
         this.author = author;
         this.rating = rating;
         this.isPrivate = isPrivate;
-//        this.coverPath="";
+        this.publicRatingSum=publicRatingSum;
+        this.publicRatingCount=publicRatingCount;
+
     }
 
 
@@ -79,6 +89,30 @@ public class RealNote implements Note {
     public boolean changePrivate(){
         isPrivate = !isPrivate;
         return isPrivate;
+    }
+
+    public double getPublicRatingSum() {
+        return publicRatingSum;
+    }
+
+    public void setPublicRatingSum(double publicRatingSum) {
+        this.publicRatingSum = publicRatingSum;
+    }
+
+    public long getPublicRatingCount() {
+        return publicRatingCount;
+    }
+
+    public void setPublicRatingCount(long publicRatingCount) {
+        this.publicRatingCount = publicRatingCount;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public Uri getCoverUri() {
