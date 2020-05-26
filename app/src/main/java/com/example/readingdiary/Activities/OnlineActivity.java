@@ -77,7 +77,7 @@ public class OnlineActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                if (etShareUser.getText().equals(""))
+                if (!etShareUser.getText().equals(""))
                 {
                     FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", etShareUser.getText().toString()).get()
                             .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
