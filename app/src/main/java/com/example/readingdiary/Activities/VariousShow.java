@@ -113,7 +113,11 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
         findViews();
         toolbar.getMenu().clear();
         toolbar.setTitle("");
-        counterText.setText(type);
+        if (type.equals(getResources().getString(R.string.commentDir))) counterText.setText("Отзыв");
+        else if (type.equals(getResources().getString(R.string.descriptionDir))) counterText.setText("Описание");
+        else if (type.equals(getResources().getString(R.string.quoteDir))) counterText.setText("Цитаты");
+
+//        counterText.setText(type);
         setSupportActionBar(toolbar);
 
         setAdapters();
@@ -132,19 +136,7 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
 
     @Override
     public void onChangeThemeClick(boolean isChecked) {
-        if (isChecked){
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(TAG_DARK, true);
-            editor.apply();
-
-        }
-        else{
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(TAG_DARK, false);
-            editor.apply();
-            this.recreate();
-        }
-        this.recreate();
+        Toast.makeText(this, "На нас напали светлые маги. Темная тема пока заперта", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -192,13 +184,11 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
             deleteVariousNotes();
             viewAdapter.notifyDataSetChanged();
             toolbar.getMenu().clear();
-//            toolbar.inflateMenu(R.menu.menu_catalog);
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            counterText.setText(type);
+            if (type.equals(getResources().getString(R.string.commentDir))) counterText.setText("Отзыв");
+            else if (type.equals(getResources().getString(R.string.descriptionDir))) counterText.setText("Описание");
+            else if (type.equals(getResources().getString(R.string.quoteDir))) counterText.setText("Цитаты");
             count=0;
-//            selectionList.clear();
-
-
         }
         return super.onOptionsItemSelected(item);
     }

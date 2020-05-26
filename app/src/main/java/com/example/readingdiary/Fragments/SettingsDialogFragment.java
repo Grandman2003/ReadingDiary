@@ -54,7 +54,7 @@ public class SettingsDialogFragment extends DialogFragment {
         wmlp.y=-2*y / 7;
         wmlp.x = x/2;
         materialDialogs.show();
-        SwitchMaterial switchMaterial = materialDialogs.findViewById(R.id.switchTheme);
+        final SwitchMaterial switchMaterial = materialDialogs.findViewById(R.id.switchTheme);
 
         if (isChecked==true){
             switchMaterial.setChecked(true);
@@ -62,6 +62,7 @@ public class SettingsDialogFragment extends DialogFragment {
             switchMaterial.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    listener.onChangeThemeClick(switchMaterial.isChecked());
                     Log.d("qwerty33", "qwertyui");
                 }
             });

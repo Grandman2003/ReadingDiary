@@ -241,20 +241,7 @@ private String TAG_DARK = "dark_theme";
 
     @Override
     public void onChangeThemeClick(boolean isChecked) {
-        if (isChecked){
-//                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(TAG_DARK, true);
-            editor.apply();
-
-        }
-        else{
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(TAG_DARK, false);
-            editor.apply();
-            this.recreate();
-        }
-        this.recreate();
+        Toast.makeText(this, "На нас напали светлые маги. Темная тема пока заперта", Toast.LENGTH_LONG).show();
     }
 
     @Override
