@@ -29,7 +29,9 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -67,7 +69,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     private String currentUser;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private boolean editAccess;
-
+    MainActivity mein = new MainActivity();
 
 
     @Override
@@ -150,12 +152,32 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     }
 
     @Override
-    public void onDelete() {
-
+    public void onDelete()
+    {
+        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful())
+                {
+                    Toast.makeText(NoteActivity.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(NoteActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                }
+                else
+                {
+                    Toast.makeText(NoteActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override
-    public void onForgot() {
+    public void onForgot()
+    {
+        Intent intent = new Intent(NoteActivity.this, ForgotPswActivity.class);
+        startActivity(intent);
 
     }
 
@@ -305,11 +327,13 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
 
         ImageButton bUpload = (ImageButton) findViewById(R.id.bUpload); // переход в галерею
         if (editAccess){
-            bUpload.setOnClickListener(new View.OnClickListener() {
+            bUpload.setOnClickListener(new View.OnClickListener()
+            {
                 @Override
-                public void onClick(View v) {
+                public void onClick(View v)
+                {
                     //загрузка записи в сеть
-                    Toast.makeText(NoteActivity.this,"Запись опубликована \n(допиши добавление в бд NoteActivity стр 293)",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(NoteActivity.this,"Запись опубликована \n(допиши добавление в бд NoteActivity стр 207)",Toast.LENGTH_SHORT).show();
                 }
             });
         }

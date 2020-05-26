@@ -49,8 +49,10 @@ import com.example.readingdiary.R;
 import com.example.readingdiary.data.LiteratureContract.NoteTable;
 import com.example.readingdiary.data.LiteratureContract.PathTable;
 import com.example.readingdiary.data.OpenHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -107,7 +109,7 @@ private String TAG_DARK = "dark_theme";
     Bitmap cover;
     CheckBox privacyView;
     boolean isPrivate;
-
+    MainActivity mein = new MainActivity();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -258,7 +260,9 @@ private String TAG_DARK = "dark_theme";
     }
 
     @Override
-    public void onExitClick() {
+    public void onExitClick()
+    {
+//        int ext =0;
 //        ext =1;
         MainActivity MainActivity = new MainActivity();
         MainActivity.currentUser=null;
@@ -270,11 +274,31 @@ private String TAG_DARK = "dark_theme";
 
     @Override
     public void onDelete() {
+        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful())
+                {
+                    Toast.makeText(EditNoteActivity.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(EditNoteActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                }
+                else
+                {
+                    Toast.makeText(EditNoteActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
     }
 
     @Override
-    public void onForgot() {
+    public void onForgot()
+    {
+        Intent intent = new Intent(EditNoteActivity.this, ForgotPswActivity.class);
+        startActivity(intent);
 
     }
 

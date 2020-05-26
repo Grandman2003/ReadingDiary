@@ -20,8 +20,10 @@ import com.example.readingdiary.Fragments.SaveDialogFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.Fragments.WrongLengthDialogFragment;
 import com.example.readingdiary.R;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
@@ -58,6 +60,7 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
     String user;
     private DocumentReference variousNotePaths;
     private CollectionReference variousNoteStorage;
+    MainActivity mein = new MainActivity();
 
 
 
@@ -146,13 +149,34 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
     }
 
     @Override
-    public void onDelete() {
-
+    public void onDelete()
+    {
+        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>()
+        {
+            @Override
+            public void onComplete(@NonNull Task<Void> task)
+            {
+                if (task.isSuccessful())
+                {
+                    Toast.makeText(VariousNotebook.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(VariousNotebook.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                }
+                else
+                {
+                    Toast.makeText(VariousNotebook.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override
-    public void onForgot() {
-
+    public void onForgot()
+    {
+        Intent intent = new Intent(VariousNotebook.this, ForgotPswActivity.class);
+        startActivity(intent);
     }
 
     @Override
