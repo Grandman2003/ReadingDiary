@@ -46,10 +46,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-
-
-
-
 public class OnlineActivity extends AppCompatActivity
 {
 
@@ -81,7 +77,8 @@ public class OnlineActivity extends AppCompatActivity
                 if (!etShareUser.getText().toString().equals("") && etShareUser.getText().toString()!= user )
                 {
                     FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", etShareUser.getText().toString()).get()
-                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>()
+                            {
                                 @Override
                                 public void onSuccess(QuerySnapshot queryDocumentSnapshots)
                                 {
@@ -90,12 +87,16 @@ public class OnlineActivity extends AppCompatActivity
                                         Map<String, String> map = new HashMap<>();
                                         map.put(documentSnapshot.getId(), etShareUser.getText().toString());
                                         FirebaseFirestore.getInstance().collection("Subscriptions").document(user).set(map, SetOptions.merge());
+
                                     }
+                                    if (queryDocumentSnapshots.size()!=0){Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();}
+                                    else {Toast.makeText(OnlineActivity.this, "Пользователь не найден", Toast.LENGTH_SHORT).show();}
+                                    etShareUser.setText("");
                                 }
                             });
-                    Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();
                 }
-                  else {Toast.makeText(OnlineActivity.this, "Введите корректный id пользователя", Toast.LENGTH_SHORT).show();}
+                  else {Toast.makeText(OnlineActivity.this, "Введите id пользователя", Toast.LENGTH_SHORT).show(); etShareUser.setText("");}
+
             }
         });
 
