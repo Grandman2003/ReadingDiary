@@ -489,7 +489,7 @@ private String TAG_DARK = "dark_theme";
         note.put("timeAdd", time);
         if (privacyView.isChecked() && (isPrivate || isNoteNew)){
             Map<String, String> map = new HashMap<>();
-            List<String> list = new ArrayList<>();
+//            List<String> list = new ArrayList<>();
             map.put(time, id);
             db.collection("Publicly").document(user).set(map, SetOptions.merge());
         }

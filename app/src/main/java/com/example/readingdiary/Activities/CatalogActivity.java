@@ -287,20 +287,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     @Override
     public void onChangeThemeClick(boolean isChecked) {
         Toast.makeText(this, "На нас напали светлые маги. Темная тема пока заперта", Toast.LENGTH_LONG).show();
-//        if (isChecked){
-////                        boolean b = sharedPreferences.getBoolean(TAG_DARK, false);
-//            SharedPreferences.Editor editor = sharedPreferences.edit();
-//            editor.putBoolean(TAG_DARK, true);
-//            editor.apply();
-//
-//        }
-//        else{
-//            SharedPreferences.Editor editor = sharedPreferences.edit();
-//            editor.putBoolean(TAG_DARK, false);
-//            editor.apply();
-//            this.recreate();
-//        }
-//        this.recreate();
     }
 
 
@@ -860,25 +846,34 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     if (!isPrivate)
                     {
 
-                        db.collection("Publicly").document(user)
-                                .update("notesId", FieldValue.arrayUnion(notes.get(position).getID()))
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        HashMap<String, List> map = new HashMap<>();
-                                        ArrayList<String> list = new ArrayList<>();
-                                        list.add(notes.get(position).getID());
-                                        map.put("notesId", list);
-                                        db.collection("Publicly").document(user).set(map);
-                                        db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).update("private", false);
-                                    }
-                                });
-                        HashMap<String, Object> map = new HashMap<>();
+                        Map<String, String> map = new HashMap<>();
+                        List<String> list = new ArrayList<>();
+                        map.put(""+((RealNote) notes.get(position)).getTime(), notes.get(position).getID());
+                        db.collection("Publicly").document(user).set(map, SetOptions.merge());
+                        db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).update("private", false);
+
+//                        db.collection("Publicly").document(user)
+//                                .update("notesId", FieldValue.arrayUnion(notes.get(position).getID()))
+//                                .addOnFailureListener(new OnFailureListener() {
+//                                    @Override
+//                                    public void onFailure(@NonNull Exception e) {
+//                                        HashMap<String, List> map = new HashMap<>();
+//                                        ArrayList<String> list = new ArrayList<>();
+//                                        list.add(notes.get(position).getID());
+//                                        map.put("notesId", list);
+//                                        db.collection("Publicly").document(user).set(map);
+//                                        db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).update("private", false);
+//                                    }
+//                                });
+//                        HashMap<String, Object> map = new HashMap<>();
 
                     }
                     else{
-                        db.collection("Publicly").document(user)
-                                .update("notesId", FieldValue.arrayRemove(notes.get(position).getID()));
+                        Map<String, String> map = new HashMap<>();
+                        map.put(""+((RealNote) notes.get(position)).getTime(), notes.get(position).getID());
+                        db.collection("Publicly").document(user).update(""+((RealNote) notes.get(position)).getTime(), FieldValue.delete());
+//                        db.collection("Publicly").document(user)
+//                                .update("notesId", FieldValue.arrayRemove(notes.get(position).getID()));
                         db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).update("private", true);
 
                     }

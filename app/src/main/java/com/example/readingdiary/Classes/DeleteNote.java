@@ -26,8 +26,23 @@ public class DeleteNote {
         deleteVariousNote(user, id, "quotes");
     }
 
-    public static void deletePublicly(String user, String id){
-        db.collection("Publicly").document(user).update("notesId", FieldValue.arrayRemove(id));
+    public static void deletePublicly(final String user, final String id){
+        db.collection("Publicly").document(user).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                HashMap<String, Object> hashMap = (HashMap)documentSnapshot.getData();
+                if (hashMap != null){
+                    for (String key : hashMap.keySet()){
+                        if (hashMap.get(key).equals(id)){
+                            db.collection("Publicly").document(user).update(key, FieldValue.delete());
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+//        db.collection("Publicly").document(user).update();
+//        db.collection("Publicly").document(user).update("notesId", FieldValue.arrayRemove(id));
     }
 
     public static void deleteVariousNote(String user, String id, final String type){
