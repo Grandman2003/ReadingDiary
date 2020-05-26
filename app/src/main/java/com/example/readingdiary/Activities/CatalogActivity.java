@@ -424,7 +424,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
         if (item.getItemId() == android.R.id.home){
             if (menuType==0){
-                finish();
+//                finish();
             }
             else if (menuType == 1){
                 action_mode=false;
