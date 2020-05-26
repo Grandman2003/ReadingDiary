@@ -46,9 +46,6 @@ import com.example.readingdiary.Fragments.DeleteTitleAndAuthorDialogFragment;
 import com.example.readingdiary.Fragments.SaveDialogFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
-import com.example.readingdiary.data.LiteratureContract.NoteTable;
-import com.example.readingdiary.data.LiteratureContract.PathTable;
-import com.example.readingdiary.data.OpenHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -87,8 +84,6 @@ private String TAG_DARK = "dark_theme";
     EditText shortCommentView;
     ImageView coverView;
     String imagePath="";
-    SQLiteDatabase sdb;
-    OpenHelper dbHelper;
     String id;
     String path;
     boolean change = false;
@@ -127,8 +122,6 @@ private String TAG_DARK = "dark_theme";
         user = FirebaseAuth.getInstance().getCurrentUser().getUid();
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        dbHelper = new OpenHelper(this);
-        sdb = dbHelper.getReadableDatabase();
         findViews();
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -271,6 +264,7 @@ private String TAG_DARK = "dark_theme";
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
+
                 }
                 else
                 {
@@ -303,43 +297,6 @@ private String TAG_DARK = "dark_theme";
             settingsDialogFragment.show(transaction, "dialog");
         }
         return false;
-    }
-
-    public void updateImage(){
-        // Выбор полей из бд
-        // Сейчас тут выбор не всех полей
-
-        String[] projection = {
-                NoteTable._ID,
-                NoteTable.COLUMN_COVER_IMAGE
-
-        };
-        Cursor cursor = sdb.query(
-                NoteTable.TABLE_NAME,   // таблица
-                projection,            // столбцы
-                NoteTable._ID + " = ?",                  // столбцы для условия WHERE
-                new String[] {id},                  // значения для условия WHERE
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);
-        try{
-            int coverColumnIndex =  cursor.getColumnIndex(NoteTable.COLUMN_COVER_IMAGE);
-
-            while (cursor.moveToNext()) {
-                imagePath = cursor.getString(coverColumnIndex);
-                this.coverView.setImageBitmap(BitmapFactory.decodeFile(imagePath));
-
-//                setViews(cursor.getString(pathColumnIndex), cursor.getString(authorColumnIndex),
-//                        cursor.getString(titleColumnIndex), cursor.getString(ratingColumnIndex),
-//                        cursor.getString(genreColumnIndex), cursor.getString(timeColumnIndex),
-//                        cursor.getString(placeColumnIndex), cursor.getString(shortCommentIndex),
-//                        cursor.getString(coverColumnIndex));
-            }
-        }
-        finally{
-            cursor.close();
-        }
-
     }
 
 

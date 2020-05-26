@@ -41,7 +41,6 @@ import com.example.readingdiary.Fragments.SortDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.CatalogButtonAdapter;
 import com.example.readingdiary.adapters.RecyclerViewAdapter;
-import com.example.readingdiary.data.OpenHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -68,7 +67,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         SettingsDialogFragment.SettingsDialogListener {
     // класс отвечает за активность с каталогами
 
-    OpenHelper dbHelper;
     RecyclerViewAdapter mAdapter;
     SQLiteDatabase sdb;
     String parent = "./";
@@ -309,11 +307,14 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
              public void onComplete(@NonNull Task<Void> task) {
                  if (task.isSuccessful())
                  {
+                     deleteDirectory(".\\");
+                     db.collection("PublicID").document(user).delete();
                      Toast.makeText(CatalogActivity.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
                      Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
                      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                      startActivity(intent);
+
                  }
                  else {
                          Toast.makeText(CatalogActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();

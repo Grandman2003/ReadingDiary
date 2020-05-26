@@ -59,6 +59,7 @@ public class OnlineActivity extends AppCompatActivity
     String user = FirebaseAuth.getInstance().getCurrentUser().getUid();
     String [] x = new String[] {"wsdsaddaads","adsdsaa ","dsadsdsad " };// тестовый массив подписок
     ArrayList<String> subscriptions = new ArrayList<>();
+    ArrayList<String> realSubscriptions = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -124,15 +125,28 @@ public class OnlineActivity extends AppCompatActivity
                 }
                 else{
                     subscriptions.clear();
+                    realSubscriptions.clear();
                     subscriptionsAdapter.notifyDataSetChanged();
-                    HashMap<String, String> hashMap = (HashMap) documentSnapshot.getData();
+                    final HashMap<String, String> hashMap = (HashMap) documentSnapshot.getData();
                     if (hashMap != null){
-                        for (String key : hashMap.keySet()){
-                            subscriptions.add(hashMap.get(key));
-                            subscriptionsAdapter.notifyItemInserted(subscriptions.size());
+                        for (final String key : hashMap.keySet()) {
+                            FirebaseFirestore.getInstance().collection("PublicID").document(key).get()
+                                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                            if (documentSnapshot != null && documentSnapshot.getData() != null) {
+                                                Log.d("qwerty60", key + " " + documentSnapshot.getData().toString());
+                                                subscriptions.add(hashMap.get(key));
+                                                realSubscriptions.add(key);
+                                                subscriptionsAdapter.notifyItemInserted(subscriptions.size());
+                                            } else {
+                                                FirebaseFirestore.getInstance().collection("Subscriptions")
+                                                        .document(user).update(key, FieldValue.delete());
+                                            }
+                                        }
+                                    });
                         }
                     }
-
                 }
             }
         });
@@ -140,18 +154,11 @@ public class OnlineActivity extends AppCompatActivity
         subscriptionsAdapter.setOnItemClickListener(new SubscriptionsShowAdapter.OnItemClickListener() {
             @Override
             public void onRemoveSubscription(final int position) {
-                FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", subscriptions.get(position)).get()
-                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                            @Override
-                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
-                                  FirebaseFirestore.getInstance().collection("Subscriptions")
-                                            .document(user).update(documentSnapshot.getId(), FieldValue.delete());
-                                }
-                                subscriptions.remove(position);
-                                subscriptionsAdapter.notifyItemRemoved(position);
-                            }
-                        });
+                FirebaseFirestore.getInstance().collection("Subscriptions")
+                        .document(user).update(realSubscriptions.get(position), FieldValue.delete());
+                subscriptions.remove(position);
+                realSubscriptions.remove(position);
+                subscriptionsAdapter.notifyItemRemoved(position);
             }
         });
 

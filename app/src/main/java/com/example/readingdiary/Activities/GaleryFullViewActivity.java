@@ -33,8 +33,6 @@ import com.example.readingdiary.Fragments.SetCoverDialogFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.GaleryFullViewAdapter;
-import com.example.readingdiary.data.LiteratureContract;
-import com.example.readingdiary.data.OpenHelper;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.appbar.MaterialToolbar;
