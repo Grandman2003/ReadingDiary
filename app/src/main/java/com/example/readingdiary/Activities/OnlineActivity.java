@@ -114,12 +114,15 @@ public class OnlineActivity extends AppCompatActivity
                 startActivity(intent);
             }
         });
+
+
+
     }
 
     private void addSubscription(){
         if (!etShareUser.getText().toString().equals(""))
         {
-            FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", etShareUser.getText().toString().trim()).get()
+            FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", etShareUser.getText().toString()).get()
                     .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                         @Override
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots)
@@ -129,11 +132,9 @@ public class OnlineActivity extends AppCompatActivity
                                 Map<String, String> map = new HashMap<>();
                                 map.put(documentSnapshot.getId(), etShareUser.getText().toString());
                                 FirebaseFirestore.getInstance().collection("Subscriptions").document(user).set(map, SetOptions.merge());
-//                                if (documentSnapshot != null)
                             }
-                            if (queryDocumentSnapshots.size()!=0){Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();}
+                            if(queryDocumentSnapshots.size()!=0){Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();}
                             else {Toast.makeText(OnlineActivity.this, "Введите корректный ник пользователя", Toast.LENGTH_SHORT).show();}
-
                             etShareUser.setText("");
                         }
                     });
@@ -161,21 +162,12 @@ public class OnlineActivity extends AppCompatActivity
                                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                         @Override
                                         public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                            Log.d("qwerty64", documentSnapshot.get("id") + " " + hashMap.get(key) + " " + key);
-                                            if (!documentSnapshot.getString("id").equals(hashMap.get(key))) {
-                                                FirebaseFirestore.getInstance().collection("Subscriptions")
-                                                        .document(user).update(key, documentSnapshot.getString("id"));
-                                                subscriptions.add(documentSnapshot.getString("id"));
-                                                realSubscriptions.add(key);
-                                                subscriptionsAdapter.notifyItemInserted(subscriptions.size());
-                                            }
-                                            else if (documentSnapshot != null && documentSnapshot.getData() != null) {
+                                            if (documentSnapshot != null && documentSnapshot.getData() != null) {
                                                 Log.d("qwerty60", key + " " + documentSnapshot.getData().toString());
                                                 subscriptions.add(hashMap.get(key));
                                                 realSubscriptions.add(key);
                                                 subscriptionsAdapter.notifyItemInserted(subscriptions.size());
-                                            }
-                                            else {
+                                            } else {
                                                 FirebaseFirestore.getInstance().collection("Subscriptions")
                                                         .document(user).update(key, FieldValue.delete());
                                             }

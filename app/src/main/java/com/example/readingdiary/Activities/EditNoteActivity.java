@@ -457,8 +457,6 @@ private String TAG_DARK = "dark_theme";
             db.collection("Publicly").document(user).update(time, FieldValue.delete());
         }
         note.put("private", !privacyView.isChecked());
-//        note.put("publicRatingSum", 0);
-//        note.put("publicRatingCount", 0);
 
         if (!beforeChanging[0].equals(path1)){
             beforeChanging[0] = path1;
@@ -477,7 +475,6 @@ private String TAG_DARK = "dark_theme";
             changedIntent();
         }
         return true;
-
     }
 
     private void showNoTitleAndAuthorDialog(){
