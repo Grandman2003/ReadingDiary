@@ -31,15 +31,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Transaction;
-
-import org.w3c.dom.Document;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.opencensus.internal.StringUtil;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, AddShortNameFragment.AddShortNameDialogListener {
 
