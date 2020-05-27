@@ -48,7 +48,6 @@ import javax.annotation.Nullable;
 
 public class OnlineActivity extends AppCompatActivity
 {
-
     Button bShareUser;
     Button bGoLent;
     EditText etShareUser;
@@ -64,9 +63,7 @@ public class OnlineActivity extends AppCompatActivity
 
         etShareUser = (EditText) findViewById(R.id.etShareUser);//строка поиска
 
-
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
 
         bShareUser= (Button) findViewById(R.id.bShareUser); //кнопка поиска
         bShareUser.setOnClickListener(new View.OnClickListener()
@@ -94,7 +91,7 @@ public class OnlineActivity extends AppCompatActivity
                                 }
                             });
                 }
-                  else {Toast.makeText(OnlineActivity.this, "Введите ник пользователя", Toast.LENGTH_SHORT).show(); etShareUser.setText("");}
+                else {Toast.makeText(OnlineActivity.this, "Введите ник пользователя", Toast.LENGTH_SHORT).show(); etShareUser.setText("");}
 
             }
         });
@@ -119,27 +116,36 @@ public class OnlineActivity extends AppCompatActivity
         subscriptionsRecycler.setItemAnimator(itemAnimator);
         FirebaseFirestore.getInstance().collection("Subscriptions").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if (e != null){
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e)
+            {
+                if (e != null)
+                {
                     Log.e("onlineE", e.toString());
                 }
-                else{
+                else
+                {
                     subscriptions.clear();
                     realSubscriptions.clear();
                     subscriptionsAdapter.notifyDataSetChanged();
                     final HashMap<String, String> hashMap = (HashMap) documentSnapshot.getData();
-                    if (hashMap != null){
-                        for (final String key : hashMap.keySet()) {
+                    if (hashMap != null)
+                    {
+                        for (final String key : hashMap.keySet())
+                        {
                             FirebaseFirestore.getInstance().collection("PublicID").document(key).get()
-                                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+                                    {
                                         @Override
                                         public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                            if (documentSnapshot != null && documentSnapshot.getData() != null) {
+                                            if (documentSnapshot != null && documentSnapshot.getData() != null)
+                                            {
                                                 Log.d("qwerty60", key + " " + documentSnapshot.getData().toString());
                                                 subscriptions.add(hashMap.get(key));
                                                 realSubscriptions.add(key);
                                                 subscriptionsAdapter.notifyItemInserted(subscriptions.size());
-                                            } else {
+                                            }
+                                            else
+                                            {
                                                 FirebaseFirestore.getInstance().collection("Subscriptions")
                                                         .document(user).update(key, FieldValue.delete());
                                             }
