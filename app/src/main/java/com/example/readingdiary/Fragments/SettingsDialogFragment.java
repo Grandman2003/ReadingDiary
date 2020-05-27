@@ -55,7 +55,6 @@ public class SettingsDialogFragment extends DialogFragment {
         builder.setCancelable(true);
         materialDialogs = builder.create();
         WindowManager.LayoutParams wmlp = materialDialogs.getWindow().getAttributes();
-//        Log.d("qwerty47", toolbarHeight + " " + y + " " + wmlp.height + " " + materialDialogs.findViewById(R.id.switchTheme).getHeight() + " " +  materialDialogs.findViewById(R.id.exitButton).getHeight());
         wmlp.y=-2*y / 7;
         wmlp.x = x/2;
         materialDialogs.show();
@@ -70,8 +69,6 @@ public class SettingsDialogFragment extends DialogFragment {
                     listener.onChangeThemeClick(switchMaterial.isChecked());
                 }
             });
-
-//        final String userName = "";
         TextView textView = materialDialogs.findViewById(R.id.exitButton);
         TextView txtDel = materialDialogs.findViewById(R.id.textView13);
         TextView txtForg = materialDialogs.findViewById(R.id.textView);
@@ -91,17 +88,6 @@ public class SettingsDialogFragment extends DialogFragment {
 
             }
         });
-//                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-//                    @Override
-//                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-//                        if (documentSnapshot != null)    {
-//                            idTextView.setText("Ваш ник\n"+documentSnapshot.get("id"));
-//                            setUserName(documentSnapshot.getString("id"));
-////                            userName += documentSnapshot.get("id");
-//                        }
-//                    }
-//                });
-
 
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
