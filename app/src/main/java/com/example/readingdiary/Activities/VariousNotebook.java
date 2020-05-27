@@ -167,6 +167,10 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
     }
 
     @Override
+    public void onChangeIdClick(String userName) {
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.item_settings) {
             int location[] = new int[2];

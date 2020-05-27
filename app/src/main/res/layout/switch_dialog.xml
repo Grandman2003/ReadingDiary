@@ -47,11 +47,25 @@
         android:text="Удалить аккаунт"
         android:textColor="#000" />
 
+
+    <TextView
+        android:id="@+id/changeIdTextView"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView13"
+        android:layout_marginHorizontal="14dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="20dp"
+        android:text="Сменить id"
+        android:textColor="#000" />
+
+
+
     <TextView
         android:id="@+id/idText"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView13"
+        android:layout_below="@+id/changeIdTextView"
         android:layout_marginHorizontal="14dp"
         android:layout_marginTop="2dp"
         android:layout_marginBottom="20dp"

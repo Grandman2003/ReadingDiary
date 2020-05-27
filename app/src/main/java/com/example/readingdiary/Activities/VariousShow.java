@@ -185,6 +185,10 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
     }
 
     @Override
+    public void onChangeIdClick(String userName) {
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item)
     {
         if (item.getItemId()==R.id.item_settings)

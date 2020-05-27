@@ -226,6 +226,11 @@ private String TAG_DARK = "dark_theme";
     }
 
     @Override
+    public void onChangeIdClick(String userName) {
+
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.item_settings) {
             int location[] = new int[2];

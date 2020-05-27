@@ -280,7 +280,10 @@ private String TAG_DARK = "dark_theme";
     {
         Intent intent = new Intent(EditNoteActivity.this, ForgotPswActivity.class);
         startActivity(intent);
+    }
 
+    @Override
+    public void onChangeIdClick(String userName) {
     }
 
     @Override

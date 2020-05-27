@@ -263,12 +263,14 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
 
     @Override
     public void onDelete() {
-
     }
 
     @Override
     public void onForgot() {
+    }
 
+    @Override
+    public void onChangeIdClick(String userName) {
     }
 
     @Override

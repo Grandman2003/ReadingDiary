@@ -165,7 +165,10 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     {
         Intent intent = new Intent(NoteActivity.this, ForgotPswActivity.class);
         startActivity(intent);
+    }
 
+    @Override
+    public void onChangeIdClick(String userName) {
     }
 
     @Override

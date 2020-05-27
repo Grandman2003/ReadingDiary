@@ -36,6 +36,7 @@ import com.example.readingdiary.Classes.DeleteNote;
 import com.example.readingdiary.Classes.Directory;
 import com.example.readingdiary.Classes.Note;
 import com.example.readingdiary.Classes.RealNote;
+import com.example.readingdiary.Fragments.AddShortNameFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.Fragments.SortDialogFragment;
 import com.example.readingdiary.R;
@@ -70,7 +71,7 @@ import java.util.stream.Collectors;
 
 
 public class CatalogActivity extends AppCompatActivity implements SortDialogFragment.SortDialogListener,
-        SettingsDialogFragment.SettingsDialogListener {
+        SettingsDialogFragment.SettingsDialogListener, AddShortNameFragment.AddShortNameDialogListener {
     // класс отвечает за активность с каталогами
 
     RecyclerViewAdapter mAdapter;
@@ -114,6 +115,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String user = "user0";
     int active=0;
+    String userID;
 
 
     @Override
@@ -373,6 +375,91 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         startActivity(intent);
     }
 
+    @Override
+    public void onChangeIdClick(String userID) {
+        AddShortNameFragment saveDialogFragment = new AddShortNameFragment(getApplicationContext(), true);
+//        saveDialogFragment.setCancelable(екгу);
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        saveDialogFragment.show(transaction, "dialog");
+        this.userID = userID;
+    }
+
+    @Override
+    public void onEnterClicked(final String name) {
+        if (name.contains(" ") || name.length() > 20 || name.equals("") || android.text.TextUtils.isDigitsOnly(name)){
+            AddShortNameFragment saveDialogFragment;
+            if (name.contains(" ")) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "space", true);
+            else if (name.length() > 20) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "long", true);
+            else if (name.equals("")) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "null", true);
+            else saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "number", true);
+            saveDialogFragment.setCancelable(false);
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            saveDialogFragment.show(transaction, "dialog");
+            return;
+        }
+
+
+        db.runTransaction(new Transaction.Function<String>() {
+            @Nullable
+            @Override
+            public String apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                DocumentReference documentReference = db.collection("allNames").document("allNames");
+                DocumentSnapshot allNamesShapshot = transaction.get(documentReference);
+                if (allNamesShapshot != null && allNamesShapshot.getString("names")!=null){
+                    String names = allNamesShapshot.getString("names");
+                    if (Arrays.asList(names.split(" ")).contains(name)){
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put("names", names);
+                        transaction.set(db.collection("allNames").document("allNames"), map);
+                        return "";
+                    }
+                    else{
+//                        ArrayList<String> namesList= (ArrayList)Arrays.asList(names.split(" "));
+                        HashMap<String, String> map = new HashMap<>();
+                        String ans;
+                        ArrayList<String> namesList=new ArrayList<>();
+                        Collections.addAll(namesList, allNamesShapshot.getString("names").split(" "));
+                        if (userID != null && namesList.contains(userID)){
+                            namesList.set(namesList.indexOf(userID), name);
+                            ans = namesList.stream().collect(Collectors.joining(" "));
+                        }
+                        else{
+                            ans = names + " " + name;
+                        }
+                        map.put("names", ans);
+                        transaction.set(db.collection("allNames").document("allNames"), map);
+                        return name;
+                    }
+                }
+                else{
+                    HashMap<String, String> map = new HashMap<>();
+                    map.put("names", name);
+                    transaction.set(db.collection("allNames").document("allNames"), map);
+                    return name;
+                }
+            }
+        }).addOnSuccessListener(new OnSuccessListener<String>() {
+            @Override
+            public void onSuccess(String str) {
+                if (str.equals("")){
+                    AddShortNameFragment saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "exists");
+                    saveDialogFragment.setCancelable(false);
+                    FragmentManager manager = getSupportFragmentManager();
+                    FragmentTransaction transaction = manager.beginTransaction();
+                    saveDialogFragment.show(transaction, "dialog");
+                }
+                else{
+                    Map<String, String> map= new HashMap<>();
+                    map.put("id", str);
+
+                    db.collection("PublicID").document(user).set(map);
+//                    startActivity(intent);
+                }
+            }
+        });
+    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

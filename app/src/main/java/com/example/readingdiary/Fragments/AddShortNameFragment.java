@@ -27,14 +27,32 @@ public class AddShortNameFragment extends AppCompatDialogFragment {
     private Context context;
     private String error;
     private Activity activity;
+    public boolean changeID;
 
     public AddShortNameFragment(Context context){
         this.context=context;
     }
+
+
+
     public AddShortNameFragment(Context context, String error){
         this.context = context;
         this.error = error;
     }
+
+    public AddShortNameFragment(Context context, boolean changeID){
+        this.context=context;
+        this.changeID = changeID;
+    }
+
+
+
+    public AddShortNameFragment(Context context, String error, boolean changeID){
+        this.context = context;
+        this.error = error;
+        this.changeID = changeID;
+    }
+
 
 
     @NonNull
@@ -73,6 +91,15 @@ public class AddShortNameFragment extends AppCompatDialogFragment {
 
             }
         });
+
+        if (changeID){
+            builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+        }
         builder.setCancelable(false);
         return builder.create();
 

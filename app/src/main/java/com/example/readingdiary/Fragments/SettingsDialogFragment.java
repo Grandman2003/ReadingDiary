@@ -27,7 +27,9 @@ import com.google.android.material.dialog.MaterialDialogs;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 public class SettingsDialogFragment extends DialogFragment {
     SettingsDialogListener listener;
@@ -41,6 +43,9 @@ public class SettingsDialogFragment extends DialogFragment {
         this.x = x;
         this.isChecked = isChecked;
     }
+    String userName="";
+
+
 
     @NonNull
     @Override
@@ -63,23 +68,39 @@ public class SettingsDialogFragment extends DialogFragment {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     listener.onChangeThemeClick(switchMaterial.isChecked());
-                    Log.d("qwerty33", "qwertyui");
                 }
             });
+
+//        final String userName = "";
         TextView textView = materialDialogs.findViewById(R.id.exitButton);
         TextView txtDel = materialDialogs.findViewById(R.id.textView13);
         TextView txtForg = materialDialogs.findViewById(R.id.textView);
+        TextView changeIdView = materialDialogs.findViewById(R.id.changeIdTextView);
         final TextView idTextView = materialDialogs.findViewById(R.id.idText);
         String user = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        FirebaseFirestore.getInstance().collection("PublicID").document(user).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot != null)    {
-                            idTextView.setText("Ваш ник\n"+documentSnapshot.get("id"));
-                        }
-                    }
-                });
+        FirebaseFirestore.getInstance().collection("PublicID").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                if (e != null){
+                    Log.e("SettingsDialogErrorPublicID", e.toString());
+                }
+                else{
+                    idTextView.setText("Ваш ник\n"+documentSnapshot.get("id"));
+                    setUserName(documentSnapshot.getString("id"));
+                }
+
+            }
+        });
+//                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+//                    @Override
+//                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+//                        if (documentSnapshot != null)    {
+//                            idTextView.setText("Ваш ник\n"+documentSnapshot.get("id"));
+//                            setUserName(documentSnapshot.getString("id"));
+////                            userName += documentSnapshot.get("id");
+//                        }
+//                    }
+//                });
 
 
         textView.setOnClickListener(new View.OnClickListener() {
@@ -100,6 +121,12 @@ public class SettingsDialogFragment extends DialogFragment {
                 listener.onForgot();
             }
         });
+        changeIdView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onChangeIdClick(userName);
+            }
+        });
 
 
 
@@ -109,6 +136,11 @@ public class SettingsDialogFragment extends DialogFragment {
         wmlp = materialDialogs.getWindow().getAttributes();
         wmlp.x = x/2;
         return materialDialogs;
+    }
+
+    public void setUserName(String userName){
+        this.userName = userName;
+
     }
 
     @Nullable
@@ -122,6 +154,7 @@ public class SettingsDialogFragment extends DialogFragment {
         void onExitClick();
         void onDelete();
         void onForgot();
+        void onChangeIdClick(String userID);
     }
 
     @Override
