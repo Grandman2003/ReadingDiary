@@ -429,7 +429,7 @@ private String TAG_DARK = "dark_theme";
         else if (genreView.length()>50){ Toast.makeText(EditNoteActivity.this,"Введено слишком большое название жанра ",Toast.LENGTH_SHORT).show();return false;}
         else if (timeView.length()>50){Toast.makeText(EditNoteActivity.this,"Введен слишком большой текст для периода прочтения",Toast.LENGTH_SHORT).show();return false;}
         else if (placeView.length()>50){Toast.makeText(EditNoteActivity.this,"Введено слишком большое название места прочтения",Toast.LENGTH_SHORT).show();return false;}
-        else if (shortCommentView.length()>50){Toast.makeText(EditNoteActivity.this,"Введен слишком большой короткий комментарий",Toast.LENGTH_SHORT).show();return false;}
+        else if (shortCommentView.length()>50){Toast.makeText(EditNoteActivity.this,"Введен слишком большой краткий комментарий",Toast.LENGTH_SHORT).show();return false;}
         String time = (beforeChanging[9].equals("0"))?System.currentTimeMillis()+"":beforeChanging[9];
         String path1 = pathView.getText().toString();
         path1 = fixPath(path1);
