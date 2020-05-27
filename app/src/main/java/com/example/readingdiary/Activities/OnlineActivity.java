@@ -119,7 +119,7 @@ public class OnlineActivity extends AppCompatActivity
     private void addSubscription(){
         if (!etShareUser.getText().toString().equals(""))
         {
-            FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", etShareUser.getText().toString()).get()
+            FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", etShareUser.getText().toString().trim()).get()
                     .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                         @Override
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots)

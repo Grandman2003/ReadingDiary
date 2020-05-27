@@ -86,7 +86,7 @@ public class AddShortNameFragment extends AppCompatDialogFragment {
         builder.setPositiveButton(acceptButtonString, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 if (editTextView != null){
-                    listener.onEnterClicked(editTextView.getText().toString());
+                    listener.onEnterClicked(editTextView.getText().toString().trim());
                 }
 
             }
@@ -103,29 +103,6 @@ public class AddShortNameFragment extends AppCompatDialogFragment {
         builder.setCancelable(false);
         return builder.create();
 
-
-
-//        builder.setView(getActivity().getLayoutInflater().inflate(R.layout.enterNameDialog, null));
-//        final EditText input = new EditText(getActivity());
-//        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-//                LinearLayout.LayoutParams.MATCH_PARENT,
-//                LinearLayout.LayoutParams.WRAP_CONTENT);
-//        input.setLayoutParams(lp);
-//        builder.setView(input);
-//
-//        if (error != null){
-//            final TextView errorView = new TextView(getActivity());
-//            LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.WRAP_CONTENT);
-//            errorView.setLayoutParams(lp1);
-//            errorView.setText(error);
-//            builder.setView(errorView);
-//        }
-
-
-
-//        return builder.create();
     }
 
     public interface AddShortNameDialogListener {
