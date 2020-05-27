@@ -76,7 +76,8 @@ public class LentaActivity extends AppCompatActivity
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
                 {
                     @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    public void onSuccess(DocumentSnapshot documentSnapshot)
+                    {
                         if (documentSnapshot != null && documentSnapshot.getData() != null)
                         {
                             subUsersId = new ArrayList<String>(documentSnapshot.getData().keySet());
