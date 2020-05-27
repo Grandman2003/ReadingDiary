@@ -24,7 +24,9 @@
                 android:ems="10"
                 android:inputType="textPersonName"
                 android:hint="Название"
-                android:visibility="gone" />
+                android:visibility="gone"
+                android:textColor="#fff"
+                android:textColorHint="#aaa"/>
 
             <TextView
                 android:layout_width="wrap_content"

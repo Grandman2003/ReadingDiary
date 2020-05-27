@@ -123,8 +123,7 @@ private String TAG_DARK = "dark_theme";
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         findViews();
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        findViews();
         toolbar.inflateMenu(R.menu.base_menu);
         Bundle args = getIntent().getExtras();
 

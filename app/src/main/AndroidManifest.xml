@@ -25,7 +25,8 @@
         <activity android:name=".Activities.NoteActivity" />
         <activity
             android:name=".Activities.CatalogActivity"
-            android:label="" />
+            android:label=""
+            />
         <activity android:name=".Activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
