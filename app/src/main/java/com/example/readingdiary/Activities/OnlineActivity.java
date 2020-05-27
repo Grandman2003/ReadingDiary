@@ -57,9 +57,9 @@ public class OnlineActivity extends AppCompatActivity
     Button bGoLent;
     EditText etShareUser;
     String user = FirebaseAuth.getInstance().getCurrentUser().getUid();
-    String [] x = new String[] {"wsdsaddaads","adsdsaa ","dsadsdsad " };// тестовый массив подписок
     ArrayList<String> subscriptions = new ArrayList<>();
     ArrayList<String> realSubscriptions = new ArrayList<>();
+    SubscriptionsShowAdapter subscriptionsAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -73,33 +73,38 @@ public class OnlineActivity extends AppCompatActivity
 
 
         bShareUser= (Button) findViewById(R.id.bShareUser); //кнопка поиска
+
+        bGoLent = (Button)findViewById(R.id.bGoLent); // переход в ленту
+
+        RecyclerView subscriptionsRecycler = findViewById(R.id.subscriptions_id_recycler);
+        subscriptionsAdapter = new SubscriptionsShowAdapter(subscriptions);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
+        subscriptionsRecycler.setAdapter(subscriptionsAdapter);
+        subscriptionsRecycler.setLayoutManager(layoutManager);
+        subscriptionsRecycler.setItemAnimator(itemAnimator);
+        selectSubscriptions();
+
+        subscriptionsAdapter.setOnItemClickListener(new SubscriptionsShowAdapter.OnItemClickListener() {
+            @Override
+            public void onRemoveSubscription(final int position) {
+                FirebaseFirestore.getInstance().collection("Subscriptions")
+                        .document(user).update(realSubscriptions.get(position), FieldValue.delete());
+                subscriptions.remove(position);
+                realSubscriptions.remove(position);
+                subscriptionsAdapter.notifyItemRemoved(position);
+            }
+        });
+
         bShareUser.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                if (!etShareUser.getText().toString().equals("") && etShareUser.getText().toString()!= user )
-                {
-                    FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", etShareUser.getText().toString()).get()
-                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                @Override
-                                public void onSuccess(QuerySnapshot queryDocumentSnapshots)
-                                {
-                                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots)
-                                    {
-                                        Map<String, String> map = new HashMap<>();
-                                        map.put(documentSnapshot.getId(), etShareUser.getText().toString());
-                                        FirebaseFirestore.getInstance().collection("Subscriptions").document(user).set(map, SetOptions.merge());
-                                    }
-                                }
-                            });
-                    Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();
-                }
-                  else {Toast.makeText(OnlineActivity.this, "Введите корректный id пользователя", Toast.LENGTH_SHORT).show();}
+                addSubscription();
             }
         });
 
-        bGoLent = (Button)findViewById(R.id.bGoLent); // переход в ленту
         bGoLent.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -110,13 +115,33 @@ public class OnlineActivity extends AppCompatActivity
             }
         });
 
-        RecyclerView subscriptionsRecycler = findViewById(R.id.subscriptions_id_recycler);
-        final SubscriptionsShowAdapter subscriptionsAdapter = new SubscriptionsShowAdapter(subscriptions);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
-        subscriptionsRecycler.setAdapter(subscriptionsAdapter);
-        subscriptionsRecycler.setLayoutManager(layoutManager);
-        subscriptionsRecycler.setItemAnimator(itemAnimator);
+
+
+    }
+
+    private void addSubscription(){
+        if (!etShareUser.getText().toString().equals(""))
+        {
+            FirebaseFirestore.getInstance().collection("PublicID").whereEqualTo("id", etShareUser.getText().toString()).get()
+                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot queryDocumentSnapshots)
+                        {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots)
+                            {
+                                Map<String, String> map = new HashMap<>();
+                                map.put(documentSnapshot.getId(), etShareUser.getText().toString());
+                                FirebaseFirestore.getInstance().collection("Subscriptions").document(user).set(map, SetOptions.merge());
+                            }
+                        }
+                    });
+            Toast.makeText(OnlineActivity.this, "Пользователь добавлен в подписки ", Toast.LENGTH_SHORT).show();
+        }
+        else {Toast.makeText(OnlineActivity.this, "Введите корректный id пользователя", Toast.LENGTH_SHORT).show();}
+
+    }
+
+    private void selectSubscriptions(){
         FirebaseFirestore.getInstance().collection("Subscriptions").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
@@ -150,18 +175,6 @@ public class OnlineActivity extends AppCompatActivity
                 }
             }
         });
-
-        subscriptionsAdapter.setOnItemClickListener(new SubscriptionsShowAdapter.OnItemClickListener() {
-            @Override
-            public void onRemoveSubscription(final int position) {
-                FirebaseFirestore.getInstance().collection("Subscriptions")
-                        .document(user).update(realSubscriptions.get(position), FieldValue.delete());
-                subscriptions.remove(position);
-                realSubscriptions.remove(position);
-                subscriptionsAdapter.notifyItemRemoved(position);
-            }
-        });
-
     }
 
 

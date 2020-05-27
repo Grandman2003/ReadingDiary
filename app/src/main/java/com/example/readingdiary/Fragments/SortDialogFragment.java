@@ -26,8 +26,7 @@ public class SortDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        String title = getResources().getString(R.string.setCoverDialogTitle);
-        String message = getResources().getString(R.string.setCoverDialogMessage);
+        String title = "Сортировка";
         final String acceptButtonString = getResources().getString(R.string.setCoverDialogAcceptButton);
         final String cancelButtonString = getResources().getString(R.string.setCoverDialogCancelButton);
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity());

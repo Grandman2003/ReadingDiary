@@ -79,7 +79,6 @@ public class LentaActivity extends AppCompatActivity
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if (documentSnapshot != null && documentSnapshot.getData() != null)
                         {
-                            Log.d("qwertyu58", "notNull");
                             subUsersId = new ArrayList<String>(documentSnapshot.getData().keySet());
                             chooseNotes();
                         }

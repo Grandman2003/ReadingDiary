@@ -48,19 +48,25 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 public class CatalogActivity extends AppCompatActivity implements SortDialogFragment.SortDialogListener,
@@ -68,7 +74,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     // класс отвечает за активность с каталогами
 
     RecyclerViewAdapter mAdapter;
-    SQLiteDatabase sdb;
     String parent = "./";
     ArrayList<Note> notes;
     ArrayList<String> buttons;
@@ -95,12 +100,12 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     int ext =0;
     ArrayList<RealNote> selectionRealNotesList = new ArrayList<>();
     ArrayList<Directory> selectionDirectoriesList = new ArrayList<>();
-    String[] choices = new String[]{"Сортировка по названиям в лексикографическом порядке",
-            "Сортировка по названиям в обратном лексикографическим порядке",
-            "Сортировка по автору в лексиграфическом порядке",
-            "Сортировка по автору в обратном лексиграфическим порядке",
-            "Сортировка по возрастанию рейтинга",
-            "Сортировка по убыванию рейтинга"};
+    String[] choices = new String[]{"По названиям по возрастанию",
+            "По названиям по убыванию",
+            "По автору по возрастанию",
+            "По автору по убыванию",
+            "По рейтингу по возрастанию",
+            "По рейтингу по убыванию"};
     private String TAG_DARK = "dark_theme";
     SharedPreferences sharedPreferences;
     Button online;
@@ -155,7 +160,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 
         notes = new ArrayList<Note>(); // список того, что будет отображаться в каталоге.
         buttons = new ArrayList<String>(); // Список пройденный каталогов до текущего
-        setSortTitles();
+//        setSortTitles();
 //        initSortsList();
         findViews();
         setSupportActionBar(toolbar);
@@ -164,10 +169,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         counterText.setText("Каталог");
         buttons.add(parent);
         selectAll(); // чтение данных из бд
-
         setAdapters();
-
-
         online= (Button) findViewById(R.id.bOnline);
         online.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -307,8 +309,48 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
              public void onComplete(@NonNull Task<Void> task) {
                  if (task.isSuccessful())
                  {
-                     deleteDirectory(".\\");
-                     db.collection("PublicID").document(user).delete();
+
+                     db.collection("PublicID").document(user).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                         @Override
+                         public void onSuccess(DocumentSnapshot documentSnapshot) {
+                             if (documentSnapshot != null && documentSnapshot.get("id") != null){
+                                 final String name = documentSnapshot.get("id").toString();
+                                 db.runTransaction(new Transaction.Function<Boolean>() {
+                                     @Nullable
+                                     @Override
+                                     public Boolean apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                                         DocumentReference documentReference = db.collection("allNames").document("allNames");
+                                         DocumentSnapshot allNamesShapshot = transaction.get(documentReference);
+                                         Log.d("qwerty62", allNamesShapshot.toString());
+                                         Log.d("qwerty62", allNamesShapshot.getString("names"));
+
+                                         if (allNamesShapshot != null && allNamesShapshot.getString("names")!=null){
+                                             Log.d("qwerty62", name);
+                                             ArrayList<String> names=new ArrayList<>();
+                                             Collections.addAll(names, allNamesShapshot.getString("names").split(" "));
+
+                                             Log.d("qwerty62", "start " + names.size() + " " + names.contains(name) + " " + name);
+                                             names.remove(name);
+                                             Log.d("qwerty62", "end " + names.size());
+                                             Map<String, String> map = new HashMap<>();
+                                             map.put("names", names.stream().collect(Collectors.joining(" ")));
+//                                             allNamesShapshot.set(map);
+                                             transaction.set(documentReference, map);
+                                         }
+                                         return true;
+                                     }
+                                 }).addOnSuccessListener(new OnSuccessListener<Boolean>() {
+                                     @Override
+                                     public void onSuccess(Boolean aBoolean) {
+                                         db.collection("PublicID").document(user).delete();
+                                         deleteDirectory(".\\");
+                                     }
+                                 });
+
+
+                             }
+                         }
+                     });
                      Toast.makeText(CatalogActivity.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
                      Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
                      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -347,7 +389,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             settingsDialogFragment.show(transaction, "dialog");
         }
         if (item.getItemId()== R.id.item_delete){
-
             action_mode=false;
             mAdapter.setActionMode(false);
             deleteSelectedRealNote();
@@ -363,7 +404,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             counterText.setText("Каталог");
             count=0;
 //            selectionList.clear();
-
 
         }
         if (item.getItemId() == R.id.item_search){
@@ -662,14 +702,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     });
         }
 
-    private void setSortTitles(){
-        sortTitles1 = "Сортировка по названиям в лексикографическом порядке";
-        sortTitles2 = "Сортировка по названиям в обратном лексикографическим порядке";
-        sortAuthors1 = "Сортировка по автору в лексиграфическом порядке";
-        sortAuthors2 = "Сортировка по автору в обратном лексиграфическим порядке";
-        sortRating1 = "Сортировка по возрастанию рейтинга";
-        sortRating2 = "Сортировка по убыванию рейтинга";
-    }
 
     private void reloadRecyclerView(){
         // перезагрузка recyclerView. Удаляются все элементы notes, выбираются новые из бд

@@ -305,7 +305,6 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
     private void saveAndOpenImage(Uri imageUri) throws Exception{
         int px = 600;
         time = System.currentTimeMillis();
-//        imagePath = time+"";
 //
         Bitmap bitmap = SaveImage.saveImage(user, id, imageUri, time, getApplicationContext());
 

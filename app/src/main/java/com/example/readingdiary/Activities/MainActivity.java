@@ -12,7 +12,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
+import com.example.readingdiary.Fragments.AddShortNameFragment;
 import com.example.readingdiary.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -31,10 +34,14 @@ import com.google.firebase.firestore.Transaction;
 
 import org.w3c.dom.Document;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import io.opencensus.internal.StringUtil;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, AddShortNameFragment.AddShortNameDialogListener {
 
 
     public FirebaseAuth mAuth= FirebaseAuth.getInstance();
@@ -44,54 +51,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public TextView tvForgPsw;
     ProgressBar progressBar2;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-
-    // Привет, зеленая обезьянка
-    // Привет, работяга
-    FirebaseUser currentUser ;
+    String user;
+    FirebaseUser currentUser;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-
-
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null)
-                {
-                }
+                {}
                 else
-                {
-                }
+                {}
                 updateUI(user);
-
             }
-
-
         };
 
         ETemail = (EditText) findViewById(R.id.et_email);
         ETpassword = (EditText) findViewById(R.id.etForgPsw);
-
-
         findViewById(R.id.btn_ForgPsw).setOnClickListener(this);
         findViewById(R.id.btn_registration).setOnClickListener(this);
         currentUser = mAuth.getCurrentUser();
         progressBar2 =findViewById(R.id.progressBar2);
-
         tvForgPsw= (TextView) findViewById(R.id.tvForgPsw);
         tvForgPsw.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, ForgotPswActivity.class);
                 startActivity(intent);
-
             }
         });
 
@@ -106,9 +97,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         else if (currentUser==null)
         {
-
-           // Toast.makeText(MainActivity.this, "Offline ", Toast.LENGTH_SHORT).show();
-
         }
 
 
@@ -158,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void signin(String email , String password)
+    private void signin(String email , String password)
     {
 
             mAuth.signInWithEmailAndPassword(email.trim(), password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
@@ -183,10 +171,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
             });
-
-
     }
-    public void registration(final String email, final String password) {
+
+
+
+
+    private void registration(final String email, final String password) {
+//        MainActivity.this
+
         mAuth.createUserWithEmailAndPassword(email.trim(), password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -207,20 +199,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                     Toast.makeText(MainActivity.this, "Вам отправленно ссылка на email. Для подтверждения email перейдите по ней", Toast.LENGTH_LONG).show();
                                                     final FirebaseUser userAuth = mAuth.getCurrentUser();
                                                     UserProfileChangeRequest.Builder builder = new UserProfileChangeRequest.Builder();
+                                                    user = userAuth.getUid();
                                                     UserProfileChangeRequest u = builder.build();
                                                     userAuth.updateProfile(u);
                                                     db.runTransaction(new Transaction.Function<Long>() {
                                                         @Nullable
                                                         @Override
                                                         public Long apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                                                            Log.d("qwerty55", "qwerty");
                                                             DocumentReference documentReference = db.collection("PublicID").document("LastID");
                                                             DocumentSnapshot lastID = transaction.get(documentReference);
                                                             if (lastID != null && lastID.getLong("id")!=null){
-                                                                Log.d("qwerty55", "qwerty!");
                                                                 long newID = lastID.getLong("id") + 1;
                                                                 transaction.update(documentReference, "id", newID);
-                                                                Log.d("qwerty55", "qwerty!" + newID);
                                                                 return newID;
                                                             }
                                                             else{
@@ -236,15 +226,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                             Map<String, String> map = new HashMap<>();
                                                             map.put("id", aLong+"");
                                                             db.collection("PublicID").document(userAuth.getUid()).set(map);
+                                                            AddShortNameFragment saveDialogFragment = new AddShortNameFragment(getApplicationContext());
+                                                            saveDialogFragment.setCancelable(false);
+                                                            FragmentManager manager = getSupportFragmentManager();
+                                                            FragmentTransaction transaction = manager.beginTransaction();
+                                                            saveDialogFragment.show(transaction, "dialog");
                                                         }
                                                     });
                                                 }
                                             });
-                                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
-                                    startActivity(intent);
-
-//                                    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-//                                    finish();
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
@@ -263,11 +253,75 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this, "Регистрация провалена", Toast.LENGTH_SHORT).show();
                 }
             }
-
         });
-
     }
 
+    @Override
+    public void onEnterClicked(final String name) {
+
+        if (name.contains(" ") || name.length() > 20 || name.equals("") || android.text.TextUtils.isDigitsOnly(name)){
+            Log.d("qwerty61", "hi!!!");
+            AddShortNameFragment saveDialogFragment;
+            if (name.contains(" ")) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "space");
+            else if (name.length() > 20) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "long");
+            else if (name.equals("")) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "null");
+            else saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "number");
+            saveDialogFragment.setCancelable(false);
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            saveDialogFragment.show(transaction, "dialog");
+            return;
+        }
+
+
+        db.runTransaction(new Transaction.Function<String>() {
+            @Nullable
+            @Override
+            public String apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                DocumentReference documentReference = db.collection("allNames").document("allNames");
+                DocumentSnapshot allNamesShapshot = transaction.get(documentReference);
+                if (allNamesShapshot != null && allNamesShapshot.getString("names")!=null){
+                    String names = allNamesShapshot.getString("names");
+                    if (Arrays.asList(names.split(" ")).contains(name)){
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put("names", names);
+                        transaction.set(db.collection("allNames").document("allNames"), map);
+                        return "";
+                    }
+                    else{
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put("names", names + " " + name);
+                        transaction.set(db.collection("allNames").document("allNames"), map);
+                        return name;
+                    }
+                }
+                else{
+                    HashMap<String, String> map = new HashMap<>();
+                    map.put("names", name);
+                    transaction.set(db.collection("allNames").document("allNames"), map);
+                    return name;
+                }
+            }
+        }).addOnSuccessListener(new OnSuccessListener<String>() {
+            @Override
+            public void onSuccess(String str) {
+                if (str.equals("")){
+                    AddShortNameFragment saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "exists");
+                    saveDialogFragment.setCancelable(false);
+                    FragmentManager manager = getSupportFragmentManager();
+                    FragmentTransaction transaction = manager.beginTransaction();
+                    saveDialogFragment.show(transaction, "dialog");
+                }
+                else{
+                    Map<String, String> map= new HashMap<>();
+                    map.put("id", str);
+                    db.collection("PublicID").document(user).set(map);
+                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
+    }
 }
 
 
