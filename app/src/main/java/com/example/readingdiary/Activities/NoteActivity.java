@@ -76,6 +76,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private boolean editAccess;
     MainActivity mein = new MainActivity();
+    private boolean exists=true;
 
 
     @Override
@@ -224,6 +225,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
 
     @Override
     protected void onDestroy() {
+        exists=false;
         super.onDestroy();
     }
 
@@ -432,6 +434,11 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
                             Log.d("qwerty71", "mapNotNull");
                             if (map.get("imagePath") != null && !map.get("imagePath").equals("")){
                                 Log.d("qwerty71", "image1");
+                                if (NoteActivity.this == null){
+
+                                    Log.d("qwerty73", "nullActivity");
+                                }
+                                if (!exists) return;
                                 db.collection("Common").document(user).collection(id0).document("Images").addSnapshotListener(NoteActivity.this, new EventListener<DocumentSnapshot>() {
                                     @Override
                                     public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {

@@ -249,6 +249,8 @@ private String TAG_DARK = "dark_theme";
 
     @Override
     public void onForgot() {
+        Intent intent = new Intent(GaleryFullViewActivity.this, ForgotPswActivity.class);
+        startActivity(intent);
     }
 
 

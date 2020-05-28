@@ -215,6 +215,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        active++;
         if (data != null && requestCode == NOTE_REQUEST_CODE){
 //            Toast.makeText(getApplicationContext(), "! " + data.getExtras().get("id").toString(), 1).show();
             // если изменился путь до записи, добавилась новая запись, то переходим к этой записи
@@ -572,6 +573,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         }
 
         public void generateNote(final String id, final int index){
+        final int active0 = active;
             db.collection("Notes").document(user).collection("userNotes").document(id).get()
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
@@ -582,12 +584,30 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                                     map.get("title").toString(), Double.valueOf(map.get("rating").toString()), (boolean)map.get("private"),
                                     (double) map.get("publicRatingSum"), (long)map.get("publicRatingCount"));
                             realNote.setTime(Long.parseLong(map.get("timeAdd").toString()));
+                            final int index1;
+                            if (active0 == active){
+                                if (index == -1) {
+                                    notes.add(realNote);
+                                    mAdapter.notifyItemInserted(notes.size() - 1);
+                                    index1 = notes.size()-1;
+
+                                } else {
+                                    notes.set(index, realNote);
+                                    mAdapter.notifyItemChanged(index);
+                                    index1 = index;
+                                }
+                            }
+                            else{
+                                index1=0;
+                                return;
+                            }
+
                             if (map.get("imagePath")!= null && !map.get("imagePath").toString().equals("")){
                                 db.collection("Common").document(user).collection(documentSnapshot0.getId()).document("Images").addSnapshotListener(CatalogActivity.this, new EventListener<DocumentSnapshot>() {
                                             @Override
                                             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                                                Log.d("qwerty72", (boolean)documentSnapshot.get(map.get("imagePath").toString()) + "");
-                                                if ((boolean)documentSnapshot.get(map.get("imagePath").toString())==true){
+//                                                Log.d("qwerty72", (boolean)documentSnapshot.get(map.get("imagePath").toString()) + "");
+                                                if (documentSnapshot.get(map.get("imagePath").toString()) != null && (boolean)documentSnapshot.get(map.get("imagePath").toString())==true){
                                                     Log.d("qwerty72", "imagePathTrue");
                                                     Log.d("qwerty72", map.get("imagePath").toString());
                                                     FirebaseStorage.getInstance().getReference(user).child(documentSnapshot0.getId()).child("Images").child(map.get("imagePath").toString()).getDownloadUrl()
@@ -595,55 +615,64 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                                                                 @Override
                                                                 public void onSuccess(Uri uri) {
                                                                     Log.d("qwerty72", "success");
-                                                                    realNote.setCoverPath(uri);
-                                                                    if (index == -1) {
-                                                                        notes.add(realNote);
-                                                                        mAdapter.notifyItemInserted(notes.size() - 1);
-                                                                    } else {
-                                                                        notes.set(index, realNote);
-                                                                        mAdapter.notifyItemChanged(index);
+                                                                    if (active0 == active){
+                                                                        realNote.setCoverPath(uri);
+                                                                        ((RealNote)notes.get(index1)).setCoverPath(uri);
+                                                                        mAdapter.notifyItemChanged(index1);
                                                                     }
-                                                                                }
+
+
+//                                                                    if (index == -1) {
+//                                                                        notes.add(realNote);
+//                                                                        mAdapter.notifyItemInserted(notes.size() - 1);
+//                                                                    } else {
+//                                                                        notes.set(index, realNote);
+//                                                                        mAdapter.notifyItemChanged(index);
+//                                                                    }
+                                                                }
                                                             })
                                                             .addOnFailureListener(new OnFailureListener() {
                                                                 @Override
                                                                 public void onFailure(@NonNull Exception e) {
                                                                     Log.d("qwerty72", e.toString());
-                                                                    if (index == -1) {
-                                                                        notes.add(realNote);
-                                                                        mAdapter.notifyItemInserted(notes.size() - 1);
-                                                                    } else {
-                                                                        notes.set(index, realNote);
-                                                                        mAdapter.notifyItemChanged(index);
+                                                                    if (active0 == active){
+                                                                        if (index == -1) {
+                                                                            notes.add(realNote);
+                                                                            mAdapter.notifyItemInserted(notes.size() - 1);
+                                                                        } else {
+                                                                            notes.set(index, realNote);
+                                                                            mAdapter.notifyItemChanged(index);
+                                                                        }
                                                                     }
+
                                                                 }
                                                             });
                                                     }
-                                                else{
-                                                    if (index == -1){
-                                                        notes.add(realNote);
-                                                        mAdapter.notifyItemInserted(notes.size()-1);
-
-                                                    }
-                                                    else{
-                                                        notes.set(index, realNote);
-                                                        mAdapter.notifyItemChanged(index);
-                                                    }
-                                                }
+//                                                else if (documentSnapshot.get(map.get("imagePath").toString()) != null && (boolean)documentSnapshot.get(map.get("imagePath").toString())==false){
+//                                                    if (index == -1){
+//                                                        notes.add(realNote);
+//                                                        mAdapter.notifyItemInserted(notes.size()-1);
+//
+//                                                    }
+//                                                    else{
+//                                                        notes.set(index, realNote);
+//                                                        mAdapter.notifyItemChanged(index);
+//                                                    }
+//                                                }
                                             }});
                                         }
 
-                            else{
-                                if (index == -1){
-                                    notes.add(realNote);
-                                    mAdapter.notifyItemInserted(notes.size()-1);
-
-                                }
-                                else{
-                                    notes.set(index, realNote);
-                                    mAdapter.notifyItemChanged(index);
-                                }
-                            }
+//                            else{
+//                                if (index == -1){
+//                                    notes.add(realNote);
+//                                    mAdapter.notifyItemInserted(notes.size()-1);
+//
+//                                }
+//                                else{
+//                                    notes.set(index, realNote);
+//                                    mAdapter.notifyItemChanged(index);
+//                                }
+//                            }
 
                         }
                     });

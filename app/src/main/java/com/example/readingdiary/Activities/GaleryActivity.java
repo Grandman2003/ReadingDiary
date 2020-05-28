@@ -294,6 +294,9 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
 
     @Override
     public void onForgot() {
+        Intent intent = new Intent(GaleryActivity.this, ForgotPswActivity.class);
+        startActivity(intent);
+
     }
 
     @Override

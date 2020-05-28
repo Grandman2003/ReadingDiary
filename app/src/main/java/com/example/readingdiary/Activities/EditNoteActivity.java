@@ -208,9 +208,10 @@ private String TAG_DARK = "dark_theme";
 
     @Override
     public void onSaveClicked() {
-        if (saveChanges()){
-            finish();
-        }
+        saveChanges();
+//        if (saveChanges()){
+//            finish();
+//        }
     }
 
     @Override
@@ -340,9 +341,10 @@ private String TAG_DARK = "dark_theme";
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (saveChanges()){
-                    finish();
-                }
+//                if (saveChanges()){
+//                    finish();
+//                }
+                saveChanges();
             }
         });
 
@@ -431,12 +433,14 @@ private String TAG_DARK = "dark_theme";
             return false;
         }
 
+
         if (authorView.length()>50){Toast.makeText(EditNoteActivity.this,"Введено слишком большое имя автора ",Toast.LENGTH_SHORT).show(); return false;}
         else if (titleView.length()>50){Toast.makeText(EditNoteActivity.this,"Ведено слишком большое название книги ",Toast.LENGTH_SHORT).show();return false;}
         else if (genreView.length()>50){ Toast.makeText(EditNoteActivity.this,"Введено слишком большое название жанра ",Toast.LENGTH_SHORT).show();return false;}
         else if (timeView.length()>50){Toast.makeText(EditNoteActivity.this,"Введен слишком большой текст для периода прочтения",Toast.LENGTH_SHORT).show();return false;}
         else if (placeView.length()>50){Toast.makeText(EditNoteActivity.this,"Введено слишком большое название места прочтения",Toast.LENGTH_SHORT).show();return false;}
         else if (shortCommentView.length()>50){Toast.makeText(EditNoteActivity.this,"Введен слишком большой краткий комментарий",Toast.LENGTH_SHORT).show();return false;}
+        else if (pathView.getText().toString().contains("\\")) {Toast.makeText(EditNoteActivity.this, "Введен недопустимы символ: \\", Toast.LENGTH_LONG).show();return false;}
         String time = (beforeChanging[9].equals("0"))?System.currentTimeMillis()+"":beforeChanging[9];
         String path1 = pathView.getText().toString();
         path1 = fixPath(path1);
@@ -467,20 +471,32 @@ private String TAG_DARK = "dark_theme";
             savePaths();
         }
         if (isNoteNew == true){
-            note.put("publicRatingSum", (double)0.0);
+            note.put("publicRatingSum", 0.0);
             note.put("publicRatingCount", 0);
-            db.collection("Notes").document(user).collection("userNotes").document(id).set(note);
-            HashMap<String, Boolean> map = new HashMap<String, Boolean>();
-            insertIntent();
+            db.collection("Notes").document(user).collection("userNotes").document(id).set(note).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    insertIntent();
+                    closeActivity();
+//                    retut
+                }
+            });
+//            HashMap<String, Boolean> map = new HashMap<String, Boolean>();
+//            insertIntent();
         }
         else
         {
             db.collection("Notes").document(user).collection("userNotes").document(id).set(note, SetOptions.merge());
             changedIntent();
+            closeActivity();
         }
         Log.d("qwerty71", "save");
 
         return true;
+    }
+
+    private void closeActivity(){
+        finish();
     }
 
     private void showNoTitleAndAuthorDialog(){
