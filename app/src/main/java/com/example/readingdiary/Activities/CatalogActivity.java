@@ -139,20 +139,15 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
 //        Получение разрешений на чтение и запись
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 == PackageManager.PERMISSION_GRANTED) {
-            Log.v("FILE3", "Permission is granted");
 
         } else {
-            Log.v("FILE3", "Permission is revoked");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
 
         }
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 == PackageManager.PERMISSION_GRANTED) {
-            Log.v("FILE3", "Permission is granted");
 
         } else {
-
-            Log.v("FILE3", "Permission is revoked");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
 
         }
@@ -258,7 +253,7 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         if (requestCode==CREATE_NOTE_REQUEST_CODE && resultCode == RESULT_OK){
             Log.d("qwerty15", data.getExtras().get("deleted") + " ! " + data.getExtras().get("noNote") + " !");
             if ((data.getExtras().get("deleted") == null && data.getExtras().get("noNote") == null)){
-                Log.d("qwerty15", "hi");
+                Log.d("qwerty71", "onResult");
                 Intent intent = new Intent(CatalogActivity.this, NoteActivity.class); // вызов активности записи
                 intent.putExtra("id", data.getExtras().get("id").toString()); // передаем id активности в бд, чтобы понять какую активность надо показывать
                 intent.putExtra("changed", "true");
@@ -580,42 +575,64 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             db.collection("Notes").document(user).collection("userNotes").document(id).get()
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            final HashMap<String, Object> map = (HashMap) documentSnapshot.getData();
+                        public void onSuccess(final DocumentSnapshot documentSnapshot0) {
+                            final HashMap<String, Object> map = (HashMap) documentSnapshot0.getData();
+                            if (map==null) return;
                             final RealNote realNote = new RealNote(id, map.get("path").toString(), map.get("author").toString(),
                                     map.get("title").toString(), Double.valueOf(map.get("rating").toString()), (boolean)map.get("private"),
                                     (double) map.get("publicRatingSum"), (long)map.get("publicRatingCount"));
                             realNote.setTime(Long.parseLong(map.get("timeAdd").toString()));
                             if (map.get("imagePath")!= null && !map.get("imagePath").toString().equals("")){
-                                FirebaseStorage.getInstance().getReference(user).child(documentSnapshot.getId()).child("Images").child(map.get("imagePath").toString()).getDownloadUrl()
-                                        .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                db.collection("Common").document(user).collection(documentSnapshot0.getId()).document("Images").addSnapshotListener(CatalogActivity.this, new EventListener<DocumentSnapshot>() {
                                             @Override
-                                            public void onSuccess(Uri uri) {
-                                                realNote.setCoverPath(uri);
-                                                if (index == -1){
-                                                    notes.add(realNote);
-                                                    mAdapter.notifyItemInserted(notes.size()-1);
-                                                }
+                                            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                                                Log.d("qwerty72", (boolean)documentSnapshot.get(map.get("imagePath").toString()) + "");
+                                                if ((boolean)documentSnapshot.get(map.get("imagePath").toString())==true){
+                                                    Log.d("qwerty72", "imagePathTrue");
+                                                    Log.d("qwerty72", map.get("imagePath").toString());
+                                                    FirebaseStorage.getInstance().getReference(user).child(documentSnapshot0.getId()).child("Images").child(map.get("imagePath").toString()).getDownloadUrl()
+                                                            .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                @Override
+                                                                public void onSuccess(Uri uri) {
+                                                                    Log.d("qwerty72", "success");
+                                                                    realNote.setCoverPath(uri);
+                                                                    if (index == -1) {
+                                                                        notes.add(realNote);
+                                                                        mAdapter.notifyItemInserted(notes.size() - 1);
+                                                                    } else {
+                                                                        notes.set(index, realNote);
+                                                                        mAdapter.notifyItemChanged(index);
+                                                                    }
+                                                                                }
+                                                            })
+                                                            .addOnFailureListener(new OnFailureListener() {
+                                                                @Override
+                                                                public void onFailure(@NonNull Exception e) {
+                                                                    Log.d("qwerty72", e.toString());
+                                                                    if (index == -1) {
+                                                                        notes.add(realNote);
+                                                                        mAdapter.notifyItemInserted(notes.size() - 1);
+                                                                    } else {
+                                                                        notes.set(index, realNote);
+                                                                        mAdapter.notifyItemChanged(index);
+                                                                    }
+                                                                }
+                                                            });
+                                                    }
                                                 else{
-                                                    notes.set(index, realNote);
-                                                    mAdapter.notifyItemChanged(index);
+                                                    if (index == -1){
+                                                        notes.add(realNote);
+                                                        mAdapter.notifyItemInserted(notes.size()-1);
+
+                                                    }
+                                                    else{
+                                                        notes.set(index, realNote);
+                                                        mAdapter.notifyItemChanged(index);
+                                                    }
                                                 }
-                                            }
-                                        })
-                                        .addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                if (index == -1){
-                                                    notes.add(realNote);
-                                                    mAdapter.notifyItemInserted(notes.size()-1);
-                                                }
-                                                else{
-                                                    notes.set(index, realNote);
-                                                    mAdapter.notifyItemChanged(index);
-                                                }
-                                            }
-                                        });
-                            }
+                                            }});
+                                        }
+
                             else{
                                 if (index == -1){
                                     notes.add(realNote);
@@ -814,28 +831,12 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                         db.collection("Publicly").document(user).set(map, SetOptions.merge());
                         db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).update("private", false);
 
-//                        db.collection("Publicly").document(user)
-//                                .update("notesId", FieldValue.arrayUnion(notes.get(position).getID()))
-//                                .addOnFailureListener(new OnFailureListener() {
-//                                    @Override
-//                                    public void onFailure(@NonNull Exception e) {
-//                                        HashMap<String, List> map = new HashMap<>();
-//                                        ArrayList<String> list = new ArrayList<>();
-//                                        list.add(notes.get(position).getID());
-//                                        map.put("notesId", list);
-//                                        db.collection("Publicly").document(user).set(map);
-//                                        db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).update("private", false);
-//                                    }
-//                                });
-//                        HashMap<String, Object> map = new HashMap<>();
 
                     }
                     else{
                         Map<String, String> map = new HashMap<>();
                         map.put(""+((RealNote) notes.get(position)).getTime(), notes.get(position).getID());
                         db.collection("Publicly").document(user).update(""+((RealNote) notes.get(position)).getTime(), FieldValue.delete());
-//                        db.collection("Publicly").document(user)
-//                                .update("notesId", FieldValue.arrayRemove(notes.get(position).getID()));
                         db.collection("Notes").document(user).collection("userNotes").document(notes.get(position).getID()).update("private", true);
 
                     }
@@ -862,20 +863,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     reloadRecyclerView();
                 }
             });
-//
-//        sortsAdapter = new CatalogSortsSpinnerAdapter(this, sortsList);
-//        sortsSpinner.setAdapter(sortsAdapter);
-//        sortsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-//                String clickedItem = (String) parent.getItemAtPosition(position);
-//                startSort(clickedItem);
-//            }
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> parent) {
-//            }
-//        });
     }
 //
 

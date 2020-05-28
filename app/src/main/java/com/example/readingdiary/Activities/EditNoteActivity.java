@@ -134,6 +134,7 @@ private String TAG_DARK = "dark_theme";
             isNoteNew=false;
             id = args.get("id").toString();
             select(id);
+            Log.d("qwerty71", "startNote");
         }
         else if (args != null && args.get("path") != null){
             isNoteNew=true;
@@ -156,19 +157,10 @@ private String TAG_DARK = "dark_theme";
         Log.d("putExtra", "start");
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         setButtons();
-//        ChooseDataDialogFragment saveDialogFragment = new ChooseDataDialogFragment();
-//        FragmentManager manager = getSupportFragmentManager();
-//        FragmentTransaction transaction = manager.beginTransaction();
-//        saveDialogFragment.show(transaction, "dialog");
-
-
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
-        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_note, menu);
         getMenuInflater().inflate(R.menu.base_menu, menu);
         return true;
     }
@@ -409,17 +401,24 @@ private String TAG_DARK = "dark_theme";
                 addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        Log.d("qwerty71", (documentSnapshot==null)+"");
                         String s = documentSnapshot.get("author").toString();
                         HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
-                        imagePath = map.get("imagePath").toString();
-                        isPrivate = (boolean)map.get("private");
-                        beforeChanging = new String[]{
-                                map.get("path").toString().replace("\\", "/"), map.get("author").toString(),
-                                map.get("title").toString(), map.get("rating").toString(),
-                                map.get("genre").toString(), map.get("time").toString(),
-                                map.get("place").toString(), map.get("short_comment").toString(),
-                                map.get("imagePath").toString(), map.get("timeAdd").toString()};
-                        setViews();
+                        if (map != null){
+                            imagePath = map.get("imagePath").toString();
+                            isPrivate = (boolean)map.get("private");
+                            beforeChanging = new String[]{
+                                    map.get("path").toString().replace("\\", "/"), map.get("author").toString(),
+                                    map.get("title").toString(), map.get("rating").toString(),
+                                    map.get("genre").toString(), map.get("time").toString(),
+                                    map.get("place").toString(), map.get("short_comment").toString(),
+                                    map.get("imagePath").toString(), map.get("timeAdd").toString()};
+                            setViews();
+                        }
+                        else{
+                            Log.d("qwerty71", "map == null");
+                        }
+
                     }
                 });
     }
@@ -479,6 +478,8 @@ private String TAG_DARK = "dark_theme";
             db.collection("Notes").document(user).collection("userNotes").document(id).set(note, SetOptions.merge());
             changedIntent();
         }
+        Log.d("qwerty71", "save");
+
         return true;
     }
 

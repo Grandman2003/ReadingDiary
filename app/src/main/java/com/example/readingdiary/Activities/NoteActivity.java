@@ -28,10 +28,12 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.readingdiary.Classes.DeleteUser;
+import com.example.readingdiary.Classes.Note;
 import com.example.readingdiary.Fragments.AddShortNameFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -257,7 +259,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     }
 
     private void setViews(String path, String author, String title, String rating, String genre,
-                          String time, String place, String shortComment, Uri imageUri){
+                          String time, String place, String shortComment){
         this.path = path;
         this.authorView.setText(author);
        // Toast.makeText(this, "!" + author + " " + author.equals(""), Toast.LENGTH_SHORT).show();
@@ -293,6 +295,13 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
         }
 //        File file = new File(imagePath);
         Log.d("IMAGE1", imagePath +" !");
+    }
+
+    private void setDefaultImage(){
+        coverView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.no_image));
+    }
+
+    private void setImage(Uri imageUri){
         if (imageUri != null) {
             Log.d("qwerty123456", imageUri.toString());
             DisplayMetrics metricsB = getResources().getDisplayMetrics();
@@ -402,43 +411,56 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     private void select(String id){
         // Выбор полей из бд
         // Сейчас тут выбор не всех полей
-        Log.d("qwerty16", id);
         final String id0 = id;
+        Log.d("qwerty71", "hiSelect");
         db.collection("Notes").document(user).collection("userNotes").document(id).get().
                 addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        Log.d("qwerty71", "doc " + (documentSnapshot==null));
                         String s = documentSnapshot.get("author").toString();
-                        Log.d("qwerty16", s);
+
                         final HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
-                        Log.d("qwerty16", map.toString());
                         imagePath = "";
-                        if (map.get("imagePath") != null && !map.get("imagePath").equals("")){
-                            FirebaseStorage.getInstance().getReference(user).child(id0).child("Images")
-                                    .child(map.get("imagePath").toString()).getDownloadUrl().
-                                    addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                        @Override
-                                        public void onSuccess(Uri uri) {
-                                            Log.d("qwerty123456", "hiStart " + uri);
-                                            imageUri = uri;
-                                            setViews(
-                                                    map.get("path").toString(), map.get("author").toString(),
-                                                    map.get("title").toString(), map.get("rating").toString(),
-                                                    map.get("genre").toString(), map.get("time").toString(),
-                                                    map.get("place").toString(), map.get("short_comment").toString(),
-                                                    imageUri
-                                            );
-                                        }
-                                    });
-                        }
-                        else{
+                        if (map != null){
                             setViews(
                                     map.get("path").toString(), map.get("author").toString(),
                                     map.get("title").toString(), map.get("rating").toString(),
                                     map.get("genre").toString(), map.get("time").toString(),
-                                    map.get("place").toString(), map.get("short_comment").toString(),
-                                    null
+                                    map.get("place").toString(), map.get("short_comment").toString()
                             );
+                            Log.d("qwerty71", "mapNotNull");
+                            if (map.get("imagePath") != null && !map.get("imagePath").equals("")){
+                                Log.d("qwerty71", "image1");
+                                db.collection("Common").document(user).collection(id0).document("Images").addSnapshotListener(NoteActivity.this, new EventListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                                        if (e == null){
+                                            Log.d("qwerty71", "event" + (documentSnapshot==null));
+                                            HashMap<String, Boolean> imagesLinks= (HashMap) documentSnapshot.getData();
+                                            Log.d("qwerty71", "imageLinks " + (imagesLinks==null));
+                                            if (imagesLinks != null && imagesLinks.get(map.get("imagePath")) == true){
+                                                Log.d("qwerty71", "imagePath: " + map.get("imagePath").toString());
+                                                FirebaseStorage.getInstance().getReference(user).child(id0).child("Images").child(map.get("imagePath").toString()).getDownloadUrl()
+                                                        .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                            @Override
+                                                            public void onSuccess(Uri uri) {
+                                                                Log.d("qwerty123456", "hiStart " + uri);
+                                                                imageUri = uri;
+                                                                setImage(imageUri);
+                                                            }
+                                                        });
+                                            }
+                                            else if (imagesLinks != null && imagesLinks.get(map.get("imagePath")) == false){
+                                                setDefaultImage();
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                        else{
+                            Log.d("qwerty71", "map == null");
                         }
                     }
                 });
