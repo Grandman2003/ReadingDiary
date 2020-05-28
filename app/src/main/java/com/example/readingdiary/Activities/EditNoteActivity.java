@@ -38,8 +38,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.readingdiary.Classes.DeleteNote;
+import com.example.readingdiary.Classes.DeleteUser;
 import com.example.readingdiary.Classes.SaveImage;
 //import com.example.readingdiary.Fragments.ChooseDataDialogFragment;
+import com.example.readingdiary.Fragments.AddShortNameFragment;
 import com.example.readingdiary.Fragments.CreateWithoutNoteDialogFragment;
 import com.example.readingdiary.Fragments.DeleteDialogFragment;
 import com.example.readingdiary.Fragments.DeleteTitleAndAuthorDialogFragment;
@@ -54,6 +56,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -165,7 +168,7 @@ private String TAG_DARK = "dark_theme";
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_note, menu);
+//        getMenuInflater().inflate(R.menu.menu_note, menu);
         getMenuInflater().inflate(R.menu.base_menu, menu);
         return true;
     }
@@ -251,27 +254,34 @@ private String TAG_DARK = "dark_theme";
         startActivity(intent);
     }
 
+
     @Override
-    public void onDelete() {
-        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+    public void onDelete()
+    {
+        String currentUser =  FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DeleteUser.deleteUser(this, currentUser);
+        db.collection("PublicID").document(currentUser).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful())
-                {
-                    Toast.makeText(EditNoteActivity.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot == null || documentSnapshot.getString("id")==null){
+                    Toast.makeText(getApplicationContext(),"Аккаунт удалён",Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(EditNoteActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
-
-                }
-                else
-                {
-                    Toast.makeText(EditNoteActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
                 }
             }
         });
+    }
 
+    @Override
+    public void onChangeIdClick(String userID) {
+        AddShortNameFragment saveDialogFragment = new AddShortNameFragment(true, userID, user);
+        saveDialogFragment.setCancelable(false);
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        saveDialogFragment.show(transaction, "dialog");
+//        this.userID = userID;
     }
 
     @Override
@@ -279,10 +289,6 @@ private String TAG_DARK = "dark_theme";
     {
         Intent intent = new Intent(EditNoteActivity.this, ForgotPswActivity.class);
         startActivity(intent);
-    }
-
-    @Override
-    public void onChangeIdClick(String userName) {
     }
 
     @Override

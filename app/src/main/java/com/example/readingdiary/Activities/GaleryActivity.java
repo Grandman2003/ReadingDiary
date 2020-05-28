@@ -25,8 +25,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.readingdiary.Classes.DeleteUser;
 import com.example.readingdiary.Classes.ImageClass;
 import com.example.readingdiary.Classes.SaveImage;
+import com.example.readingdiary.Fragments.AddShortNameFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.GaleryFullViewAdapter;
@@ -261,16 +263,37 @@ public class GaleryActivity extends AppCompatActivity implements SettingsDialogF
         startActivity(intent);
     }
 
+
     @Override
-    public void onDelete() {
+    public void onDelete()
+    {
+        DeleteUser.deleteUser(this, user);
+        FirebaseFirestore.getInstance().collection("PublicID").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@androidx.annotation.Nullable DocumentSnapshot documentSnapshot, @androidx.annotation.Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot == null || documentSnapshot.getString("id")==null){
+                    Toast.makeText(getApplicationContext(),"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(GaleryActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onChangeIdClick(String userID) {
+        AddShortNameFragment saveDialogFragment = new AddShortNameFragment(true, userID, user);
+        saveDialogFragment.setCancelable(false);
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        saveDialogFragment.show(transaction, "dialog");
+//        this.userID = userID;
     }
 
     @Override
     public void onForgot() {
-    }
-
-    @Override
-    public void onChangeIdClick(String userName) {
     }
 
     @Override

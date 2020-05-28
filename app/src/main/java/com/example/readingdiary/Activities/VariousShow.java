@@ -22,7 +22,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.readingdiary.Classes.DeleteFilesClass;
+import com.example.readingdiary.Classes.DeleteUser;
 import com.example.readingdiary.Classes.VariousNotes;
+import com.example.readingdiary.Fragments.AddShortNameFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.example.readingdiary.adapters.VariousViewAdapter;
@@ -153,29 +155,35 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
         startActivity(intent);
     }
 
+
     @Override
     public void onDelete()
     {
-        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>()
-        {
+        DeleteUser.deleteUser(this, user);
+        FirebaseFirestore.getInstance().collection("PublicID").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<Void> task)
-            {
-                if (task.isSuccessful())
-                {
-                    Toast.makeText(VariousShow.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot == null || documentSnapshot.getString("id")==null){
+                    Toast.makeText(getApplicationContext(),"Аккаунт удалён",Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(VariousShow.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 }
-                else
-                {
-                    Toast.makeText(VariousShow.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
-                }
             }
         });
     }
+
+    @Override
+    public void onChangeIdClick(String userID) {
+        AddShortNameFragment saveDialogFragment = new AddShortNameFragment(true, userID, user);
+        saveDialogFragment.setCancelable(false);
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        saveDialogFragment.show(transaction, "dialog");
+//        this.userID = userID;
+    }
+
 
     @Override
     public void onForgot()
@@ -184,9 +192,6 @@ public class VariousShow extends AppCompatActivity implements SettingsDialogFrag
         startActivity(intent);
     }
 
-    @Override
-    public void onChangeIdClick(String userName) {
-    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item)

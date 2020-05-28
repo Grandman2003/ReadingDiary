@@ -27,6 +27,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.readingdiary.Classes.DeleteUser;
+import com.example.readingdiary.Fragments.AddShortNameFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -34,7 +36,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.storage.FirebaseStorage;
 import com.squareup.picasso.Picasso;
 
@@ -141,24 +145,31 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
     @Override
     public void onDelete()
     {
-        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+        DeleteUser.deleteUser(this, user);
+        db.collection("PublicID").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful())
-                {
-                    Toast.makeText(NoteActivity.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot == null || documentSnapshot.getString("id")==null){
+                    Toast.makeText(getApplicationContext(),"Аккаунт удалён",Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(NoteActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 }
-                else
-                {
-                    Toast.makeText(NoteActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
-                }
             }
         });
     }
+
+    @Override
+    public void onChangeIdClick(String userID) {
+        AddShortNameFragment saveDialogFragment = new AddShortNameFragment(true, userID, user);
+        saveDialogFragment.setCancelable(false);
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        saveDialogFragment.show(transaction, "dialog");
+//        this.userID = userID;
+    }
+
 
     @Override
     public void onForgot()
@@ -167,9 +178,7 @@ public class NoteActivity extends AppCompatActivity implements SettingsDialogFra
         startActivity(intent);
     }
 
-    @Override
-    public void onChangeIdClick(String userName) {
-    }
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

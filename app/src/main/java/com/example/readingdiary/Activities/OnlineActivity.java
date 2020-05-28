@@ -162,12 +162,20 @@ public class OnlineActivity extends AppCompatActivity
                                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                         @Override
                                         public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                            if (documentSnapshot != null && documentSnapshot.getData() != null) {
+                                            if (!documentSnapshot.getString("id").equals(hashMap.get(key))) {
+                                                FirebaseFirestore.getInstance().collection("Subscriptions")
+                                                        .document(user).update(key, documentSnapshot.getString("id"));
+                                                subscriptions.add(documentSnapshot.getString("id"));
+                                                realSubscriptions.add(key);
+                                                subscriptionsAdapter.notifyItemInserted(subscriptions.size());
+                                            }
+                                            else if (documentSnapshot != null && documentSnapshot.getData() != null) {
                                                 Log.d("qwerty60", key + " " + documentSnapshot.getData().toString());
                                                 subscriptions.add(hashMap.get(key));
                                                 realSubscriptions.add(key);
                                                 subscriptionsAdapter.notifyItemInserted(subscriptions.size());
-                                            } else {
+                                            }
+                                            else {
                                                 FirebaseFirestore.getInstance().collection("Subscriptions")
                                                         .document(user).update(key, FieldValue.delete());
                                             }

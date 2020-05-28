@@ -11,11 +11,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.readingdiary.Classes.DeleteUser;
+import com.example.readingdiary.Fragments.AddShortNameFragment;
 import com.example.readingdiary.Fragments.SaveDialogFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
 import com.example.readingdiary.Fragments.WrongLengthDialogFragment;
@@ -30,8 +33,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.SetOptions;
 
 import java.io.BufferedReader;
@@ -135,39 +140,41 @@ public class VariousNotebook extends AppCompatActivity implements SaveDialogFrag
         startActivity(intent);
     }
 
+
     @Override
     public void onDelete()
     {
-        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>()
-        {
+        DeleteUser.deleteUser(this, user);
+        FirebaseFirestore.getInstance().collection("PublicID").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<Void> task)
-            {
-                if (task.isSuccessful())
-                {
-                    Toast.makeText(VariousNotebook.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot == null || documentSnapshot.getString("id")==null){
+                    Toast.makeText(getApplicationContext(),"Аккаунт удалён",Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(VariousNotebook.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
-                }
-                else
-                {
-                    Toast.makeText(VariousNotebook.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
     @Override
+    public void onChangeIdClick(String userID) {
+        AddShortNameFragment saveDialogFragment = new AddShortNameFragment(true, userID, user);
+        saveDialogFragment.setCancelable(false);
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        saveDialogFragment.show(transaction, "dialog");
+//        this.userID = userID;
+    }
+
+
+    @Override
     public void onForgot()
     {
         Intent intent = new Intent(VariousNotebook.this, ForgotPswActivity.class);
         startActivity(intent);
-    }
-
-    @Override
-    public void onChangeIdClick(String userName) {
     }
 
     @Override

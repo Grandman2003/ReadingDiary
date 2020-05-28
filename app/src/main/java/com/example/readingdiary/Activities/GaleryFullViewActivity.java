@@ -27,7 +27,9 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.readingdiary.Classes.DeleteUser;
 import com.example.readingdiary.Classes.ImageClass;
+import com.example.readingdiary.Fragments.AddShortNameFragment;
 import com.example.readingdiary.Fragments.DeleteDialogFragment;
 import com.example.readingdiary.Fragments.SetCoverDialogFragment;
 import com.example.readingdiary.Fragments.SettingsDialogFragment;
@@ -215,20 +217,40 @@ private String TAG_DARK = "dark_theme";
         startActivity(intent);
     }
 
-    @Override
-    public void onDelete() {
 
+    @Override
+    public void onDelete()
+    {
+        DeleteUser.deleteUser(this, user);
+        db.collection("PublicID").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@androidx.annotation.Nullable DocumentSnapshot documentSnapshot, @androidx.annotation.Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot == null || documentSnapshot.getString("id")==null){
+                    Toast.makeText(getApplicationContext(),"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(GaleryFullViewActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                }
+            }
+        });
     }
+
+    @Override
+    public void onChangeIdClick(String userID) {
+        AddShortNameFragment saveDialogFragment = new AddShortNameFragment(true, userID, user);
+        saveDialogFragment.setCancelable(false);
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        saveDialogFragment.show(transaction, "dialog");
+//        this.userID = userID;
+    }
+
 
     @Override
     public void onForgot() {
-
     }
 
-    @Override
-    public void onChangeIdClick(String userName) {
-
-    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

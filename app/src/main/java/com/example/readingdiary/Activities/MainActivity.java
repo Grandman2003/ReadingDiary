@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Transaction;
@@ -36,9 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, AddShortNameFragment.AddShortNameDialogListener {
-
-
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     public FirebaseAuth mAuth= FirebaseAuth.getInstance();
     public FirebaseAuth.AuthStateListener mAuthListener;
     public EditText ETemail;
@@ -217,11 +216,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                         }
                                                     }).addOnSuccessListener(new OnSuccessListener<Long>() {
                                                         @Override
-                                                        public void onSuccess(Long aLong) {
+                                                        public void onSuccess(final Long aLong) {
                                                             Map<String, String> map = new HashMap<>();
                                                             map.put("id", aLong+"");
-                                                            db.collection("PublicID").document(userAuth.getUid()).set(map);
-                                                            AddShortNameFragment saveDialogFragment = new AddShortNameFragment(getApplicationContext());
+                                                            db.collection("PublicID").document(userAuth.getUid()).set(map).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+                                                                    db.collection("PublicID").document(userAuth.getUid()).addSnapshotListener(MainActivity.this, new EventListener<DocumentSnapshot>() {
+                                                                        @Override
+                                                                        public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                                                                            if (e == null && documentSnapshot != null && documentSnapshot.getString("id")!= null){
+                                                                                if (!documentSnapshot.getString("id").equals(aLong+"")){
+                                                                                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
+                                                                                    startActivity(intent);
+
+                                                                                }
+
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                }
+                                                            });
+                                                            AddShortNameFragment saveDialogFragment = new AddShortNameFragment(false, aLong+"", userAuth.getUid());
                                                             saveDialogFragment.setCancelable(false);
                                                             FragmentManager manager = getSupportFragmentManager();
                                                             FragmentTransaction transaction = manager.beginTransaction();
@@ -246,73 +262,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 else
                 {
                     Toast.makeText(MainActivity.this, "Регистрация провалена", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-    @Override
-    public void onEnterClicked(final String name) {
-
-        if (name.contains(" ") || name.length() > 20 || name.equals("") || android.text.TextUtils.isDigitsOnly(name)){
-            Log.d("qwerty61", "hi!!!");
-            AddShortNameFragment saveDialogFragment;
-            if (name.contains(" ")) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "space");
-            else if (name.length() > 20) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "long");
-            else if (name.equals("")) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "null");
-            else saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "number");
-            saveDialogFragment.setCancelable(false);
-            FragmentManager manager = getSupportFragmentManager();
-            FragmentTransaction transaction = manager.beginTransaction();
-            saveDialogFragment.show(transaction, "dialog");
-            return;
-        }
-
-
-        db.runTransaction(new Transaction.Function<String>() {
-            @Nullable
-            @Override
-            public String apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                DocumentReference documentReference = db.collection("allNames").document("allNames");
-                DocumentSnapshot allNamesShapshot = transaction.get(documentReference);
-                if (allNamesShapshot != null && allNamesShapshot.getString("names")!=null){
-                    String names = allNamesShapshot.getString("names");
-                    if (Arrays.asList(names.split(" ")).contains(name)){
-                        HashMap<String, String> map = new HashMap<>();
-                        map.put("names", names);
-                        transaction.set(db.collection("allNames").document("allNames"), map);
-                        return "";
-                    }
-                    else{
-                        HashMap<String, String> map = new HashMap<>();
-                        map.put("names", names + " " + name);
-                        transaction.set(db.collection("allNames").document("allNames"), map);
-                        return name;
-                    }
-                }
-                else{
-                    HashMap<String, String> map = new HashMap<>();
-                    map.put("names", name);
-                    transaction.set(db.collection("allNames").document("allNames"), map);
-                    return name;
-                }
-            }
-        }).addOnSuccessListener(new OnSuccessListener<String>() {
-            @Override
-            public void onSuccess(String str) {
-                if (str.equals("")){
-                    AddShortNameFragment saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "exists");
-                    saveDialogFragment.setCancelable(false);
-                    FragmentManager manager = getSupportFragmentManager();
-                    FragmentTransaction transaction = manager.beginTransaction();
-                    saveDialogFragment.show(transaction, "dialog");
-                }
-                else{
-                    Map<String, String> map= new HashMap<>();
-                    map.put("id", str);
-                    db.collection("PublicID").document(user).set(map);
-                    Intent intent = new Intent(MainActivity.this, CatalogActivity.class);
-                    startActivity(intent);
                 }
             }
         });

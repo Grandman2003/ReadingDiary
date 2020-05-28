@@ -8,14 +8,50 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DeleteNote {
     private static FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    public static void deleteDirectory(final String user, final String path){
+        final String path1 = path;
+        final File dir0 = new File(path);
+        db.collection("User").document(user).collection("paths").whereEqualTo("parent", path1).get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (queryDocumentSnapshots != null){
+                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                deleteDirectory(user, documentSnapshot.getId());
+                            }
+                        }
+                    }
+                });
+        db.collection("User").document(user).collection("paths").document(path1).delete();
+
+        db.collection("Notes").document(user).collection("userNotes").whereEqualTo("path", path1).get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (queryDocumentSnapshots != null){
+                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                deleteNote(user, documentSnapshot.getId());
+                                if (!(boolean)documentSnapshot.get("private")){
+                                    deletePublicly(user, documentSnapshot.getId());
+                                }
+                            }
+                        }
+
+                    }
+                });
+    }
 
     public static void deleteNote(String user, String id){
         db.collection("Notes").document(user).collection("userNotes").document(id).delete();

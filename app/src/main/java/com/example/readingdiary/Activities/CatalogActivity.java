@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.readingdiary.Classes.DeleteNote;
+import com.example.readingdiary.Classes.DeleteUser;
 import com.example.readingdiary.Classes.Directory;
 import com.example.readingdiary.Classes.Note;
 import com.example.readingdiary.Classes.RealNote;
@@ -51,6 +52,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -71,7 +73,7 @@ import java.util.stream.Collectors;
 
 
 public class CatalogActivity extends AppCompatActivity implements SortDialogFragment.SortDialogListener,
-        SettingsDialogFragment.SettingsDialogListener, AddShortNameFragment.AddShortNameDialogListener {
+        SettingsDialogFragment.SettingsDialogListener {
     // класс отвечает за активность с каталогами
 
     RecyclerViewAdapter mAdapter;
@@ -154,16 +156,8 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
 
         }
-
-        //Toast.makeText(CatalogActivity.this,mein.frgEm,Toast.LENGTH_LONG).show();
-
-
-
-
         notes = new ArrayList<Note>(); // список того, что будет отображаться в каталоге.
         buttons = new ArrayList<String>(); // Список пройденный каталогов до текущего
-//        setSortTitles();
-//        initSortsList();
         findViews();
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -303,70 +297,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         startActivity(intent);
     }
 
-    @Override
-    public void onDelete()
-    {
-        mein.mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-             @Override
-             public void onComplete(@NonNull Task<Void> task) {
-                 if (task.isSuccessful())
-                 {
-
-                     db.collection("PublicID").document(user).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                         @Override
-                         public void onSuccess(DocumentSnapshot documentSnapshot) {
-                             if (documentSnapshot != null && documentSnapshot.get("id") != null){
-                                 final String name = documentSnapshot.get("id").toString();
-                                 db.runTransaction(new Transaction.Function<Boolean>() {
-                                     @Nullable
-                                     @Override
-                                     public Boolean apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                                         DocumentReference documentReference = db.collection("allNames").document("allNames");
-                                         DocumentSnapshot allNamesShapshot = transaction.get(documentReference);
-                                         Log.d("qwerty62", allNamesShapshot.toString());
-                                         Log.d("qwerty62", allNamesShapshot.getString("names"));
-
-                                         if (allNamesShapshot != null && allNamesShapshot.getString("names")!=null){
-                                             Log.d("qwerty62", name);
-                                             ArrayList<String> names=new ArrayList<>();
-                                             Collections.addAll(names, allNamesShapshot.getString("names").split(" "));
-
-                                             Log.d("qwerty62", "start " + names.size() + " " + names.contains(name) + " " + name);
-                                             names.remove(name);
-                                             Log.d("qwerty62", "end " + names.size());
-                                             Map<String, String> map = new HashMap<>();
-                                             map.put("names", names.stream().collect(Collectors.joining(" ")));
-//                                             allNamesShapshot.set(map);
-                                             transaction.set(documentReference, map);
-                                         }
-                                         return true;
-                                     }
-                                 }).addOnSuccessListener(new OnSuccessListener<Boolean>() {
-                                     @Override
-                                     public void onSuccess(Boolean aBoolean) {
-                                         db.collection("PublicID").document(user).delete();
-                                         deleteDirectory(".\\");
-                                     }
-                                 });
-
-
-                             }
-                         }
-                     });
-                     Toast.makeText(CatalogActivity.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
-                     Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
-                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                     startActivity(intent);
-
-                 }
-                 else {
-                         Toast.makeText(CatalogActivity.this, "Ошибка: "+task.getException().getMessage(),Toast.LENGTH_SHORT).show();
-                     }
-             }
-         });
-
-    }
 
     @Override
     public void onForgot()
@@ -376,90 +306,33 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
     }
 
     @Override
+    public void onDelete()
+    {
+        DeleteUser.deleteUser(this, user);
+        db.collection("PublicID").document(user).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot == null || documentSnapshot.getString("id")==null){
+                    Toast.makeText(CatalogActivity.this,"Аккаунт удалён",Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(CatalogActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                }
+            }
+        });
+    }
+
+    @Override
     public void onChangeIdClick(String userID) {
-        AddShortNameFragment saveDialogFragment = new AddShortNameFragment(getApplicationContext(), true);
-//        saveDialogFragment.setCancelable(екгу);
+        AddShortNameFragment saveDialogFragment = new AddShortNameFragment(true, userID, user);
+        saveDialogFragment.setCancelable(false);
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         saveDialogFragment.show(transaction, "dialog");
         this.userID = userID;
     }
 
-    @Override
-    public void onEnterClicked(final String name) {
-        if (name.contains(" ") || name.length() > 20 || name.equals("") || android.text.TextUtils.isDigitsOnly(name)){
-            AddShortNameFragment saveDialogFragment;
-            if (name.contains(" ")) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "space", true);
-            else if (name.length() > 20) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "long", true);
-            else if (name.equals("")) saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "null", true);
-            else saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "number", true);
-            saveDialogFragment.setCancelable(false);
-            FragmentManager manager = getSupportFragmentManager();
-            FragmentTransaction transaction = manager.beginTransaction();
-            saveDialogFragment.show(transaction, "dialog");
-            return;
-        }
-
-
-        db.runTransaction(new Transaction.Function<String>() {
-            @Nullable
-            @Override
-            public String apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                DocumentReference documentReference = db.collection("allNames").document("allNames");
-                DocumentSnapshot allNamesShapshot = transaction.get(documentReference);
-                if (allNamesShapshot != null && allNamesShapshot.getString("names")!=null){
-                    String names = allNamesShapshot.getString("names");
-                    if (Arrays.asList(names.split(" ")).contains(name)){
-                        HashMap<String, String> map = new HashMap<>();
-                        map.put("names", names);
-                        transaction.set(db.collection("allNames").document("allNames"), map);
-                        return "";
-                    }
-                    else{
-//                        ArrayList<String> namesList= (ArrayList)Arrays.asList(names.split(" "));
-                        HashMap<String, String> map = new HashMap<>();
-                        String ans;
-                        ArrayList<String> namesList=new ArrayList<>();
-                        Collections.addAll(namesList, allNamesShapshot.getString("names").split(" "));
-                        if (userID != null && namesList.contains(userID)){
-                            namesList.set(namesList.indexOf(userID), name);
-                            ans = namesList.stream().collect(Collectors.joining(" "));
-                        }
-                        else{
-                            ans = names + " " + name;
-                        }
-                        map.put("names", ans);
-                        transaction.set(db.collection("allNames").document("allNames"), map);
-                        return name;
-                    }
-                }
-                else{
-                    HashMap<String, String> map = new HashMap<>();
-                    map.put("names", name);
-                    transaction.set(db.collection("allNames").document("allNames"), map);
-                    return name;
-                }
-            }
-        }).addOnSuccessListener(new OnSuccessListener<String>() {
-            @Override
-            public void onSuccess(String str) {
-                if (str.equals("")){
-                    AddShortNameFragment saveDialogFragment = new AddShortNameFragment(getApplicationContext(), "exists");
-                    saveDialogFragment.setCancelable(false);
-                    FragmentManager manager = getSupportFragmentManager();
-                    FragmentTransaction transaction = manager.beginTransaction();
-                    saveDialogFragment.show(transaction, "dialog");
-                }
-                else{
-                    Map<String, String> map= new HashMap<>();
-                    map.put("id", str);
-
-                    db.collection("PublicID").document(user).set(map);
-//                    startActivity(intent);
-                }
-            }
-        });
-    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -468,8 +341,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             toolbar.getLocationInWindow(location);
             int y = getResources().getDisplayMetrics().heightPixels;
             int x = getResources().getDisplayMetrics().widthPixels;
-          //  Toast.makeText(getApplicationContext(), "height " + toolbarHeight, Toast.LENGTH_LONG).show();
-
             SettingsDialogFragment settingsDialogFragment = new SettingsDialogFragment(y, x, sharedPreferences.getBoolean(TAG_DARK, false));
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();
@@ -481,8 +352,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             deleteSelectedRealNote();
             deleteSelectedDirectories();
             mAdapter.notifyDataSetChanged();
-//            RecyclerViewAdapter recyclerViewAdapter = (RecyclerViewAdapter) mAdapter;
-//            recyclerViewAdapter.updateAdapter(selectionList);
             toolbar.getMenu().clear();
             toolbar.inflateMenu(R.menu.menu_catalog);
             toolbar.inflateMenu(R.menu.base_menu);
@@ -490,27 +359,18 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             menuType = 0;
             counterText.setText("Каталог");
             count=0;
-//            selectionList.clear();
-
         }
         if (item.getItemId() == R.id.item_search){
             counterText.setVisibility(View.GONE);
             findText1.setVisibility(View.VISIBLE);
             toolbar.getMenu().clear();
             toolbar.inflateMenu(R.menu.menu_search);
-//            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             menuType = 2;
 
         }
         if (item.getItemId() == R.id.item_search1){
-//            counterText.setVisibility(View.VISIBLE);
-//            findText1.setVisibility(View.GONE);
-//            toolbar.getMenu().clear();
-//            toolbar.inflateMenu(R.menu.menu_catalog);
-
-//                buttons.clear();
             if (!findText1.getText().toString().equals("")){
                 notes.clear();
                 selectTitle(findText1.getText().toString());
@@ -523,14 +383,11 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
             toolbar.inflateMenu(R.menu.menu_catalog);
             toolbar.inflateMenu(R.menu.base_menu);
             menuType = 0;
-//            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         }
 
         if (item.getItemId() == R.id.item_sort){
             SortDialogFragment sortDialogFragment = new SortDialogFragment(choices);
-//            SaveDialogFragment saveDialogFragment = new SaveDialogFragment();
             FragmentManager manager = getSupportFragmentManager();
-            //myDialogFragment.show(manager, "dialog");
             FragmentTransaction transaction = manager.beginTransaction();
             sortDialogFragment.show(transaction, "dialog");
         }
@@ -593,108 +450,96 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         Log.d("strangeSort", choices[position]);
         startSort(choices[position]);
     }
+    public void deleteDirectory(String path){
+        final String path1 = path;
+        final File dir0 = new File(path);
+        db.collection("User").document(user).collection("paths").whereEqualTo("parent", path1).get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (queryDocumentSnapshots != null){
+                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                deleteDirectory(documentSnapshot.getId());
+                            }
+                        }
+                    }
+                });
+        db.collection("User").document(user).collection("paths").document(path1).delete();
 
-
-        public void deleteDirectory(String path){
-            final String path1 = path;
-            final File dir0 = new File(path);
-            Log.d("qwerty12", "start " + path1);
-            db.collection("User").document(user).collection("paths").whereEqualTo("parent", path1).get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                            if (queryDocumentSnapshots != null){
-                                for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                    deleteDirectory(documentSnapshot.getId());
+        db.collection("Notes").document(user).collection("userNotes").whereEqualTo("path", path1).get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (queryDocumentSnapshots != null){
+                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                DeleteNote.deleteNote(user, documentSnapshot.getId());
+                                if (!(boolean)documentSnapshot.get("private")){
+                                    DeleteNote.deletePublicly(user, documentSnapshot.getId());
                                 }
                             }
                         }
-                    });
-            db.collection("User").document(user).collection("paths").document(path1).delete();
 
-            db.collection("Notes").document(user).collection("userNotes").whereEqualTo("path", path1).get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                            if (queryDocumentSnapshots != null){
-                                for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                    DeleteNote.deleteNote(user, documentSnapshot.getId());
-                                    if (!(boolean)documentSnapshot.get("private")){
-                                        DeleteNote.deletePublicly(user, documentSnapshot.getId());
+                    }
+                });
+    }
+
+
+
+    private void selectAll() {
+        final String par1 = parent.replace("/", "\\");
+        final String par2 = parent;
+        final long old_active = active;
+        db.collection("User").document(user).collection("paths").document(par1).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot != null){
+                            ArrayList<String> list = (ArrayList<String>) documentSnapshot.get("paths");
+                            if (list != null) {
+                                for (String i : list) {
+                                    if (active!=old_active){
+                                        break;
                                     }
+                                    if (!par1.equals(parent.replace("/", "\\"))){
+                                        break;
+                                    }
+                                    notes.add(new Directory(i, i.replace("\\", "/")));
                                 }
                             }
-
                         }
-                    });
-
-
-
-        }
-
-
-
-        private void selectAll() {
-          //  Toast.makeText(this, parent, Toast.LENGTH_LONG).show();
-            final String par1 = parent.replace("/", "\\");
-            final String par2 = parent;
-            final long old_active = active;
-
-            db.collection("User").document(user).collection("paths").document(par1).get()
-                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                        @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            if (documentSnapshot != null){
-                                ArrayList<String> list = (ArrayList<String>) documentSnapshot.get("paths");
-                                if (list != null) {
-                                    for (String i : list) {
-                                        if (active!=old_active){
-                                            break;
-                                        }
-                                        if (!par1.equals(parent.replace("/", "\\"))){
-                                            break;
-                                        }
-
-                                        notes.add(new Directory(i, i.replace("\\", "/")));
-                                    }
-                                }
-                            }
-                            startPos = notes.size();
-                            mAdapter.notifyDataSetChanged();
-
-                            db.collection("Notes").document(user).collection("userNotes").whereEqualTo("path", par1).get()
-                                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                            if (queryDocumentSnapshots != null){
-                                                for (final QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                                    if (active!=old_active){
-                                                        break;
-                                                    }
-                                                    final HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
-                                                    generateNote(documentSnapshot.getId(), -1);
+                        startPos = notes.size();
+                        mAdapter.notifyDataSetChanged();
+                        db.collection("Notes").document(user).collection("userNotes").whereEqualTo("path", par1).get()
+                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                        if (queryDocumentSnapshots != null){
+                                            for (final QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                                if (active!=old_active){
+                                                    break;
                                                 }
+                                                final HashMap<String, Object> map = (HashMap<String, Object>) documentSnapshot.getData();
+                                                generateNote(documentSnapshot.getId(), -1);
                                             }
-                                            mAdapter.notifyDataSetChanged();
                                         }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                          // Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-                                            Log.e("qwerty9", e.toString());
-                                        }
-                                    });
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                           // Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-                            Log.e("qwerty10", e.toString());
-                        }
-                    });
-        }
+                                        mAdapter.notifyDataSetChanged();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.e("qwerty9", e.toString());
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("qwerty10", e.toString());
+                    }
+                });
+    }
 
         private void selectTitle(String title){
             db.collection("Notes").document(user).collection("userNotes").whereEqualTo("title", title).get()
@@ -712,7 +557,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                          //  Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                             Log.e("qwerty9", e.toString());
                         }
                     });
@@ -733,7 +577,6 @@ public class CatalogActivity extends AppCompatActivity implements SortDialogFrag
         }
 
         public void generateNote(final String id, final int index){
-//        final RealNote realNote = new RealNote(id, "", "", "", 0);
             db.collection("Notes").document(user).collection("userNotes").document(id).get()
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
